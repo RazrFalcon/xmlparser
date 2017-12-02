@@ -1,0 +1,135 @@
+{"tests": [
+
+{"description": "PI tag",
+"input": "<?xslt ma?>",
+"output":[
+    { "PI" : [ "xslt", "ma" ] }
+]},
+
+{"description": "PI tag 2",
+"input": "<?xslt \t\n m?>",
+"output":[
+    { "PI" : [ "xslt", "m" ] }
+]},
+
+{"description": "PI tag 3",
+"input": "<?xslt?>",
+"output":[
+    { "PI" : [ "xslt", null ] }
+]},
+
+{"description": "PI tag 4",
+"input": "<?xslt ?>",
+"output":[
+    { "PI" : [ "xslt", null ] }
+]},
+
+{"description": "PI tag 5",
+"input": "<?xml-stylesheet?>",
+"output":[
+    { "PI" : [ "xml-stylesheet", null ] }
+]},
+
+{"description": "PI tag with '?' in target",
+"input": "<??xml \t\n m?>",
+"output":[
+    { "Error" : "Error: invalid token 'Processing Instruction' at 1:1\nCaused by: invalid name token\n" }
+]},
+
+{"description": "Declaration 1",
+"input": "<?xml version=\"1.0\"?>",
+"output":[
+    { "Declaration" : [ "1.0", null, null ] }
+]},
+
+{"description": "Declaration 2",
+"input": "<?xml version='1.0'?>",
+"output":[
+    { "Declaration" : [ "1.0", null, null ] }
+]},
+
+{"description": "Declaration with encoding 1",
+"input": "<?xml version='1.0' encoding=\"UTF-8\"?>",
+"output":[
+    { "Declaration" : [ "1.0", "UTF-8", null ] }
+]},
+
+{"description": "Declaration with encoding 2",
+"input": "<?xml version='1.0' encoding='UTF-8'?>",
+"output":[
+    { "Declaration" : [ "1.0", "UTF-8", null ] }
+]},
+
+{"description": "Declaration with encoding 3",
+"input": "<?xml version='1.0' encoding=\"utf-8\"?>",
+"output":[
+    { "Declaration" : [ "1.0", "utf-8", null ] }
+]},
+
+{"description": "Declaration with encoding 4",
+"input": "<?xml version='1.0' encoding=\"EUC-JP\"?>",
+"output":[
+    { "Declaration" : [ "1.0", "EUC-JP", null ] }
+]},
+
+{"description": "Declaration with all attributes",
+"input": "<?xml version='1.0' encoding='UTF-8' standalone='yes'?>",
+"output":[
+    { "Declaration" : [ "1.0", "UTF-8", "yes" ] }
+]},
+
+{"description": "Declaration with an invalid order",
+"input": "<?xml encoding='UTF-8' version='1.0'?>",
+"output":[
+    { "Error" : "Error: invalid token 'Declaration' at 1:1\nCaused by: expected 'v', found 'e' at 1:7\n" }
+]},
+
+{"description": "Declaration with an invalid encoding",
+"input": "<?xml version='1.0' encoding=\"*invalid*\"?>",
+"output":[
+    { "Error" : "Error: invalid token 'Declaration' at 1:1\nCaused by: expected ''\"', found '*' at 1:31\n" }
+]},
+
+{"description": "Declaration with an invalid version",
+"input": "<?xml version='2.0'?>",
+"output":[
+    { "Error" : "Error: invalid token 'Declaration' at 1:1\nCaused by: expected '1', found '2' at 1:16\n" }
+]},
+
+{"description": "Declaration with an invalid standalone",
+"input": "<?xml version='1.0' standalone='true'?>",
+"output":[
+    { "Error" : "Error: invalid token 'Declaration' at 1:1\nCaused by: expected 'yn', found 't' at 1:33\n" }
+]},
+
+{"description": "Declaration with an invalid attribute 1",
+"input": "<?xml version='1.0' yes='true'?>",
+"output":[
+    { "Error" : "Error: invalid token 'Declaration' at 1:1\nCaused by: expected '?', found 'y' at 1:21\n" }
+]},
+
+{"description": "Declaration with an invalid attribute 2",
+"input": "<?xml version='1.0' encoding='UTF-8' standalone='yes' yes='true'?>",
+"output":[
+    { "Error" : "Error: invalid token 'Declaration' at 1:1\nCaused by: expected '?', found 'y' at 1:55\n" }
+]},
+
+{"description": "Fuzz 1",
+"input": "\u000a<?xml\u001d\u000a\u0000&jg'];",
+"output":[
+    { "Error" : "Error: invalid token 'Processing Instruction' at 2:2\nCaused by: expected '?', found '\u001d' at 2:6\n" }
+]},
+
+{"description": "PI tag with '?' in PiAfter state",
+"input": "<?xml \t\n ?m?>",
+"output":[
+    { "Error" : "Error: invalid token 'Declaration' at 1:1\nCaused by: expected 'v', found '?' at 2:2\n" }
+]},
+
+{"description": "PI tag with '?' in PiAfter state 2",
+"input": "<?xml \t\n m?>",
+"output":[
+    { "Error" : "Error: invalid token 'Declaration' at 1:1\nCaused by: expected 'v', found 'm' at 2:2\n" }
+]}
+
+]}

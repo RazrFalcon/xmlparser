@@ -1,0 +1,103 @@
+{"tests": [
+
+{"description":"Empty DTD 1",
+"input":"<!DOCTYPE greeting SYSTEM \"hello.dtd\">",
+"output":[
+    { "EmptyDTD": [ "greeting", "SYSTEM", "hello.dtd", "" ] }
+]},
+
+{"description":"Empty DTD 2",
+"input":"<!DOCTYPE greeting PUBLIC \"hello.dtd\" \"hello.dtd\">",
+"output":[
+    { "EmptyDTD": [ "greeting", "PUBLIC", "hello.dtd", "hello.dtd" ] }
+]},
+
+{"description":"Empty DTD 3",
+"input":"<!DOCTYPE greeting SYSTEM 'hello.dtd'>",
+"output":[
+    { "EmptyDTD": [ "greeting", "SYSTEM", "hello.dtd", "" ] }
+]},
+
+{"description":"Empty DTD 4",
+"input":"<!DOCTYPE greeting>",
+"output":[
+    { "EmptyDTD": [ "greeting", "", "", "" ] }
+]},
+
+{"description":"Empty DTD 5",
+"input":"<!DOCTYPE greeting []>",
+"output":[
+    { "DTDStart": [ "greeting", "", "", "" ] },
+    "DTDEnd"
+]},
+
+{"description":"Empty DTD 6",
+"input":"<!DOCTYPE greeting><a/>",
+"output":[
+    { "EmptyDTD": [ "greeting", "", "", "" ] },
+    { "ElementStart" : "a" },
+    { "ElementEnd" : "Empty" }
+]},
+
+{"description":"Entity 1",
+"input":"<!DOCTYPE svg [\n<!ENTITY ns_extend \"http://ns.adobe.com/Extensibility/1.0/\">\n]>",
+"output":[
+    { "DTDStart": [ "svg", "", "", "" ] },
+    { "EntityDecl": [ "ns_extend", "http://ns.adobe.com/Extensibility/1.0/", "", "" ] },
+    "DTDEnd"
+]},
+
+{"description":"Entity 2",
+"input":"<!DOCTYPE svg [\n<!ENTITY Pub-Status \"This is a pre-release of the\nspecification.\">\n]>",
+"output":[
+    { "DTDStart": [ "svg", "", "", "" ] },
+    { "EntityDecl": [ "Pub-Status", "This is a pre-release of the\nspecification.", "", "" ] },
+    "DTDEnd"
+]},
+
+{"description":"Entity 3",
+"input":"<!DOCTYPE svg [\n<!ENTITY open-hatch SYSTEM \"http://www.textuality.com/boilerplate/OpenHatch.xml\">\n]>",
+"output":[
+    { "DTDStart": [ "svg", "", "", "" ] },
+    { "EntityDecl": [ "open-hatch", "SYSTEM", "http://www.textuality.com/boilerplate/OpenHatch.xml", "" ] },
+    "DTDEnd"
+]},
+
+{"description":"Entity 4",
+"input":"<!DOCTYPE svg [\n<!ENTITY open-hatch\n         PUBLIC \"-//Textuality//TEXT Standard open-hatch boilerplate//EN\"         \n\"http://www.textuality.com/boilerplate/OpenHatch.xml\">\n]>",
+"output":[
+    { "DTDStart": [ "svg", "", "", "" ] },
+    { "EntityDecl": [ "open-hatch", "PUBLIC", "-//Textuality//TEXT Standard open-hatch boilerplate//EN", "http://www.textuality.com/boilerplate/OpenHatch.xml" ] },
+    "DTDEnd"
+]},
+
+{"description":"Entity 5 (partly supported)",
+"input":"<!DOCTYPE svg [\n<!ENTITY hatch-pic SYSTEM \"../grafix/OpenHatch.gif\" NDATA gif >\n]>",
+"output":[
+    { "DTDStart": [ "svg", "", "", "" ] },
+    { "EntityDecl": [ "hatch-pic", "SYSTEM", "../grafix/OpenHatch.gif", "" ] },
+    "DTDEnd"
+]},
+
+{"description": "Fuzz 1",
+"input": "<!DOCTYPEEG[<!ENTITY%ETT\u000aSSSSSSSS<D_IDYT;->\u000a<",
+"output":[
+    { "Error" : "Error: invalid token 'Doctype Declaration' at 1:1\nCaused by: expected 'Space', found 'E' at 1:10\n" }
+]},
+
+{"description": "Fuzz 2",
+"input": "<!DOCTYPE s [<!ENTITY % name S YSTEM",
+"output":[
+    { "DTDStart": [ "s", "", "", "" ] },
+    { "Error" : "Error: invalid token 'Doctype Entity Declaration' at 1:14\nCaused by: invalid ExternalID\n" }
+]},
+
+{"description":"DTD 1",
+"input":"<!DOCTYPE svg [\n<!ELEMENT sgml ANY>\n<!ENTITY ns_extend \"http://ns.adobe.com/Extensibility/1.0/\">\n<!NOTATION example1SVG-rdf SYSTEM \"example1.svg.rdf\">\n<!ATTLIST img data ENTITY #IMPLIED>\n]>",
+"output":[
+    { "DTDStart": [ "svg", "", "", "" ] },
+    { "EntityDecl": [ "ns_extend", "http://ns.adobe.com/Extensibility/1.0/", "", "" ] },
+    "DTDEnd"
+]}
+
+]}

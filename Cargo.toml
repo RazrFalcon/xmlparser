@@ -1,0 +1,29 @@
+[package]
+name = "xmlparser"
+# When updating version, also modify html_root_url in the lib.rs and in the README
+version = "0.1.0"
+authors = ["Evgeniy Reizner <razrfalcon@gmail.com>"]
+keywords = ["xml", "parser", "tokenizer"]
+categories = ["parsing"]
+license = "MIT"
+description = "Pull-based, zero-allocation XML parser."
+repository = "https://github.com/RazrFalcon/libxmlparser"
+documentation = "https://docs.rs/xmlparser/"
+readme = "README.md"
+
+[dependencies]
+log = "0.3"
+
+[dependencies.error-chain]
+version = "0.11"
+default-features = false
+
+[dev-dependencies]
+serde = "1.0"
+serde_json = "1.0"
+serde_derive = "1.0"
+rustc-test = "0.2"
+stderrlog = "0.2"
+
+[lib]
+doctest = true

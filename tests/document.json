@@ -1,0 +1,41 @@
+{"tests": [
+
+{"description": "Empty",
+"input": "",
+"output":[
+]},
+
+{"description": "Only whitespaces 1",
+"input": "    ",
+"output":[
+]},
+
+{"description": "Only whitespaces 2",
+"input": " \n\t\r ",
+"output":[
+]},
+
+{"description": "Only whitespaces 3",
+"input": "&#x20;",
+"output":[
+]},
+
+{"description": "Unexpected CDATA",
+"input": "<![CDATA[text]]>",
+"output":[
+    { "Error" : "Error: unexpected token 'CDATA' at 1:1\n" }
+]},
+
+{"description": "Fuzz 1",
+"input": " &www---------Ӥ+----------w-----www_",
+"output":[
+    { "Error" : "Error: unknown token at 1:2\n" }
+]},
+
+{"description": "Unexpected char",
+"input": "q",
+"output":[
+    { "Error" : "Error: unknown token at 1:1\n" }
+]}
+
+]}

@@ -1,0 +1,269 @@
+{"tests": [
+
+{"description": "Empty element 1",
+"input": "<a/>",
+"output":[
+    { "ElementStart" : "a" },
+    { "ElementEnd" : "Empty" }
+]},
+
+{"description": "Element pair",
+"input": "<a></a>",
+"output":[
+    { "ElementStart" : "a" },
+    { "ElementEnd" : "Open" },
+    { "ElementEnd" : { "Close" : "a" } }
+]},
+
+{"description": "Attributes DoubleQuoted",
+"input": "<a ax=\"test\"/>",
+"output":[
+    { "ElementStart" : "a" },
+    { "Attribute" : [ "ax", "test" ] },
+    { "ElementEnd" : "Empty" }
+]},
+
+{"description": "Attributes SingleQuoted",
+"input": "<b ay='test'/>",
+"output":[
+    { "ElementStart" : "b" },
+    { "Attribute" : [ "ay", "test" ] },
+    { "ElementEnd" : "Empty" }
+]},
+
+{"description": "Attributes UnQuoted",
+"input": "<c az=test>",
+"output":[
+    { "ElementStart" : "c" },
+    { "Error" : "Error: invalid token 'Attribute' at 1:3\nCaused by: expected ''\"', found 't' at 1:7\n" }
+]},
+
+{"description": "Start tag multiple attributes",
+"input": "<a b='test1' c=\"test2\"/>",
+"output": [
+    { "ElementStart" : "a" },
+    { "Attribute" : [ "b", "test1" ] },
+    { "Attribute" : [ "c", "test2" ] },
+    { "ElementEnd" : "Empty" }
+]},
+
+{"description": "Double-quoted attribute",
+"input": "<a b='\"test1\"' c=\"'test2'\"/>",
+"output": [
+    { "ElementStart" : "a" },
+    { "Attribute" : [ "b", "\"test1\"" ] },
+    { "Attribute" : [ "c", "'test2'" ] },
+    { "ElementEnd" : "Empty" }
+]},
+
+{"description": "Mixed quotes attribute",
+"input": "<c a=\"test1' c='test2\" b='test1\" c=\"test2'/>",
+"output": [
+    { "ElementStart" : "c" },
+    { "Attribute" : [ "a", "test1' c='test2" ] },
+    { "Attribute" : [ "b", "test1\" c=\"test2" ] },
+    { "ElementEnd" : "Empty" }
+]},
+
+{"description": "Spaces in attributes 1",
+"input": "<c   a   =    'test1'     />",
+"output": [
+    { "ElementStart" : "c" },
+    { "Attribute" : [ "a", "test1" ] },
+    { "ElementEnd" : "Empty" }
+]},
+
+{"description": "Start tag spaces in attribute",
+"input": "<b ay = 'test'>",
+"output": [
+    { "ElementStart" : "b" },
+    { "Attribute" : [ "ay", "test" ] },
+    { "ElementEnd" : "Open" }
+]},
+
+{"description": "Whitespaces around the element 1",
+"input": "  \t  <a/>   \n ",
+"output":[
+    { "ElementStart" : "a" },
+    { "ElementEnd" : "Empty" }
+]},
+
+{"description": "Whitespaces around the element 2",
+"input": "  \t  <b><a/></b>   \n ",
+"output":[
+    { "ElementStart" : "b" },
+    { "ElementEnd" : "Open" },
+    { "ElementStart" : "a" },
+    { "ElementEnd" : "Empty" },
+    { "ElementEnd" : { "Close" : "b" } }
+]},
+
+{"description": "Whitespaces around the element 3",
+"input": "&#x9;&#xA;&#xD;&#x20;<b/>&#x9;&#xA;&#xD;&#x20;",
+"output":[
+    { "ElementStart" : "b" },
+    { "ElementEnd" : "Empty" }
+]},
+
+{"description": "Tag state Error >",
+"input": "<>",
+"output":[
+    { "Error" : "Error: invalid token 'Element Start' at 1:1\nCaused by: invalid name token\n" }
+]},
+
+{"description": "End tag state premature EOF",
+"input": "</",
+"output":[
+    { "Error" : "Error: unexpected token 'Element Close' at 1:1\n" }
+]},
+
+{"description":"End tag name state premature EOF",
+"input":"</a",
+"output":[
+    { "Error" : "Error: unexpected token 'Element Close' at 1:1\n" }
+]},
+
+{"description":"End tag with attributes premature EOF",
+"input":"<a x=test /",
+"output":[
+    { "ElementStart" : "a" },
+    { "Error" : "Error: invalid token 'Attribute' at 1:3\nCaused by: expected ''\"', found 't' at 1:6\n" }
+]},
+
+{"description": "Tag state Error <",
+"input": "<<",
+"output":[
+    { "Error" : "Error: invalid token 'Element Start' at 1:1\nCaused by: invalid name token\n" }
+]},
+
+{"description": "Tag state Error 3",
+"input": "< a",
+"output":[
+    { "Error" : "Error: invalid token 'Element Start' at 1:1\nCaused by: invalid name token\n" }
+]},
+
+{"description": "Tag state Error ' '",
+"input": "< ",
+"output":[
+    { "Error" : "Error: invalid token 'Element Start' at 1:1\nCaused by: invalid name token\n" }
+]},
+
+{"description": "Tag state Error '\\t'",
+"input": "<\t",
+"output":[
+    { "Error" : "Error: invalid token 'Element Start' at 1:1\nCaused by: invalid name token\n" }
+]},
+
+{"description": "Tag state Error '\\n'",
+"input": "<\n",
+"output":[
+    { "Error" : "Error: invalid token 'Element Start' at 1:1\nCaused by: invalid name token\n" }
+]},
+
+{"description": "End tag state Error '\\t'",
+"input": "</\t",
+"output":[
+    { "Error" : "Error: unexpected token 'Element Close' at 1:1\n" }
+]},
+
+{"description": "End tag state Error '\\n'",
+"input": "</\n",
+"output":[
+    { "Error" : "Error: unexpected token 'Element Close' at 1:1\n" }
+]},
+
+{"description": "End tag state Error '\\n'",
+"input": "</ ",
+"output":[
+    { "Error" : "Error: unexpected token 'Element Close' at 1:1\n" }
+]},
+
+{"description": "End tag state Error '<'",
+"input": "</<",
+"output":[
+    { "Error" : "Error: unexpected token 'Element Close' at 1:1\n" }
+]},
+
+{"description": "End tag name after state",
+"input": "</a >",
+"output":[
+    { "Error" : "Error: unexpected token 'Element Close' at 1:1\n" }
+]},
+
+{"description": "Invalid depth",
+"input": "<a></a></a>",
+"output":[
+    { "ElementStart" : "a" },
+    { "ElementEnd" : "Open" },
+    { "ElementEnd" : { "Close" : "a" } },
+    { "Error" : "Error: unexpected token 'Element Close' at 1:8\n" }
+]},
+
+{"description": "Invalid depth 2",
+"input": "<a/><a/>",
+"output":[
+    { "ElementStart" : "a" },
+    { "ElementEnd" : "Empty" },
+    { "Error" : "Error: unexpected token 'Element Start' at 1:5\n" }
+]},
+
+{"description": "Start tag with empty attribute",
+"input": "<b ay>",
+"output":[
+    { "ElementStart" : "b" },
+    { "Error" : "Error: invalid token 'Attribute' at 1:3\nCaused by: expected '=', found '>' at 1:6\n" }
+]},
+
+{"description": "Start tag with empty attributes 2",
+"input": "<b ay az>",
+"output":[
+    { "ElementStart" : "b" },
+    { "Error" : "Error: invalid token 'Attribute' at 1:3\nCaused by: expected '=', found 'a' at 1:7\n" }
+]},
+
+{"description": "Empty tag with empty attribute",
+"input": "<b ay/>",
+"output":[
+    { "ElementStart" : "b" },
+    { "Error" : "Error: invalid token 'Attribute' at 1:3\nCaused by: expected '=', found '/' at 1:6\n" }
+]},
+
+{"description":"Double end element",
+"input":"</br/>",
+"output":[
+    { "Error" : "Error: unexpected token 'Element Close' at 1:1\n" }
+]},
+
+{"description":"Double end element 2",
+"input":"<p></br/></p>",
+"output":[
+    { "ElementStart" : "p" },
+    { "ElementEnd" : "Open" },
+    { "Error" : "Error: invalid token 'Element Close' at 1:4\nCaused by: expected '>', found '/' at 1:8\n" }
+]},
+
+{"description":"Start tag double attributes, one unfinished",
+"input":"<b ay='test' ay>",
+"output":[
+    { "ElementStart" : "b" },
+    { "Attribute" : [ "ay", "test" ] },
+    { "Error" : "Error: invalid token 'Attribute' at 1:14\nCaused by: expected '=', found '>' at 1:16\n" }
+]},
+
+{"description": "Unicode 1",
+"input": "<俄语 լեզու=\"ռուսերեն\">данные</俄语>",
+"output":[
+    { "ElementStart" : "俄语" },
+    { "Attribute" : [ "լեզու", "ռուսերեն" ] },
+    { "ElementEnd" : "Open" },
+    { "Text" : "данные" },
+    { "ElementEnd": { "Close" : "俄语" } }
+]},
+
+{"description": "End tag name after state with attr",
+"input": "</a f='x'>",
+"output":[
+    { "Error" : "Error: unexpected token 'Element Close' at 1:1\n" }
+]}
+
+]}
