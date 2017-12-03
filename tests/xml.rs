@@ -222,7 +222,7 @@ fn cmp_tokens(xml_token: Result<xml::Token, xml::Error>, tst_token: &tst::Token)
                 }
             }
         }
-        (&xml::Token::EntityDecl(name1, ref def),
+        (&xml::Token::EntityDeclaration(name1, ref def),
          &tst::Token::EntityDecl(ref name2, ref text1_2, ref text2_2, ref text2_3)) => {
             assert_eq!(name1.to_str(), name2, "ENTITY name mismatch");
 

@@ -660,7 +660,7 @@ impl<'a> Tokenizer<'a> {
         s.skip_spaces();
         s.consume_byte(b'>')?;
 
-        Ok(Token::EntityDecl(name, def))
+        Ok(Token::EntityDeclaration(name, def))
     }
 
     // EntityDef   ::= EntityValue | (ExternalID NDataDecl?)

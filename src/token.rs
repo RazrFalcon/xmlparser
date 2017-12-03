@@ -31,7 +31,7 @@ pub enum Token<'a> {
     /// Can appear only inside the DTD.
     ///
     /// Example: `<!ENTITY ns_extend "http://test.com">`
-    EntityDecl(StrSpan<'a>, EntityDefinition<'a>),
+    EntityDeclaration(StrSpan<'a>, EntityDefinition<'a>),
     /// DOCTYPE end token.
     ///
     /// Example: `]>`
