@@ -17,7 +17,7 @@ impl XmlCharExt for char {
     #[inline]
     fn is_xml_name_start(&self) -> bool {
         match *self {
-            'A'...'Z' | 'a'...'z' | ':' | '_' => true,
+            'A'...'Z' | 'a'...'z' | ':' | '_' => true, // shortcut
             _ => {
                 match *self as u32 {
                       0x0000C0...0x0000D6
@@ -31,8 +31,7 @@ impl XmlCharExt for char {
                     | 0x003001...0x00D7FF
                     | 0x00F900...0x00FDCF
                     | 0x00FDF0...0x00FFFD
-                    | 0x010000...0x0EFFFF
-                        => true,
+                    | 0x010000...0x0EFFFF => true,
                     _ => false,
                 }
             }

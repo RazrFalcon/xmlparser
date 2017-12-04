@@ -40,36 +40,43 @@ impl<'a> StrSpan<'a> {
         }
     }
 
-    /// Returns a start position of the frame.
+    /// Returns a start position of the span.
     pub fn start(&self) -> usize {
         self.start
     }
 
-    /// Returns a end position of the frame.
+    /// Returns a end position of the span.
     pub fn end(&self) -> usize {
         self.end
     }
 
-    /// Returns a length of the frame.
+    /// Returns a length of the span.
     pub fn len(&self) -> usize {
         self.end - self.start
     }
 
-    /// Returns a length of the frame.
+    /// Returns a length of the span.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
-    /// Returns a length of the frame underling string.
+    /// Returns a length of the span underling string.
     pub fn full_len(&self) -> usize {
         self.text.len()
     }
 
-    /// Returns a frame slice.
+    /// Returns a span slice.
     ///
     /// A bit expensive, since Rust checks for char boundary.
     pub fn to_str(&self) -> &'a str {
         &self.text[self.start..self.end]
+    }
+
+    /// Returns a span slice as bytes.
+    ///
+    /// The same as `to_str` but does not involve char boundary checking.
+    pub fn as_bytes(&self) -> &'a [u8] {
+        &self.text.as_bytes()[self.start..self.end]
     }
 
     /// Returns an underling string region as `StrSpan`.
