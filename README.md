@@ -1,4 +1,6 @@
-## libxmlparser
+## libxmlparser [![Build Status]](https://travis-ci.org/RazrFalcon/libxmlparser)
+
+[Build Status]: https://travis-ci.org/RazrFalcon/libxmlparser.svg?branch=master
 
 *libxmlparser* is a low-level, pull-based, zero-allocation
 [XML 1.0](https://www.w3.org/TR/xml/) parser.
