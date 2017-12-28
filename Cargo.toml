@@ -12,7 +12,7 @@ documentation = "https://docs.rs/xmlparser/"
 readme = "README.md"
 
 [dependencies]
-log = "0.3"
+log = "0.4"
 
 [dependencies.error-chain]
 version = "0.11"
