@@ -401,14 +401,14 @@ impl<'a> Tokenizer<'a> {
         let encoding = Self::parse_encoding_decl(s)?;
         let standalone = Self::parse_standalone(s)?;
 
-        s.skip_spaces();
+        s.skip_ascii_spaces();
         s.skip_string(b"?>")?;
 
         Ok(Token::Declaration(version, encoding, standalone))
     }
 
     fn parse_version_info(s: &mut Stream<'a>) -> Result<StrSpan<'a>> {
-        s.skip_spaces();
+        s.skip_ascii_spaces();
         s.skip_string(b"version")?;
         s.consume_eq()?;
         s.consume_quote()?;
@@ -429,7 +429,7 @@ impl<'a> Tokenizer<'a> {
 
     // S 'encoding' Eq ('"' EncName '"' | "'" EncName "'" )
     fn parse_encoding_decl(s: &mut Stream<'a>) -> Result<Option<StrSpan<'a>>> {
-        s.skip_spaces();
+        s.skip_ascii_spaces();
 
         if s.skip_string(b"encoding").is_err() {
             return Ok(None);
@@ -476,7 +476,7 @@ impl<'a> Tokenizer<'a> {
 
     // S 'standalone' Eq (("'" ('yes' | 'no') "'") | ('"' ('yes' | 'no') '"'))
     fn parse_standalone(s: &mut Stream<'a>) -> Result<Option<StrSpan<'a>>> {
-        s.skip_spaces();
+        s.skip_ascii_spaces();
 
         if s.skip_string(b"standalone").is_err() {
             return Ok(None);
@@ -757,7 +757,7 @@ impl<'a> Tokenizer<'a> {
     // '</' Name S? '>'
     fn parse_close_element_impl(s: &mut Stream<'a>) -> Result<Token<'a>> {
         let tag_name = s.consume_name()?;
-        s.skip_spaces();
+        s.skip_ascii_spaces();
         s.consume_byte(b'>')?;
 
         Ok(Token::ElementEnd(ElementEnd::Close(tag_name)))
@@ -765,7 +765,7 @@ impl<'a> Tokenizer<'a> {
 
     // Name Eq AttValue
     fn consume_attribute(s: &mut Stream<'a>) -> Result<Token<'a>> {
-        s.skip_spaces();
+        s.skip_ascii_spaces();
 
         if let Some(c) = s.get_curr_byte() {
             match c {
@@ -793,7 +793,7 @@ impl<'a> Tokenizer<'a> {
         // }
 
         s.consume_byte(quote)?;
-        s.skip_spaces();
+        s.skip_ascii_spaces();
 
         Ok(Token::Attribute(name, value))
     }

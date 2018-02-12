@@ -245,6 +245,19 @@ impl<'a> Stream<'a> {
         }
     }
 
+    /// Skips ASCII whitespaces.
+    ///
+    /// Accepted values: `' ' \n \r \t`.
+    pub fn skip_ascii_spaces(&mut self) {
+        while !self.at_end() {
+            if self.curr_byte_unchecked().is_xml_space() {
+                self.advance(1);
+            } else {
+                break;
+            }
+        }
+    }
+
     /// Checks that the stream starts with a selected text.
     ///
     /// We are using `&[u8]` instead of `&str` for performance reasons.
@@ -274,13 +287,13 @@ impl<'a> Stream<'a> {
 
         let mut is_space = false;
 
-        let mut s = self.clone();
-        let c = s.curr_byte_unchecked();
+        let c = self.curr_byte_unchecked();
 
         if c.is_xml_space() {
             is_space = true;
         } else if c == b'&' {
             // Check for (#x20 | #x9 | #xD | #xA).
+            let mut s = self.clone();
             if let Some(v) = s.try_consume_char_reference() {
                 if (v as u32) < 255 && (v as u8).is_xml_space() {
                     is_space = true;
@@ -430,9 +443,9 @@ impl<'a> Stream<'a> {
     ///
     /// - `InvalidChar`
     pub fn consume_eq(&mut self) -> Result<()> {
-        self.skip_spaces();
+        self.skip_ascii_spaces();
         self.consume_byte(b'=')?;
-        self.skip_spaces();
+        self.skip_ascii_spaces();
 
         Ok(())
     }
