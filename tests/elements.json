@@ -264,6 +264,42 @@
 "input": "</a f='x'>",
 "output":[
     { "Error" : "Error: unexpected token 'Element Close' at 1:1\n" }
+]},
+
+{"description": "Tag name with a prefix",
+"input": "<svg:circle/>",
+"output":[
+    { "ElementStart" : "svg:circle" },
+    { "ElementEnd" : "Empty" }
+]},
+
+{"description": "Tag name with an empty prefix",
+"input": "<:circle/>",
+"output":[
+    { "ElementStart" : "circle" },
+    { "ElementEnd" : "Empty" }
+]},
+
+{"description": "Tag name with an empty local name",
+"input": "<svg:/>",
+"output":[
+    { "Error" : "Error: invalid token 'Element Start' at 1:1\nCaused by: invalid name token\n" }
+]},
+
+{"description": "Tag name with a prefix on close tag",
+"input": "<svg:circle></svg:circle>",
+"output":[
+    { "ElementStart" : "svg:circle" },
+    { "ElementEnd" : "Open" },
+    { "ElementEnd": { "Close" : "svg:circle" } }
+]},
+
+{"description": "Attribute with a prefix",
+"input": "<circle a:b=\"b\"/>",
+"output":[
+    { "ElementStart" : "circle" },
+    { "Attribute" : [ "a:b", "b" ] },
+    { "ElementEnd" : "Empty" }
 ]}
 
 ]}

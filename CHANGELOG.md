@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- Qualified name parsing.
+
+### Changed
+- **Breaking**. `Token::ElementStart` and `Token::Attribute` contains prefix
+  and local part of the qualified name now.
 
 ## [0.1.2] - 2018-02-12
 ### Added

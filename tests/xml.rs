@@ -156,12 +156,16 @@ fn cmp_tokens(xml_token: Result<xml::Token, xml::Error>, tst_token: &tst::Token)
         (&xml::Token::Comment(ref data1), &tst::Token::Comment(ref data2)) => {
             assert_eq!(data1.to_str(), data2, "comment mismatch");
         }
-        (&xml::Token::ElementStart(ref tag_name1),
+        (&xml::Token::ElementStart(ref prefix1, ref tag_name1),
          &tst::Token::ElementStart(ref tag_name2)) => {
+            let (prefix2, tag_name2) = split_ns(&tag_name2);
+            assert_eq!(prefix1.to_str(), prefix2, "tag name prefix mismatch");
             assert_eq!(tag_name1.to_str(), tag_name2, "tag name mismatch");
         }
-        (&xml::Token::Attribute(ref name1, ref value1),
+        (&xml::Token::Attribute((ref prefix1, ref name1), ref value1),
          &tst::Token::Attribute(ref name2, ref value2)) => {
+            let (prefix2, name2) = split_ns(&name2);
+            assert_eq!(prefix1.to_str(), prefix2, "attribute prefix mismatch");
             assert_eq!(name1.to_str(), name2, "attribute name mismatch");
             assert_eq!(value1.to_str(), value2, "attribute value mismatch");
         }
@@ -169,7 +173,9 @@ fn cmp_tokens(xml_token: Result<xml::Token, xml::Error>, tst_token: &tst::Token)
             match (*end1, end2) {
                 (xml::ElementEnd::Open, &tst::ElementEnd::Open) => {},
                 (xml::ElementEnd::Empty, &tst::ElementEnd::Empty) => {},
-                (xml::ElementEnd::Close(ref name1), &tst::ElementEnd::Close(ref name2)) => {
+                (xml::ElementEnd::Close(ref prefix1, ref name1), &tst::ElementEnd::Close(ref name2)) => {
+                    let (prefix2, name2) = split_ns(&name2);
+                    assert_eq!(prefix1.to_str(), prefix2);
                     assert_eq!(name1.to_str(), name2);
                 },
                 _ => {
@@ -251,6 +257,16 @@ fn cmp_tokens(xml_token: Result<xml::Token, xml::Error>, tst_token: &tst::Token)
         _ => {
             panic!("unexpected token: {:?}, expected {:?}", xml_token, tst_token);
         }
+    }
+}
+
+fn split_ns(text: &str) -> (&str, &str) {
+    match text.chars().position(|c| c == ':') {
+        Some(_) => {
+            let mut iter = text.split(':');
+            (iter.next().unwrap(), iter.next().unwrap())
+        },
+        None => ("", text),
     }
 }
 

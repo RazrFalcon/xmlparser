@@ -435,6 +435,51 @@ impl<'a> Stream<'a> {
         Ok(())
     }
 
+    /// Consumes a qualified XML name and returns it.
+    ///
+    /// Consumes according to: https://www.w3.org/TR/xml-names/#ns-qualnames
+    ///
+    /// # Errors
+    ///
+    /// - `InvalidNameToken` - if name is empty or starts with an invalid char
+    /// - `UnexpectedEndOfStream`
+    pub fn consume_qname(&mut self) -> Result<(StrSpan<'a>, StrSpan<'a>)> {
+        let start = self.pos();
+
+        let mut splitter = None;
+        let iter = self.span.to_str()[self.pos..self.end].chars();
+        for c in iter {
+            if c == ':' {
+                splitter = Some(self.pos());
+                self.advance(1);
+            } else if c.is_xml_name() {
+                self.advance(c.len_utf8());
+            } else {
+                break;
+            }
+        }
+
+        let (prefix, local) = if let Some(splitter) = splitter {
+            let local = self.slice_back(splitter + 1);
+
+            let pos = self.pos();
+            self.pos = splitter;
+            let prefix = self.slice_back(start);
+            self.pos = pos;
+
+            (prefix, local)
+        } else {
+            let local = self.slice_back(start);
+            (StrSpan::from(""), local)
+        };
+
+        if local.is_empty() {
+            return Err(StreamErrorKind::InvalidName.into());
+        }
+
+        Ok((prefix, local))
+    }
+
     /// Consumes `=`.
     ///
     /// Consumes according to: https://www.w3.org/TR/xml/#NT-Eq

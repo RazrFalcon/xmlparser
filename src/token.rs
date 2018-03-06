@@ -38,12 +38,16 @@ pub enum Token<'a> {
     DtdEnd,
     /// Element start token.
     ///
+    /// Contains prefix and local part of the qualified name.
+    ///
     /// Example: `<elem`
-    ElementStart(StrSpan<'a>),
+    ElementStart(StrSpan<'a>, StrSpan<'a>),
     /// Attribute.
     ///
+    /// Contains prefix and local part of the qualified name and value.
+    ///
     /// Example: `name="value"`
-    Attribute(StrSpan<'a>, StrSpan<'a>),
+    Attribute((StrSpan<'a>, StrSpan<'a>), StrSpan<'a>),
     /// Element end token.
     ElementEnd(ElementEnd<'a>),
     /// Text token.
@@ -76,7 +80,7 @@ pub enum ElementEnd<'a> {
     /// Indicates `>`
     Open,
     /// Indicates `</name>`
-    Close(StrSpan<'a>),
+    Close(StrSpan<'a>, StrSpan<'a>),
     /// Indicates `/>`
     Empty,
 }

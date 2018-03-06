@@ -104,7 +104,7 @@ impl<'a> Iterator for Tokenizer<'a> {
 
         if let Some(ref t) = t {
             match *t {
-                Ok(Token::ElementStart(_)) => {
+                Ok(Token::ElementStart(_, _)) => {
                     self.state = State::Attributes;
                 }
                 Ok(Token::ElementEnd(ref end)) => {
@@ -112,7 +112,7 @@ impl<'a> Iterator for Tokenizer<'a> {
                         ElementEnd::Open => {
                             self.depth += 1;
                         }
-                        ElementEnd::Close(_) => {
+                        ElementEnd::Close(_, _) => {
                             if self.depth > 0 {
                                 self.depth -= 1;
                             }
@@ -742,8 +742,8 @@ impl<'a> Tokenizer<'a> {
 
     // '<' Name (S Attribute)* S? '>'
     fn parse_element_start_impl(s: &mut Stream<'a>) -> Result<Token<'a>> {
-        let tag_name = s.consume_name()?;
-        Ok(Token::ElementStart(tag_name))
+        let (prefix, tag_name) = s.consume_qname()?;
+        Ok(Token::ElementStart(prefix, tag_name))
     }
 
     fn parse_close_element(s: &mut Stream<'a>) -> Result<Token<'a>> {
@@ -756,11 +756,11 @@ impl<'a> Tokenizer<'a> {
 
     // '</' Name S? '>'
     fn parse_close_element_impl(s: &mut Stream<'a>) -> Result<Token<'a>> {
-        let tag_name = s.consume_name()?;
+        let (prefix, tag_name) = s.consume_qname()?;
         s.skip_ascii_spaces();
         s.consume_byte(b'>')?;
 
-        Ok(Token::ElementEnd(ElementEnd::Close(tag_name)))
+        Ok(Token::ElementEnd(ElementEnd::Close(prefix, tag_name)))
     }
 
     // Name Eq AttValue
@@ -782,7 +782,7 @@ impl<'a> Tokenizer<'a> {
             }
         }
 
-        let name = s.consume_name()?;
+        let (prefix, name) = s.consume_qname()?;
         s.consume_eq()?;
         let quote = s.consume_quote()?;
         let value = s.consume_bytes(|_, c| c != quote);
@@ -795,7 +795,7 @@ impl<'a> Tokenizer<'a> {
         s.consume_byte(quote)?;
         s.skip_ascii_spaces();
 
-        Ok(Token::Attribute(name, value))
+        Ok(Token::Attribute((prefix, name), value))
     }
 
     fn parse_text(s: &mut Stream<'a>) -> Result<Token<'a>> {
