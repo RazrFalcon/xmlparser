@@ -21,6 +21,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - `log` 0.3 -> 0.4
 
-[Unreleased]: https://github.com/RazrFalcon/libxmlparser/compare/v0.1.2...HEAD
-[0.1.2]: https://github.com/RazrFalcon/libxmlparser/compare/0.1.1...0.1.2
-[0.1.1]: https://github.com/RazrFalcon/libxmlparser/compare/0.1.0...0.1.1
+[Unreleased]: https://github.com/RazrFalcon/xmlparser/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/RazrFalcon/xmlparser/compare/0.1.1...0.1.2
+[0.1.1]: https://github.com/RazrFalcon/xmlparser/compare/0.1.0...0.1.1

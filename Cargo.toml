@@ -7,7 +7,7 @@ keywords = ["xml", "parser", "tokenizer"]
 categories = ["parsing"]
 license = "MIT"
 description = "Pull-based, zero-allocation XML parser."
-repository = "https://github.com/RazrFalcon/libxmlparser"
+repository = "https://github.com/RazrFalcon/xmlparser"
 documentation = "https://docs.rs/xmlparser/"
 readme = "README.md"
 

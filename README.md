@@ -1,8 +1,8 @@
-## libxmlparser [![Build Status]](https://travis-ci.org/RazrFalcon/libxmlparser)
+## xmlparser [![Build Status]](https://travis-ci.org/RazrFalcon/xmlparser)
 
-[Build Status]: https://travis-ci.org/RazrFalcon/libxmlparser.svg?branch=master
+[Build Status]: https://travis-ci.org/RazrFalcon/xmlparser.svg?branch=master
 
-*libxmlparser* is a low-level, pull-based, zero-allocation
+*xmlparser* is a low-level, pull-based, zero-allocation
 [XML 1.0](https://www.w3.org/TR/xml/) parser.
 
 ## Table of Contents
@@ -78,4 +78,4 @@ xmlparser = "0.1"
 
 ### License
 
-*libxmlparser* is licensed under the **MIT**.
+*xmlparser* is licensed under the **MIT**.
