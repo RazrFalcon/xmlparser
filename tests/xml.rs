@@ -1,4 +1,4 @@
-extern crate test;
+extern crate rustc_test;
 extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
@@ -12,7 +12,7 @@ use std::path::Path;
 use xmlparser as xml;
 use xmlparser::{FromSpan, ChainedError};
 
-use test::{TestDesc, TestDescAndFn, DynTestName, DynTestFn};
+use rustc_test::{TestDesc, TestDescAndFn, DynTestName, DynTestFn};
 
 macro_rules! assert_eq_text {
     ($left:expr, $right:expr) => ({
@@ -98,7 +98,7 @@ fn run() {
     }
 
     let args: Vec<_> = env::args().collect();
-    test::test_main(&args, tests);
+    rustc_test::test_main(&args, tests);
 }
 
 fn create_tests(path: &Path, list: &mut Vec<TestDescAndFn>) {
