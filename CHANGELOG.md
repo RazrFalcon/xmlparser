@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.2.0] - 2018-03-11
 ### Added
 - Qualified name parsing.
 
@@ -21,6 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - `log` 0.3 -> 0.4
 
-[Unreleased]: https://github.com/RazrFalcon/xmlparser/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/RazrFalcon/xmlparser/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/RazrFalcon/xmlparser/compare/0.1.2...0.2.0
 [0.1.2]: https://github.com/RazrFalcon/xmlparser/compare/0.1.1...0.1.2
 [0.1.1]: https://github.com/RazrFalcon/xmlparser/compare/0.1.0...0.1.1
