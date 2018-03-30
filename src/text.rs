@@ -21,7 +21,7 @@ pub enum XmlSpace {
 
 /// XML escaped text to plain text converter.
 ///
-/// Processing is done as described in: https://www.w3.org/TR/SVG11/text.html#WhiteSpace
+/// Processing is done as described in: <https://www.w3.org/TR/SVG11/text.html#WhiteSpace>
 ///
 /// # Examples
 ///

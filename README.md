@@ -67,7 +67,7 @@ Detailed comparison with other XML parsers can be found at
 
 ### Usage
 
-Dependency: [Rust](https://www.rust-lang.org/) >= 1.16 (>=1.18 for tests)
+Dependency: [Rust](https://www.rust-lang.org/) >= 1.18
 
 Add this to your `Cargo.toml`:
 

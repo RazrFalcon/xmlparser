@@ -5,7 +5,7 @@ use std::env;
 use std::fs;
 use std::io::Read;
 
-use xml::{FromSpan, ChainedError};
+use xml::FromSpan;
 
 fn main() {
     stderrlog::new().module(module_path!()).init().unwrap();
@@ -19,7 +19,7 @@ fn main() {
     let text = load_file(&args[1]);
 
     if let Err(e) = parse(&text) {
-        println!("{}", e.display_chain().to_string());
+        println!("Error: {}.", e);
     }
 }
 

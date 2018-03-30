@@ -23,19 +23,19 @@
 {"description": "Unexpected CDATA",
 "input": "<![CDATA[text]]>",
 "output":[
-    { "Error" : "Error: unexpected token 'CDATA' at 1:1\n" }
+    { "Error" : "unexpected token 'CDATA' at 1:1" }
 ]},
 
 {"description": "Fuzz 1",
 "input": " &www---------Ӥ+----------w-----www_",
 "output":[
-    { "Error" : "Error: unknown token at 1:2\n" }
+    { "Error" : "unknown token at 1:2" }
 ]},
 
 {"description": "Unexpected char",
 "input": "q",
 "output":[
-    { "Error" : "Error: unknown token at 1:1\n" }
+    { "Error" : "unknown token at 1:1" }
 ]}
 
 ]}

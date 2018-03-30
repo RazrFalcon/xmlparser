@@ -16,7 +16,7 @@ for token in xmlparser::Tokenizer::from_str("<tagname name='value'/>") {
 #![warn(missing_docs)]
 
 #[macro_use] extern crate log;
-#[macro_use] extern crate error_chain;
+#[macro_use] extern crate failure;
 
 
 mod error;
@@ -30,22 +30,20 @@ mod xmlchar;
 
 pub use error::{
     Error,
-    ErrorKind,
     ErrorPos,
+    StreamError,
 };
 pub use stream::{
     Reference,
     Stream,
-    StreamError,
-    StreamErrorKind,
 };
 pub use text::{
     TextUnescape,
     XmlSpace,
 };
 pub use strspan::{
-    StrSpan,
     FromSpan,
+    StrSpan,
 };
 pub use token::{
     ElementEnd,
@@ -55,10 +53,9 @@ pub use token::{
 };
 pub use xml::{
     Tokenizer,
+    TokenType,
 };
 pub use xmlchar::{
     XmlByteExt,
     XmlCharExt,
 };
-
-pub use error_chain::ChainedError;

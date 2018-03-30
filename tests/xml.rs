@@ -10,7 +10,7 @@ use std::str;
 use std::path::Path;
 
 use xmlparser as xml;
-use xmlparser::{FromSpan, ChainedError};
+use xmlparser::FromSpan;
 
 use rustc_test::{TestDesc, TestDescAndFn, DynTestName, DynTestFn};
 
@@ -108,9 +108,9 @@ fn create_tests(path: &Path, list: &mut Vec<TestDescAndFn>) {
     });
 
     for test in tests.tests {
-        // if test.description == "Tag state Error :" {
+//         if test.description == "Fuzz 1" {
             list.push(create_test(test, path));
-        // }
+//         }
     }
 }
 
@@ -141,7 +141,7 @@ fn cmp_tokens(xml_token: Result<xml::Token, xml::Error>, tst_token: &tst::Token)
     if let &tst::Token::Error(ref tst_err) = tst_token {
         match xml_token {
             Err(ref e) => {
-                assert_eq_text!(tst_err, &e.display_chain().to_string());
+                assert_eq_text!(tst_err, &e.to_string());
                 return;
             }
             Ok(ref t) => {
@@ -276,10 +276,12 @@ fn bom_1() {
     s.push(0xEF);
     s.push(0xBB);
     s.push(0xBF);
+    s.extend_from_slice(b"<xml/>");
 
     let t = str::from_utf8(&s).unwrap();
 
     let mut p = xml::Tokenizer::from_str(t);
-    assert_eq!(p.next().unwrap().unwrap_err().display_chain().to_string(),
-               "Error: unexpected end of stream\n");
+    assert!(p.next().is_some()); // <xml
+    assert!(p.next().is_some()); // />
+    assert!(p.next().is_none()); // EOF
 }

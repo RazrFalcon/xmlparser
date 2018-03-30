@@ -33,7 +33,7 @@
 {"description": "PI tag with '?' in target",
 "input": "<??xml \t\n m?>",
 "output":[
-    { "Error" : "Error: invalid token 'Processing Instruction' at 1:1\nCaused by: invalid name token\n" }
+    { "Error" : "invalid token 'Processing Instruction' at 1:1 cause invalid name token" }
 ]},
 
 {"description": "Declaration 1",
@@ -81,55 +81,55 @@
 {"description": "Declaration with an invalid order",
 "input": "<?xml encoding='UTF-8' version='1.0'?>",
 "output":[
-    { "Error" : "Error: invalid token 'Declaration' at 1:1\nCaused by: expected 'v', found 'e' at 1:7\n" }
+    { "Error" : "invalid token 'Declaration' at 1:1 cause expected 'v' not 'e' at 1:7" }
 ]},
 
 {"description": "Declaration with an invalid encoding",
 "input": "<?xml version='1.0' encoding=\"*invalid*\"?>",
 "output":[
-    { "Error" : "Error: invalid token 'Declaration' at 1:1\nCaused by: expected ''\"', found '*' at 1:31\n" }
+    { "Error" : "invalid token 'Declaration' at 1:1 cause expected ''\"' not '*' at 1:31" }
 ]},
 
 {"description": "Declaration with an invalid version",
 "input": "<?xml version='2.0'?>",
 "output":[
-    { "Error" : "Error: invalid token 'Declaration' at 1:1\nCaused by: expected '1', found '2' at 1:16\n" }
+    { "Error" : "invalid token 'Declaration' at 1:1 cause expected '1' not '2' at 1:16" }
 ]},
 
 {"description": "Declaration with an invalid standalone",
 "input": "<?xml version='1.0' standalone='true'?>",
 "output":[
-    { "Error" : "Error: invalid token 'Declaration' at 1:1\nCaused by: expected 'yn', found 't' at 1:33\n" }
+    { "Error" : "invalid token 'Declaration' at 1:1 cause expected 'yn' not 't' at 1:33" }
 ]},
 
 {"description": "Declaration with an invalid attribute 1",
 "input": "<?xml version='1.0' yes='true'?>",
 "output":[
-    { "Error" : "Error: invalid token 'Declaration' at 1:1\nCaused by: expected '?', found 'y' at 1:21\n" }
+    { "Error" : "invalid token 'Declaration' at 1:1 cause expected '?' not 'y' at 1:21" }
 ]},
 
 {"description": "Declaration with an invalid attribute 2",
 "input": "<?xml version='1.0' encoding='UTF-8' standalone='yes' yes='true'?>",
 "output":[
-    { "Error" : "Error: invalid token 'Declaration' at 1:1\nCaused by: expected '?', found 'y' at 1:55\n" }
+    { "Error" : "invalid token 'Declaration' at 1:1 cause expected '?' not 'y' at 1:55" }
 ]},
 
 {"description": "Fuzz 1",
 "input": "\u000a<?xml\u001d\u000a\u0000&jg'];",
 "output":[
-    { "Error" : "Error: invalid token 'Processing Instruction' at 2:2\nCaused by: expected '?', found '\u001d' at 2:6\n" }
+    { "Error" : "invalid token 'Processing Instruction' at 2:2 cause expected '?' not '\u001d' at 2:6" }
 ]},
 
 {"description": "PI tag with '?' in PiAfter state",
 "input": "<?xml \t\n ?m?>",
 "output":[
-    { "Error" : "Error: invalid token 'Declaration' at 1:1\nCaused by: expected 'v', found '?' at 2:2\n" }
+    { "Error" : "invalid token 'Declaration' at 1:1 cause expected 'v' not '?' at 2:2" }
 ]},
 
 {"description": "PI tag with '?' in PiAfter state 2",
 "input": "<?xml \t\n m?>",
 "output":[
-    { "Error" : "Error: invalid token 'Declaration' at 1:1\nCaused by: expected 'v', found 'm' at 2:2\n" }
+    { "Error" : "invalid token 'Declaration' at 1:1 cause expected 'v' not 'm' at 2:2" }
 ]}
 
 ]}
