@@ -1,4 +1,7 @@
-## xmlparser [![Build Status]](https://travis-ci.org/RazrFalcon/xmlparser)
+## xmlparser
+[![Build Status]](https://travis-ci.org/RazrFalcon/xmlparser)
+[![Crates.io](https://img.shields.io/crates/v/xmlparser.svg)](https://crates.io/crates/xmlparser)
+[![Documentation](https://docs.rs/xmlparser/badge.svg)](https://docs.rs/xmlparser)
 
 [Build Status]: https://travis-ci.org/RazrFalcon/xmlparser.svg?branch=master
 
@@ -6,7 +9,6 @@
 [XML 1.0](https://www.w3.org/TR/xml/) parser.
 
 ## Table of Contents
-- [Documentation](#documentation)
 - [Example](#example)
 - [Why a new library](#why-a-new-library)
 - [Benefits](#benefits)
@@ -14,8 +16,6 @@
 - [Safety](#safety)
 - [Usage](#usage)
 - [License](#license)
-
-### [Documentation](https://docs.rs/xmlparser/)
 
 ### Example
 
