@@ -73,7 +73,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-xmlparser = "0.2"
+xmlparser = "0.3"
 ```
 
 ### License

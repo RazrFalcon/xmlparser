@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.3.0] - 2018-04-10
 ### Changed
 - Use `failure` instead of `error-chain`.
 - Minimum Rust version is 1.18.
@@ -31,7 +33,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - `log` 0.3 -> 0.4
 
-[Unreleased]: https://github.com/RazrFalcon/xmlparser/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/RazrFalcon/xmlparser/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/RazrFalcon/xmlparser/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/RazrFalcon/xmlparser/compare/0.1.2...0.2.0
 [0.1.2]: https://github.com/RazrFalcon/xmlparser/compare/0.1.1...0.1.2
 [0.1.1]: https://github.com/RazrFalcon/xmlparser/compare/0.1.0...0.1.1

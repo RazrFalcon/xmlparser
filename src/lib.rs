@@ -10,7 +10,7 @@ for token in xmlparser::Tokenizer::from_str("<tagname name='value'/>") {
 ```
 */
 
-#![doc(html_root_url = "https://docs.rs/xmlparser/0.2.0")]
+#![doc(html_root_url = "https://docs.rs/xmlparser/0.3.0")]
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
