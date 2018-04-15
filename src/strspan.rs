@@ -133,20 +133,6 @@ impl<'a> fmt::Display for StrSpan<'a> {
     }
 }
 
-
-/// A general tokenizer interface.
-pub trait FromSpan<'a>
-    where Self: Sized
-{
-    /// Constructs a new `Tokenizer` from a string.
-    fn from_str(text: &'a str) -> Self {
-        Self::from_span(StrSpan::from_str(text))
-    }
-
-    /// Constructs a new `Tokenizer` from `StrSpan`.
-    fn from_span(span: StrSpan<'a>) -> Self;
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

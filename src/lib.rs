@@ -2,8 +2,6 @@
 A low-level [XML 1.0](https://www.w3.org/TR/xml/) parser implementation.
 
 ```rust
-use xmlparser::FromSpan;
-
 for token in xmlparser::Tokenizer::from_str("<tagname name='value'/>") {
     println!("{:?}", token);
 }
@@ -42,7 +40,6 @@ pub use text::{
     XmlSpace,
 };
 pub use strspan::{
-    FromSpan,
     StrSpan,
 };
 pub use token::{

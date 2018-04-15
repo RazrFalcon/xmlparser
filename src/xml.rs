@@ -7,7 +7,6 @@ use {
     EntityDefinition,
     Error,
     ExternalId,
-    FromSpan,
     Stream,
     StreamError,
     StrSpan,
@@ -85,70 +84,21 @@ pub struct Tokenizer<'a> {
     depth: usize,
 }
 
-impl<'a> FromSpan<'a> for Tokenizer<'a> {
-    fn from_span(span: StrSpan<'a>) -> Self {
+impl<'a> Tokenizer<'a> {
+    /// Constructs a new `Tokenizer` from a string.
+    pub fn from_str(text: &'a str) -> Self {
+        Self::from_span(StrSpan::from_str(text))
+    }
+
+    /// Constructs a new `Tokenizer` from `StrSpan`.
+    pub fn from_span(span: StrSpan<'a>) -> Self {
         Tokenizer {
             stream: Stream::from_span(span),
             state: State::Document,
             depth: 0,
         }
     }
-}
 
-impl<'a> Iterator for Tokenizer<'a> {
-    type Item = Result<Token<'a>>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.stream.at_end() || self.state == State::Finished {
-            self.state = State::Finished;
-            return None;
-        }
-
-        let t = Self::parse_next_impl(&mut self.stream, self.state);
-
-        if let Some(ref t) = t {
-            match *t {
-                Ok(Token::ElementStart(_, _)) => {
-                    self.state = State::Attributes;
-                }
-                Ok(Token::ElementEnd(ref end)) => {
-                    match *end {
-                        ElementEnd::Open => {
-                            self.depth += 1;
-                        }
-                        ElementEnd::Close(_, _) => {
-                            if self.depth > 0 {
-                                self.depth -= 1;
-                            }
-                        }
-                        ElementEnd::Empty => {}
-                    }
-
-                    if self.depth == 0 {
-                        self.state = State::AfterElements;
-                    } else {
-                        self.state = State::Elements;
-                    }
-                }
-                Ok(Token::DtdStart(_, _)) => {
-                    self.state = State::Dtd;
-                }
-                Ok(Token::DtdEnd) => {
-                    self.state = State::Document;
-                }
-                Err(_) => {
-                    self.stream.jump_to_end();
-                    self.state = State::Finished;
-                }
-                _ => {}
-            }
-        }
-
-        t
-    }
-}
-
-impl<'a> Tokenizer<'a> {
     fn parse_next_impl(s: &mut Stream<'a>, state: State) -> Option<Result<Token<'a>>> {
         if s.at_end() {
             return None;
@@ -815,5 +765,58 @@ impl<'a> Tokenizer<'a> {
         } else {
             Ok(Token::Text(text))
         }
+    }
+}
+
+impl<'a> Iterator for Tokenizer<'a> {
+    type Item = Result<Token<'a>>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.stream.at_end() || self.state == State::Finished {
+            self.state = State::Finished;
+            return None;
+        }
+
+        let t = Self::parse_next_impl(&mut self.stream, self.state);
+
+        if let Some(ref t) = t {
+            match *t {
+                Ok(Token::ElementStart(_, _)) => {
+                    self.state = State::Attributes;
+                }
+                Ok(Token::ElementEnd(ref end)) => {
+                    match *end {
+                        ElementEnd::Open => {
+                            self.depth += 1;
+                        }
+                        ElementEnd::Close(_, _) => {
+                            if self.depth > 0 {
+                                self.depth -= 1;
+                            }
+                        }
+                        ElementEnd::Empty => {}
+                    }
+
+                    if self.depth == 0 {
+                        self.state = State::AfterElements;
+                    } else {
+                        self.state = State::Elements;
+                    }
+                }
+                Ok(Token::DtdStart(_, _)) => {
+                    self.state = State::Dtd;
+                }
+                Ok(Token::DtdEnd) => {
+                    self.state = State::Document;
+                }
+                Err(_) => {
+                    self.stream.jump_to_end();
+                    self.state = State::Finished;
+                }
+                _ => {}
+            }
+        }
+
+        t
     }
 }

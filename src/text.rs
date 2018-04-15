@@ -2,7 +2,6 @@ use std::str;
 use std::io::Write;
 
 use {
-    FromSpan,
     Stream,
     StrSpan,
 };
@@ -29,7 +28,7 @@ pub enum XmlSpace {
 ///
 /// ```
 /// use std::str;
-/// use xmlparser::{TextUnescape, FromSpan};
+/// use xmlparser::TextUnescape;
 ///
 /// let v: Vec<_> = TextUnescape::from_str("&gt;").collect();
 /// let s = str::from_utf8(&v).unwrap();
@@ -53,6 +52,22 @@ pub struct TextUnescape<'a> {
 }
 
 impl<'a> TextUnescape<'a> {
+    /// Constructs a new `TextUnescape` from a string.
+    pub fn from_str(text: &'a str) -> Self {
+        Self::from_span(StrSpan::from_str(text))
+    }
+
+    /// Constructs a new `TextUnescape` from `StrSpan`.
+    pub fn from_span(span: StrSpan<'a>) -> Self {
+        TextUnescape {
+            stream: Stream::from_span(span),
+            buf: [0xFF; BUF_END],
+            buf_idx: BUF_END,
+            preserve_spaces: false,
+            prev: 0,
+        }
+    }
+
     /// Converts provided text into an unescaped one.
     pub fn unescape(text: &str, space: XmlSpace) -> String {
         let mut v = Vec::new();
@@ -68,18 +83,6 @@ impl<'a> TextUnescape<'a> {
     /// Sets the flag that prevents spaces from being striped.
     pub fn set_xml_space(&mut self, kind: XmlSpace) {
         self.preserve_spaces = kind == XmlSpace::Preserve;
-    }
-}
-
-impl<'a> FromSpan<'a> for TextUnescape<'a> {
-    fn from_span(span: StrSpan<'a>) -> Self {
-        TextUnescape {
-            stream: Stream::from_span(span),
-            buf: [0xFF; BUF_END],
-            buf_idx: BUF_END,
-            preserve_spaces: false,
-            prev: 0,
-        }
     }
 }
 

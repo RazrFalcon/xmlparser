@@ -5,8 +5,6 @@ use std::env;
 use std::fs;
 use std::io::Read;
 
-use xml::FromSpan;
-
 fn main() {
     stderrlog::new().module(module_path!()).init().unwrap();
 

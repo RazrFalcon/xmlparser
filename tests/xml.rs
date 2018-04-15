@@ -10,7 +10,6 @@ use std::str;
 use std::path::Path;
 
 use xmlparser as xml;
-use xmlparser::FromSpan;
 
 use rustc_test::{TestDesc, TestDescAndFn, DynTestName, DynTestFn};
 
