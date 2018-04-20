@@ -17,27 +17,24 @@ pub struct StrSpan<'a> {
     end: usize,
 }
 
-impl<'a> StrSpan<'a> {
-    /// Constructs a new `StrSpan` from string.
-    pub fn from_str(text: &str) -> StrSpan {
+impl<'a> From<&'a str> for StrSpan<'a> {
+    fn from(text: &'a str) -> Self {
         StrSpan {
-            text: text,
+            text,
             start: 0,
             end: text.len(),
         }
     }
+}
 
+impl<'a> StrSpan<'a> {
     /// Constructs a new `StrSpan` from substring.
     pub fn from_substr(text: &str, start: usize, end: usize) -> StrSpan {
         debug_assert!(start <= end);
         debug_assert!(text.is_char_boundary(start));
         debug_assert!(text.is_char_boundary(end));
 
-        StrSpan {
-            text: text,
-            start: start,
-            end: end,
-        }
+        StrSpan { text, start, end }
     }
 
     /// Returns a start position of the span.
@@ -96,7 +93,7 @@ impl<'a> StrSpan<'a> {
     ///
     /// This function will trim escaped spaces (aka `&#x20;`) too.
     pub fn trim(&self) -> StrSpan<'a> {
-        let mut s = Stream::from_span(*self);
+        let mut s = Stream::from(*self);
         s.skip_spaces();
 
         let start = s.pos();
@@ -112,12 +109,6 @@ impl<'a> StrSpan<'a> {
         }
 
         self.slice_region(start, end)
-    }
-}
-
-impl<'a> From<&'a str> for StrSpan<'a> {
-    fn from(text: &'a str) -> Self {
-        StrSpan::from_str(text)
     }
 }
 

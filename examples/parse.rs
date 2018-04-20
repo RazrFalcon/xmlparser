@@ -22,7 +22,7 @@ fn main() {
 }
 
 fn parse(text: &str) -> Result<(), xml::Error> {
-    for token in xml::Tokenizer::from_str(&text) {
+    for token in xml::Tokenizer::from(text) {
         println!("{:?}", token?);
     }
 

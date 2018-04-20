@@ -35,9 +35,19 @@ pub struct Stream<'a> {
     span: StrSpan<'a>,
 }
 
-impl<'a> Stream<'a> {
-    /// Constructs a new `Stream` from a string span.
-    pub fn from_span(span: StrSpan<'a>) -> Stream {
+impl<'a> From<&'a str> for Stream<'a> {
+    fn from(text: &'a str) -> Self {
+        Stream {
+            bytes: text.as_bytes(),
+            pos: 0,
+            end: text.len(),
+            span: text.into(),
+        }
+    }
+}
+
+impl<'a> From<StrSpan<'a>> for Stream<'a> {
+    fn from(span: StrSpan<'a>) -> Self {
         Stream {
             bytes: span.to_str().as_bytes(),
             pos: 0,
@@ -45,17 +55,9 @@ impl<'a> Stream<'a> {
             span,
         }
     }
+}
 
-    /// Constructs a new `Stream` from a string.
-    pub fn from_str(text: &str) -> Stream {
-        Stream {
-            bytes: text.as_bytes(),
-            pos: 0,
-            end: text.len(),
-            span: StrSpan::from_str(text),
-        }
-    }
-
+impl<'a> Stream<'a> {
     /// Returns an underling string span.
     pub fn span(&self) -> StrSpan<'a> {
         self.span
@@ -167,7 +169,7 @@ impl<'a> Stream<'a> {
     /// ```rust,should_panic
     /// use xmlparser::Stream;
     ///
-    /// let mut s = Stream::from_str("text");
+    /// let mut s = Stream::from("text");
     /// s.advance(2); // ok
     /// s.advance(20); // will cause a panic via debug_assert!().
     /// ```
@@ -186,7 +188,7 @@ impl<'a> Stream<'a> {
     /// ```
     /// use xmlparser::Stream;
     ///
-    /// let mut s = Stream::from_str(" \t\n\r &#x20; ");
+    /// let mut s = Stream::from(" \t\n\r &#x20; ");
     /// s.skip_spaces();
     /// assert_eq!(s.at_end(), true);
     /// ```
@@ -238,7 +240,7 @@ impl<'a> Stream<'a> {
     /// ```
     /// use xmlparser::Stream;
     ///
-    /// let mut s = Stream::from_str("Some text.");
+    /// let mut s = Stream::from("Some text.");
     /// s.advance(5);
     /// assert_eq!(s.starts_with(b"text"), true);
     /// assert_eq!(s.starts_with(b"long"), false);
@@ -302,7 +304,7 @@ impl<'a> Stream<'a> {
     /// ```
     /// use xmlparser::Stream;
     ///
-    /// let mut s = Stream::from_str("Some text.");
+    /// let mut s = Stream::from("Some text.");
     /// s.consume_byte(b'S').unwrap();
     /// s.consume_byte(b'o').unwrap();
     /// s.consume_byte(b'm').unwrap();

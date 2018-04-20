@@ -124,7 +124,7 @@ fn create_test(data: tst::TestData, path: &Path) -> TestDescAndFn {
 }
 
 fn actual_test(data: tst::TestData) {
-    let mut parser = xml::Tokenizer::from_str(&data.input);
+    let mut parser = xml::Tokenizer::from(data.input.as_str());
 
     for exp_token in &data.output {
         let token = parser.next().unwrap();
@@ -279,7 +279,7 @@ fn bom_1() {
 
     let t = str::from_utf8(&s).unwrap();
 
-    let mut p = xml::Tokenizer::from_str(t);
+    let mut p = xml::Tokenizer::from(t);
     assert!(p.next().is_some()); // <xml
     assert!(p.next().is_some()); // />
     assert!(p.next().is_none()); // EOF

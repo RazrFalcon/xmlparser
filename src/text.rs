@@ -30,7 +30,7 @@ pub enum XmlSpace {
 /// use std::str;
 /// use xmlparser::TextUnescape;
 ///
-/// let v: Vec<_> = TextUnescape::from_str("&gt;").collect();
+/// let v: Vec<_> = TextUnescape::from("&gt;").collect();
 /// let s = str::from_utf8(&v).unwrap();
 /// assert_eq!(s, ">");
 /// ```
@@ -51,27 +51,29 @@ pub struct TextUnescape<'a> {
     prev: u8,
 }
 
-impl<'a> TextUnescape<'a> {
-    /// Constructs a new `TextUnescape` from a string.
-    pub fn from_str(text: &'a str) -> Self {
-        Self::from_span(StrSpan::from_str(text))
+impl<'a> From<&'a str> for TextUnescape<'a> {
+    fn from(text: &'a str) -> Self {
+        Self::from(StrSpan::from(text))
     }
+}
 
-    /// Constructs a new `TextUnescape` from `StrSpan`.
-    pub fn from_span(span: StrSpan<'a>) -> Self {
+impl<'a> From<StrSpan<'a>> for TextUnescape<'a> {
+    fn from(span: StrSpan<'a>) -> Self {
         TextUnescape {
-            stream: Stream::from_span(span),
+            stream: Stream::from(span),
             buf: [0xFF; BUF_END],
             buf_idx: BUF_END,
             preserve_spaces: false,
             prev: 0,
         }
     }
+}
 
+impl<'a> TextUnescape<'a> {
     /// Converts provided text into an unescaped one.
     pub fn unescape(text: &str, space: XmlSpace) -> String {
         let mut v = Vec::new();
-        let mut t = TextUnescape::from_str(text);
+        let mut t = TextUnescape::from(text);
         t.set_xml_space(space);
         for c in t {
             v.push(c);

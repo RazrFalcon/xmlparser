@@ -84,21 +84,23 @@ pub struct Tokenizer<'a> {
     depth: usize,
 }
 
-impl<'a> Tokenizer<'a> {
-    /// Constructs a new `Tokenizer` from a string.
-    pub fn from_str(text: &'a str) -> Self {
-        Self::from_span(StrSpan::from_str(text))
+impl<'a> From<&'a str> for Tokenizer<'a> {
+    fn from(text: &'a str) -> Self {
+        Self::from(StrSpan::from(text))
     }
+}
 
-    /// Constructs a new `Tokenizer` from `StrSpan`.
-    pub fn from_span(span: StrSpan<'a>) -> Self {
+impl<'a> From<StrSpan<'a>> for Tokenizer<'a> {
+    fn from(span: StrSpan<'a>) -> Self {
         Tokenizer {
-            stream: Stream::from_span(span),
+            stream: Stream::from(span),
             state: State::Document,
             depth: 0,
         }
     }
+}
 
+impl<'a> Tokenizer<'a> {
     fn parse_next_impl(s: &mut Stream<'a>, state: State) -> Option<Result<Token<'a>>> {
         if s.at_end() {
             return None;
@@ -757,7 +759,7 @@ impl<'a> Tokenizer<'a> {
     fn parse_text(s: &mut Stream<'a>) -> Result<Token<'a>> {
         let text = s.consume_bytes(|_, c| c != b'<');
 
-        let mut ts = Stream::from_span(text);
+        let mut ts = Stream::from(text);
         // TODO: optimize
         ts.skip_spaces();
         if ts.at_end() {

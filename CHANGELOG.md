@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Removed
 - `FromSpan` trait.
+- `from_str` and `from_span` methods are removed. Use the `From` trait instead.
 
 ## [0.3.0] - 2018-04-10
 ### Changed
