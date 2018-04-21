@@ -5,8 +5,6 @@ extern crate xmlparser;
 
 use std::str;
 
-use xmlparser::FromSpan;
-
 fuzz_target!(|data: &[u8]| {
     if let Ok(text) = str::from_utf8(data) {
         let mut n = 0;

@@ -50,7 +50,7 @@ token positions.
 - The library forbids unsafe code.
 */
 
-#![doc(html_root_url = "https://docs.rs/xmlparser/0.3.0")]
+#![doc(html_root_url = "https://docs.rs/xmlparser/0.4.0")]
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
