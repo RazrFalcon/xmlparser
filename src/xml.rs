@@ -77,7 +77,7 @@ impl fmt::Display for TokenType {
 }
 
 
-/// Tokenizer of the XML structure.
+/// Tokenizer for the XML structure.
 pub struct Tokenizer<'a> {
     stream: Stream<'a>,
     state: State,

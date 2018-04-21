@@ -9,7 +9,7 @@ use {
 
 const BUF_END: usize = 4;
 
-/// Spaces processing type.
+/// Representation of the `xml:space` attribute.
 #[derive(Clone, Copy, PartialEq, Debug)]
 #[allow(missing_docs)]
 pub enum XmlSpace {
@@ -18,7 +18,7 @@ pub enum XmlSpace {
 }
 
 
-/// XML escaped text to plain text converter.
+/// An XML escaped text to plain text converter.
 ///
 /// Processing is done as described in: <https://www.w3.org/TR/SVG11/text.html#WhiteSpace>
 ///

@@ -26,7 +26,7 @@ pub enum Reference<'a> {
 }
 
 
-/// Streaming text parsing interface.
+/// A streaming text parsing interface.
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub struct Stream<'a> {
     bytes: &'a [u8],
