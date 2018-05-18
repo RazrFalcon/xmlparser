@@ -82,6 +82,7 @@ pub struct Tokenizer<'a> {
     stream: Stream<'a>,
     state: State,
     depth: usize,
+    is_fragment_parsing: bool,
 }
 
 impl<'a> From<&'a str> for Tokenizer<'a> {
@@ -96,11 +97,23 @@ impl<'a> From<StrSpan<'a>> for Tokenizer<'a> {
             stream: Stream::from(span),
             state: State::Document,
             depth: 0,
+            is_fragment_parsing: false,
         }
     }
 }
 
 impl<'a> Tokenizer<'a> {
+    /// Enables document fragment parsing.
+    ///
+    /// By default, `xmlparser` will check for DTD, root element, etc.
+    /// But if we have to parse an XML fragment, it will lead to an error.
+    /// This method switch the parser to the root element content parsing mode.
+    /// So it will treat any data as a content of the root element.
+    pub fn set_fragment_mode(&mut self) {
+        self.state = State::Elements;
+        self.is_fragment_parsing = true;
+    }
+
     fn parse_next_impl(s: &mut Stream<'a>, state: State) -> Option<Result<Token<'a>>> {
         if s.at_end() {
             return None;
@@ -221,7 +234,8 @@ impl<'a> Tokenizer<'a> {
             }
             State::Attributes => {
                 Self::consume_attribute(s).map_err(|e|
-                    Error::InvalidTokenWithCause(TokenType::Attribute, s.gen_error_pos_from(start), e))
+                    Error::InvalidTokenWithCause(TokenType::Attribute,
+                                                 s.gen_error_pos_from(start), e))
             }
             State::AfterElements => {
                 let token_type = parse_token_type!();
@@ -799,7 +813,7 @@ impl<'a> Iterator for Tokenizer<'a> {
                         ElementEnd::Empty => {}
                     }
 
-                    if self.depth == 0 {
+                    if self.depth == 0 && !self.is_fragment_parsing {
                         self.state = State::AfterElements;
                     } else {
                         self.state = State::Elements;

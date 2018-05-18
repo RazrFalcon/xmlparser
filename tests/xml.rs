@@ -284,3 +284,25 @@ fn bom_1() {
     assert!(p.next().is_some()); // />
     assert!(p.next().is_none()); // EOF
 }
+
+#[test]
+fn parse_fragment_1() {
+    let s = "<p/><p/>";
+    let mut p = xml::Tokenizer::from(s);
+    p.set_fragment_mode();
+
+    match p.next().unwrap().unwrap() {
+        xml::Token::ElementStart(_, local) => assert_eq!(local.to_str(), "p"),
+        _ => panic!(),
+    }
+
+    match p.next().unwrap().unwrap() {
+        xml::Token::ElementEnd(_) => {}
+        _ => panic!(),
+    }
+
+    match p.next().unwrap().unwrap() {
+        xml::Token::ElementStart(_, local) => assert_eq!(local.to_str(), "p"),
+        _ => panic!(),
+    }
+}
