@@ -1,7 +1,5 @@
 use std::fmt;
 
-use error::Result;
-use stream::Result as StreamResult;
 use {
     ElementEnd,
     EntityDefinition,
@@ -15,6 +13,9 @@ use {
     XmlCharExt,
 };
 
+
+type Result<T> = ::std::result::Result<T, Error>;
+type StreamResult<T> = ::std::result::Result<T, StreamError>;
 
 #[derive(Clone, Copy, PartialEq)]
 enum State {

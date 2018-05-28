@@ -56,7 +56,6 @@ token positions.
 #![warn(missing_docs)]
 
 #[macro_use] extern crate log;
-#[macro_use] extern crate failure;
 
 
 mod error;

@@ -1,4 +1,5 @@
 use std::fmt;
+use std::error;
 
 use {
     TokenType,
@@ -6,57 +7,96 @@ use {
 
 
 /// An XML parser errors.
-#[derive(Fail, Debug)]
+#[derive(Debug)]
 pub enum Error {
     /// An invalid token.
-    #[fail(display = "invalid token '{}' at {}", _0, _1)]
     InvalidToken(TokenType, ErrorPos),
 
     /// An invalid token with cause.
-    #[fail(display = "invalid token '{}' at {} cause {}", _0, _1, _2)]
     InvalidTokenWithCause(TokenType, ErrorPos, StreamError),
 
     /// An unexpected token.
-    #[fail(display = "unexpected token '{}' at {}", _0, _1)]
     UnexpectedToken(TokenType, ErrorPos),
 
     /// An unknown token.
-    #[fail(display = "unknown token at {}", _0)]
     UnknownToken(ErrorPos),
 }
 
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Error::InvalidToken(token_type, pos) => {
+                write!(f, "invalid token '{}' at {}", token_type, pos)
+            }
+            Error::InvalidTokenWithCause(token_type, pos, ref cause) => {
+                write!(f, "invalid token '{}' at {} cause {}", token_type, pos, cause)
+            }
+            Error::UnexpectedToken(token_type, pos) => {
+                write!(f, "unexpected token '{}' at {}", token_type, pos)
+            }
+            Error::UnknownToken(pos) => {
+                write!(f, "unknown token at {}", pos)
+            }
+        }
+    }
+}
 
-/// A specialized `Result` type where the error is hard-wired to [`Error`].
-///
-/// [`Error`]: enum.Error.html
-pub type Result<T> = ::std::result::Result<T, Error>;
+impl error::Error for Error {
+    fn description(&self) -> &str {
+        "an XML parsing error"
+    }
+}
 
 
 /// A stream parser errors.
-#[derive(Fail, Debug)]
+#[derive(Debug)]
 pub enum StreamError {
     /// The steam ended earlier than we expected.
     ///
     /// Should only appear on invalid input data.
     /// Errors in a valid XML should be handled by errors below.
-    #[fail(display = "unexpected end of stream")]
     UnexpectedEndOfStream,
 
     /// An unknown token.
-    #[fail(display = "invalid name token")]
     InvalidName,
 
     /// An invalid/unexpected character in the stream.
-    #[fail(display = "expected '{}' not '{}' at {}", _1, _0, _2)]
     InvalidChar(char, String, ErrorPos),
 
     /// An invalid reference.
-    #[fail(display = "invalid reference")]
     InvalidReference,
 
+    // TODO: to Error
     /// An invalid ExternalID in DTD.
-    #[fail(display = "invalid ExternalID")]
     InvalidExternalID,
+}
+
+impl fmt::Display for StreamError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            StreamError::UnexpectedEndOfStream => {
+                write!(f, "unexpected end of stream")
+            }
+            StreamError::InvalidName => {
+                write!(f, "invalid name token")
+            }
+            StreamError::InvalidChar(c, ref s, pos) => {
+                write!(f, "expected '{}' not '{}' at {}", s, c, pos)
+            }
+            StreamError::InvalidReference => {
+                write!(f, "invalid reference")
+            }
+            StreamError::InvalidExternalID => {
+                write!(f, "invalid ExternalID")
+            }
+        }
+    }
+}
+
+impl error::Error for StreamError {
+    fn description(&self) -> &str {
+        "an XML stream parsing error"
+    }
 }
 
 

@@ -9,7 +9,7 @@ use {
     XmlCharExt,
 };
 
-pub type Result<T> = ::std::result::Result<T, StreamError>;
+type Result<T> = ::std::result::Result<T, StreamError>;
 
 
 /// Representation of the [Reference](https://www.w3.org/TR/xml/#NT-Reference) value.
