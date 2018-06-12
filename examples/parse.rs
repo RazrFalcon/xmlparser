@@ -1,13 +1,10 @@
 extern crate xmlparser as xml;
-extern crate stderrlog;
 
 use std::env;
 use std::fs;
 use std::io::Read;
 
 fn main() {
-    stderrlog::new().module(module_path!()).init().unwrap();
-
     let args = env::args().collect::<Vec<String>>();
     if args.len() != 2 {
         println!("Usage: parse file.xml");

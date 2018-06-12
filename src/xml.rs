@@ -217,7 +217,6 @@ impl<'a> Tokenizer<'a> {
             }
             State::Elements => {
                 let token_type = parse_token_type!();
-
                 match token_type {
                     TokenType::ElementStart => {
                         Self::parse_element_start(s)
