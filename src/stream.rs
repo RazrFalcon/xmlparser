@@ -624,6 +624,7 @@ impl<'a> Stream<'a> {
     /// Calculates a current absolute position.
     ///
     /// This operation is very expensive. Use only for errors.
+    #[inline(never)]
     pub fn gen_error_pos(&self) -> ErrorPos {
         let row = self.calc_current_row();
         let col = self.calc_current_col();
@@ -633,6 +634,7 @@ impl<'a> Stream<'a> {
     /// Calculates an absolute position at `pos`.
     ///
     /// This operation is very expensive. Use only for errors.
+    #[inline(never)]
     pub fn gen_error_pos_from(&self, pos: usize) -> ErrorPos {
         let mut s = *self;
         let old_pos = s.pos;
