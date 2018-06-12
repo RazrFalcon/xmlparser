@@ -631,11 +631,12 @@ impl<'a> Stream<'a> {
     /// Calculates an absolute position at `pos`.
     ///
     /// This operation is very expensive. Use only for errors.
-    pub fn gen_error_pos_from(&mut self, pos: usize) -> ErrorPos {
-        let old_pos = self.pos;
-        self.pos = pos;
-        let e = self.gen_error_pos();
-        self.pos = old_pos;
+    pub fn gen_error_pos_from(&self, pos: usize) -> ErrorPos {
+        let mut s = self.clone();
+        let old_pos = s.pos;
+        s.pos = pos;
+        let e = s.gen_error_pos();
+        s.pos = old_pos;
         e
     }
 

@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - `Stream::consume_reference` will return only `InvalidReference` error from now.
 - `Error::InvalidTokenWithCause` merged into `Error::InvalidToken`.
+- `Stream::gen_error_pos_from` does not require `mut self` from now.
 
 ### Removed
 - `failure` dependency.
