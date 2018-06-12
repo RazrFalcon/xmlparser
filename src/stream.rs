@@ -266,7 +266,7 @@ impl<'a> Stream<'a> {
             is_space = true;
         } else if c == b'&' {
             // Check for (#x20 | #x9 | #xD | #xA).
-            let mut s = self.clone();
+            let mut s = *self;
             if let Some(v) = s.try_consume_char_reference() {
                 if (v as u32) < 255 && (v as u8).is_xml_space() {
                     is_space = true;
@@ -632,7 +632,7 @@ impl<'a> Stream<'a> {
     ///
     /// This operation is very expensive. Use only for errors.
     pub fn gen_error_pos_from(&self, pos: usize) -> ErrorPos {
-        let mut s = self.clone();
+        let mut s = *self;
         let old_pos = s.pos;
         s.pos = pos;
         let e = s.gen_error_pos();

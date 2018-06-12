@@ -50,6 +50,8 @@ token positions.
 - The library forbids unsafe code.
 */
 
+#![cfg_attr(feature = "cargo-clippy", allow(unreadable_literal))]
+
 #![doc(html_root_url = "https://docs.rs/xmlparser/0.4.1")]
 
 #![forbid(unsafe_code)]
