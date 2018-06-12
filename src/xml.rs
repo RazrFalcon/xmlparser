@@ -1,17 +1,6 @@
 use std::fmt;
 
-use {
-    ElementEnd,
-    EntityDefinition,
-    Error,
-    ExternalId,
-    Stream,
-    StreamError,
-    StrSpan,
-    Token,
-    XmlByteExt,
-    XmlCharExt,
-};
+use super::*;
 
 
 type Result<T> = ::std::result::Result<T, Error>;

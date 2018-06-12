@@ -65,33 +65,10 @@ mod xml;
 mod xmlchar;
 
 
-pub use error::{
-    Error,
-    ErrorPos,
-    StreamError,
-};
-pub use stream::{
-    Reference,
-    Stream,
-};
-pub use text::{
-    TextUnescape,
-    XmlSpace,
-};
-pub use strspan::{
-    StrSpan,
-};
-pub use token::{
-    ElementEnd,
-    EntityDefinition,
-    ExternalId,
-    Token,
-};
-pub use xml::{
-    Tokenizer,
-    TokenType,
-};
-pub use xmlchar::{
-    XmlByteExt,
-    XmlCharExt,
-};
+pub use error::*;
+pub use stream::*;
+pub use text::*;
+pub use strspan::*;
+pub use token::*;
+pub use xml::*;
+pub use xmlchar::*;

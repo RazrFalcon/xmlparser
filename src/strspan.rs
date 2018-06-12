@@ -91,6 +91,8 @@ impl<'a> StrSpan<'a> {
 
     /// Returns a trimmed version of this `StrSpan`.
     ///
+    /// Removes only leading and trailing spaces.
+    ///
     /// This function will trim escaped spaces (aka `&#x20;`) too.
     pub fn trim(&self) -> StrSpan<'a> {
         let mut s = Stream::from(*self);

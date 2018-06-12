@@ -95,7 +95,7 @@ impl<'a> Stream<'a> {
     ///
     /// # Errors
     ///
-    /// Returns `UnexpectedEndOfStream` if we are at the end of the stream.
+    /// - `UnexpectedEndOfStream`
     pub fn curr_byte(&self) -> Result<u8> {
         if self.at_end() {
             return Err(StreamError::UnexpectedEndOfStream);
@@ -135,7 +135,7 @@ impl<'a> Stream<'a> {
     ///
     /// # Errors
     ///
-    /// Returns `UnexpectedEndOfStream` if we are at the end of the stream.
+    /// - `UnexpectedEndOfStream`
     pub fn next_byte(&self) -> Result<u8> {
         if self.pos + 1 >= self.end {
             return Err(StreamError::UnexpectedEndOfStream);
@@ -148,7 +148,7 @@ impl<'a> Stream<'a> {
     ///
     /// # Errors
     ///
-    /// Returns `UnexpectedEndOfStream` if we are at the end of the stream.
+    /// - `UnexpectedEndOfStream`
     pub fn curr_char(&self) -> Result<char> {
         if self.at_end() {
             return Err(StreamError::UnexpectedEndOfStream);
@@ -282,6 +282,10 @@ impl<'a> Stream<'a> {
     /// Like [`skip_spaces()`], but checks that first char is actually a space.
     ///
     /// [`skip_spaces()`]: #method.skip_spaces
+    ///
+    /// # Errors
+    ///
+    /// - `InvalidChar`
     pub fn consume_spaces(&mut self) -> Result<()> {
         if !self.at_end() && !self.starts_with_space() {
             let c = self.curr_byte_unchecked() as char;
@@ -387,6 +391,11 @@ impl<'a> Stream<'a> {
     /// Skips an XML name.
     ///
     /// The same as `consume_name()`, but does not return a consumed name.
+    ///
+    /// # Errors
+    ///
+    /// - `InvalidNameToken` - if name is empty or starts with an invalid char
+    /// - `UnexpectedEndOfStream`
     pub fn skip_name(&mut self) -> Result<()> {
         let mut iter = self.span.to_str()[self.pos..self.end].chars();
         if let Some(c) = iter.next() {
@@ -470,7 +479,7 @@ impl<'a> Stream<'a> {
 
     /// Consumes quote.
     ///
-    /// Consumes ''' or '"' and returns it.
+    /// Consumes `'` or `"` and returns it.
     ///
     /// # Errors
     ///
@@ -485,9 +494,9 @@ impl<'a> Stream<'a> {
         }
     }
 
-    /// Consumes bytes by predicate and returns them.
+    /// Consumes bytes by the predicate and returns them.
     ///
-    /// Result can be empty.
+    /// The result can be empty.
     pub fn consume_bytes<F>(&mut self, f: F) -> StrSpan<'a>
         where F: Fn(&Stream, u8) -> bool
     {
@@ -496,7 +505,7 @@ impl<'a> Stream<'a> {
         self.slice_back(start)
     }
 
-    /// Consumes bytes by predicate.
+    /// Consumes bytes by the predicate.
     pub fn skip_bytes<F>(&mut self, f: F)
         where F: Fn(&Stream, u8) -> bool
     {
@@ -510,9 +519,9 @@ impl<'a> Stream<'a> {
         }
     }
 
-    /// Consumes chars by predicate and returns them.
+    /// Consumes chars by the predicate and returns them.
     ///
-    /// Result can be empty.
+    /// The result can be empty.
     pub fn consume_chars<F>(&mut self, f: F) -> StrSpan<'a>
         where F: Fn(&Stream, char) -> bool
     {
@@ -521,7 +530,7 @@ impl<'a> Stream<'a> {
         self.slice_back(start)
     }
 
-    /// Consumes chars by predicate.
+    /// Consumes chars by the predicate.
     pub fn skip_chars<F>(&mut self, f: F)
         where F: Fn(&Stream, char) -> bool
     {
@@ -541,19 +550,26 @@ impl<'a> Stream<'a> {
     pub fn try_consume_char_reference(&mut self) -> Option<char> {
         let start = self.pos();
 
-        match self.consume_reference() {
-            Ok(Reference::CharRef(ch)) => Some(ch),
-            _ => {
-                self.pos = start;
-                None
-            }
+        if let Ok(Reference::CharRef(ch)) = self.consume_reference() {
+            Some(ch)
+        } else {
+            self.pos = start;
+            None
         }
     }
 
     /// Consumes an XML reference.
     ///
     /// Consumes according to: <https://www.w3.org/TR/xml/#NT-Reference>
+    ///
+    /// # Errors
+    ///
+    /// - `InvalidReference`
+    /// - `InvalidName`
+    /// - `InvalidChar`
     pub fn consume_reference(&mut self) -> Result<Reference<'a>> {
+        // TODO: return only a single error type or Option
+
         if self.curr_byte()? != b'&' {
             return Err(StreamError::InvalidReference);
         }
@@ -563,18 +579,12 @@ impl<'a> Stream<'a> {
             self.advance(1);
             let n = if self.curr_byte()? == b'x' {
                 self.advance(1);
-                let value = self.consume_bytes(|_, c| c.is_xml_hex_digit());
-                match u32::from_str_radix(value.to_str(), 16) {
-                    Ok(v) => v,
-                    Err(_) => return Err(StreamError::InvalidReference),
-                }
+                let value = self.consume_bytes(|_, c| c.is_xml_hex_digit()).to_str();
+                u32::from_str_radix(value, 16).map_err(|_| StreamError::InvalidReference)
             } else {
-                let value = self.consume_bytes(|_, c| c.is_xml_digit());
-                match u32::from_str_radix(value.to_str(), 10) {
-                    Ok(v) => v,
-                    Err(_) => return Err(StreamError::InvalidReference),
-                }
-            };
+                let value = self.consume_bytes(|_, c| c.is_xml_digit()).to_str();
+                u32::from_str_radix(value, 10).map_err(|_| StreamError::InvalidReference)
+            }?;
 
             let c = char::from_u32(n).unwrap_or('\u{FFFD}');
             if c.is_xml_char() {
@@ -618,7 +628,7 @@ impl<'a> Stream<'a> {
         ErrorPos::new(row, col)
     }
 
-    /// Calculates a current absolute position.
+    /// Calculates an absolute position at `pos`.
     ///
     /// This operation is very expensive. Use only for errors.
     pub fn gen_error_pos_from(&mut self, pos: usize) -> ErrorPos {
@@ -633,11 +643,10 @@ impl<'a> Stream<'a> {
         let text = self.span.full_str();
         let mut row = 1;
         let end = self.pos + self.span.start();
-        row += text.as_bytes()
-            .iter()
-            .take(end)
-            .filter(|c| **c == b'\n')
-            .count();
+        row += text.bytes()
+                   .take(end)
+                   .filter(|c| *c == b'\n')
+                   .count();
         row
     }
 
