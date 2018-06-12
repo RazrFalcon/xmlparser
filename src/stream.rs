@@ -138,7 +138,7 @@ impl<'a> Stream<'a> {
     /// Returns `UnexpectedEndOfStream` if we are at the end of the stream.
     pub fn next_byte(&self) -> Result<u8> {
         if self.pos + 1 >= self.end {
-            return Err(StreamError::UnexpectedEndOfStream.into());
+            return Err(StreamError::UnexpectedEndOfStream);
         }
 
         Ok(self.bytes[self.pos + 1])
@@ -151,7 +151,7 @@ impl<'a> Stream<'a> {
     /// Returns `UnexpectedEndOfStream` if we are at the end of the stream.
     pub fn curr_char(&self) -> Result<char> {
         if self.at_end() {
-            return Err(StreamError::UnexpectedEndOfStream.into());
+            return Err(StreamError::UnexpectedEndOfStream);
         }
 
         Ok(self.curr_char_unchecked())
@@ -286,7 +286,7 @@ impl<'a> Stream<'a> {
         if !self.at_end() && !self.starts_with_space() {
             let c = self.curr_byte_unchecked() as char;
             let pos = self.gen_error_pos();
-            return Err(StreamError::InvalidChar(c, "Space".into(), pos).into());
+            return Err(StreamError::InvalidChar(c, "Space".into(), pos));
         }
 
         self.skip_spaces();
@@ -317,7 +317,7 @@ impl<'a> Stream<'a> {
                     self.curr_byte_unchecked() as char,
                     String::from_utf8(vec![c]).unwrap(),
                     self.gen_error_pos(),
-                ).into()
+                )
             );
         }
 
@@ -338,7 +338,7 @@ impl<'a> Stream<'a> {
         let c = self.curr_byte()?;
         if !list.contains(&c) {
             let s = String::from_utf8(list.to_vec()).unwrap();
-            return Err(StreamError::InvalidChar(c as char, s, self.gen_error_pos()).into());
+            return Err(StreamError::InvalidChar(c as char, s, self.gen_error_pos()));
         }
 
         self.advance(1);
@@ -378,7 +378,7 @@ impl<'a> Stream<'a> {
 
         let name = self.slice_back(start);
         if name.is_empty() {
-            return Err(StreamError::InvalidName.into());
+            return Err(StreamError::InvalidName);
         }
 
         Ok(name)
@@ -393,7 +393,7 @@ impl<'a> Stream<'a> {
             if c.is_xml_name_start() {
                 self.advance(c.len_utf8());
             } else {
-                return Err(StreamError::InvalidName.into());
+                return Err(StreamError::InvalidName);
             }
         }
 
@@ -447,7 +447,7 @@ impl<'a> Stream<'a> {
         };
 
         if local.is_empty() {
-            return Err(StreamError::InvalidName.into());
+            return Err(StreamError::InvalidName);
         }
 
         Ok((prefix, local))
@@ -481,7 +481,7 @@ impl<'a> Stream<'a> {
             self.advance(1);
             Ok(c)
         } else {
-            Err(StreamError::InvalidChar(c as char, "'\"".into(), self.gen_error_pos()).into())
+            Err(StreamError::InvalidChar(c as char, "'\"".into(), self.gen_error_pos()))
         }
     }
 
@@ -555,7 +555,7 @@ impl<'a> Stream<'a> {
     /// Consumes according to: <https://www.w3.org/TR/xml/#NT-Reference>
     pub fn consume_reference(&mut self) -> Result<Reference<'a>> {
         if self.curr_byte()? != b'&' {
-            return Err(StreamError::InvalidReference.into());
+            return Err(StreamError::InvalidReference);
         }
 
         self.advance(1);
@@ -566,13 +566,13 @@ impl<'a> Stream<'a> {
                 let value = self.consume_bytes(|_, c| c.is_xml_hex_digit());
                 match u32::from_str_radix(value.to_str(), 16) {
                     Ok(v) => v,
-                    Err(_) => return Err(StreamError::InvalidReference.into()),
+                    Err(_) => return Err(StreamError::InvalidReference),
                 }
             } else {
                 let value = self.consume_bytes(|_, c| c.is_xml_digit());
                 match u32::from_str_radix(value.to_str(), 10) {
                     Ok(v) => v,
-                    Err(_) => return Err(StreamError::InvalidReference.into()),
+                    Err(_) => return Err(StreamError::InvalidReference),
                 }
             };
 
@@ -580,7 +580,7 @@ impl<'a> Stream<'a> {
             if c.is_xml_char() {
                 Reference::CharRef(c)
             } else {
-                return Err(StreamError::InvalidReference.into());
+                return Err(StreamError::InvalidReference);
             }
         } else {
             let name = self.consume_name()?;

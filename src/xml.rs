@@ -179,7 +179,7 @@ impl<'a> Tokenizer<'a> {
                       TokenType::ElementDecl
                     | TokenType::NotationDecl
                     | TokenType::AttlistDecl => {
-                        if let Err(_) = Self::consume_decl(s) {
+                        if Self::consume_decl(s).is_err() {
                             gen_err!(token_type);
                         }
 
@@ -466,8 +466,7 @@ impl<'a> Tokenizer<'a> {
             _ => {
                 let c = value.to_str().chars().next().unwrap();
                 let pos = s.gen_error_pos_from(start);
-                let kind = StreamError::InvalidChar(c, "yn".into(), pos);
-                return Err(StreamError::from(kind).into());
+                return Err(StreamError::InvalidChar(c, "yn".into(), pos));
             }
         }
 
@@ -671,8 +670,7 @@ impl<'a> Tokenizer<'a> {
             }
             _ => {
                 let pos = s.gen_error_pos();
-                let kind = StreamError::InvalidChar(c as char, "\"'SP".into(), pos);
-                Err(StreamError::from(kind).into())
+                Err(StreamError::InvalidChar(c as char, "\"'SP".into(), pos))
             }
         }
     }
