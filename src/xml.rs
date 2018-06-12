@@ -224,8 +224,8 @@ impl<'a> Tokenizer<'a> {
             }
             State::Attributes => {
                 Self::consume_attribute(s).map_err(|e|
-                    Error::InvalidTokenWithCause(TokenType::Attribute,
-                                                 s.gen_error_pos_from(start), e))
+                    Error::InvalidToken(TokenType::Attribute,
+                                        s.gen_error_pos_from(start), Some(e)))
             }
             State::AfterElements => {
                 let token_type = parse_token_type!();
@@ -354,7 +354,7 @@ impl<'a> Tokenizer<'a> {
         let start = s.pos() - 6;
 
         Self::parse_declaration_impl(s).map_err(|e|
-            Error::InvalidTokenWithCause(TokenType::XMLDecl, s.gen_error_pos_from(start), e)
+            Error::InvalidToken(TokenType::XMLDecl, s.gen_error_pos_from(start), Some(e))
         )
     }
 
@@ -455,12 +455,12 @@ impl<'a> Tokenizer<'a> {
 
         if text.to_str().contains("--") {
             let pos = s.gen_error_pos_from(start);
-            return Err(Error::InvalidToken(TokenType::Comment, pos));
+            return Err(Error::InvalidToken(TokenType::Comment, pos, None));
         }
 
         if s.skip_string(b"-->").is_err() {
             let pos = s.gen_error_pos_from(start);
-            return Err(Error::InvalidToken(TokenType::Comment, pos));
+            return Err(Error::InvalidToken(TokenType::Comment, pos, None));
         }
 
         Ok(Token::Comment(text))
@@ -470,7 +470,7 @@ impl<'a> Tokenizer<'a> {
         let start = s.pos() - 2;
 
         Self::parse_pi_impl(s).map_err(|e|
-            Error::InvalidTokenWithCause(TokenType::PI, s.gen_error_pos_from(start), e)
+            Error::InvalidToken(TokenType::PI, s.gen_error_pos_from(start), Some(e))
         )
     }
 
@@ -508,7 +508,7 @@ impl<'a> Tokenizer<'a> {
         let start = s.pos() - 9;
 
         Self::parse_doctype_impl(s).map_err(|e|
-            Error::InvalidTokenWithCause(TokenType::DoctypeDecl, s.gen_error_pos_from(start), e)
+            Error::InvalidToken(TokenType::DoctypeDecl, s.gen_error_pos_from(start), Some(e))
         )
     }
 
@@ -564,7 +564,7 @@ impl<'a> Tokenizer<'a> {
         let start = s.pos() - 8;
 
         Self::parse_entity_decl_impl(s).map_err(|e|
-            Error::InvalidTokenWithCause(TokenType::EntityDecl, s.gen_error_pos_from(start), e)
+            Error::InvalidToken(TokenType::EntityDecl, s.gen_error_pos_from(start), Some(e))
         )
     }
 
@@ -651,7 +651,7 @@ impl<'a> Tokenizer<'a> {
         });
 
         s.skip_string(b"]]>").map_err(|e|
-            Error::InvalidTokenWithCause(TokenType::CDSect, s.gen_error_pos_from(start), e)
+            Error::InvalidToken(TokenType::CDSect, s.gen_error_pos_from(start), Some(e))
         )?;
 
         Ok(Token::Cdata(text))
@@ -661,7 +661,7 @@ impl<'a> Tokenizer<'a> {
         let start = s.pos() - 1;
 
         Self::parse_element_start_impl(s).map_err(|e|
-            Error::InvalidTokenWithCause(TokenType::ElementStart, s.gen_error_pos_from(start), e)
+            Error::InvalidToken(TokenType::ElementStart, s.gen_error_pos_from(start), Some(e))
         )
     }
 
@@ -675,7 +675,7 @@ impl<'a> Tokenizer<'a> {
         let start = s.pos() - 2;
 
         Self::parse_close_element_impl(s).map_err(|e|
-            Error::InvalidTokenWithCause(TokenType::ElementClose, s.gen_error_pos_from(start), e)
+            Error::InvalidToken(TokenType::ElementClose, s.gen_error_pos_from(start), Some(e))
         )
     }
 

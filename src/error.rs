@@ -9,11 +9,8 @@ use {
 /// An XML parser errors.
 #[derive(Debug)]
 pub enum Error {
-    /// An invalid token.
-    InvalidToken(TokenType, ErrorPos),
-
-    /// An invalid token with cause.
-    InvalidTokenWithCause(TokenType, ErrorPos, StreamError),
+    /// An invalid token with an optional cause.
+    InvalidToken(TokenType, ErrorPos, Option<StreamError>),
 
     /// An unexpected token.
     UnexpectedToken(TokenType, ErrorPos),
@@ -25,11 +22,15 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Error::InvalidToken(token_type, pos) => {
-                write!(f, "invalid token '{}' at {}", token_type, pos)
-            }
-            Error::InvalidTokenWithCause(token_type, pos, ref cause) => {
-                write!(f, "invalid token '{}' at {} cause {}", token_type, pos, cause)
+            Error::InvalidToken(token_type, pos, ref cause) => {
+                match *cause {
+                    Some(ref cause) => {
+                        write!(f, "invalid token '{}' at {} cause {}", token_type, pos, cause)
+                    }
+                    None => {
+                        write!(f, "invalid token '{}' at {}", token_type, pos)
+                    }
+                }
             }
             Error::UnexpectedToken(token_type, pos) => {
                 write!(f, "unexpected token '{}' at {}", token_type, pos)
