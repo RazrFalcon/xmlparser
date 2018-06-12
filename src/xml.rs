@@ -92,6 +92,26 @@ impl<'a> From<StrSpan<'a>> for Tokenizer<'a> {
     }
 }
 
+
+/// Shorthand for:
+///
+/// ```no_run
+/// let start = stream.pos() - 2; // or any other number
+/// some_func().map_err(|e|
+///     Error::InvalidToken(Token::SomeToken, stream.gen_error_pos_from(start), Some(e))
+/// )
+/// ```
+macro_rules! map_err_at {
+    ($fun:expr, $token:expr, $stream:expr, $d:expr) => {{
+        let mut start = $stream.pos() as isize + $d;
+        debug_assert!(start >= 0);
+        if start < 0 { start = 0; }
+        $fun.map_err(|e|
+            Error::InvalidToken($token, $stream.gen_error_pos_from(start as usize), Some(e))
+        )
+    }}
+}
+
 impl<'a> Tokenizer<'a> {
     /// Enables document fragment parsing.
     ///
@@ -351,11 +371,7 @@ impl<'a> Tokenizer<'a> {
     }
 
     fn parse_declaration(s: &mut Stream<'a>) -> Result<Token<'a>> {
-        let start = s.pos() - 6;
-
-        Self::parse_declaration_impl(s).map_err(|e|
-            Error::InvalidToken(TokenType::XMLDecl, s.gen_error_pos_from(start), Some(e))
-        )
+        map_err_at!(Self::parse_declaration_impl(s), TokenType::XMLDecl, s, -6)
     }
 
     fn parse_declaration_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
@@ -467,11 +483,7 @@ impl<'a> Tokenizer<'a> {
     }
 
     fn parse_pi(s: &mut Stream<'a>) -> Result<Token<'a>> {
-        let start = s.pos() - 2;
-
-        Self::parse_pi_impl(s).map_err(|e|
-            Error::InvalidToken(TokenType::PI, s.gen_error_pos_from(start), Some(e))
-        )
+        map_err_at!(Self::parse_pi_impl(s), TokenType::PI, s, -2)
     }
 
     // PI       ::= '<?' PITarget (S (Char* - (Char* '?>' Char*)))? '?>'
@@ -505,11 +517,7 @@ impl<'a> Tokenizer<'a> {
     }
 
     fn parse_doctype(s: &mut Stream<'a>) -> Result<Token<'a>> {
-        let start = s.pos() - 9;
-
-        Self::parse_doctype_impl(s).map_err(|e|
-            Error::InvalidToken(TokenType::DoctypeDecl, s.gen_error_pos_from(start), Some(e))
-        )
+        map_err_at!(Self::parse_doctype_impl(s), TokenType::DoctypeDecl, s, -9)
     }
 
     // doctypedecl ::= '<!DOCTYPE' S Name (S ExternalID)? S? ('[' intSubset ']' S?)? '>'
@@ -561,11 +569,7 @@ impl<'a> Tokenizer<'a> {
     }
 
     fn parse_entity_decl(s: &mut Stream<'a>) -> Result<Token<'a>> {
-        let start = s.pos() - 8;
-
-        Self::parse_entity_decl_impl(s).map_err(|e|
-            Error::InvalidToken(TokenType::EntityDecl, s.gen_error_pos_from(start), Some(e))
-        )
+        map_err_at!(Self::parse_entity_decl_impl(s), TokenType::EntityDecl, s, -8)
     }
 
     // EntityDecl  ::= GEDecl | PEDecl
@@ -639,30 +643,26 @@ impl<'a> Tokenizer<'a> {
         Ok(())
     }
 
+    fn parse_cdata(s: &mut Stream<'a>) -> Result<Token<'a>> {
+        map_err_at!(Self::parse_cdata_impl(s), TokenType::CDSect, s, -9)
+    }
+
     // CDSect  ::= CDStart CData CDEnd
     // CDStart ::= '<![CDATA['
     // CData   ::= (Char* - (Char* ']]>' Char*))
     // CDEnd   ::= ']]>'
-    fn parse_cdata(s: &mut Stream<'a>) -> Result<Token<'a>> {
-        let start = s.pos() - 9;
-
+    fn parse_cdata_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
         let text = s.consume_bytes(|s, c| {
             !(c == b']' && s.starts_with(b"]]>"))
         });
 
-        s.skip_string(b"]]>").map_err(|e|
-            Error::InvalidToken(TokenType::CDSect, s.gen_error_pos_from(start), Some(e))
-        )?;
+        s.skip_string(b"]]>")?;
 
         Ok(Token::Cdata(text))
     }
 
     fn parse_element_start(s: &mut Stream<'a>) -> Result<Token<'a>> {
-        let start = s.pos() - 1;
-
-        Self::parse_element_start_impl(s).map_err(|e|
-            Error::InvalidToken(TokenType::ElementStart, s.gen_error_pos_from(start), Some(e))
-        )
+        map_err_at!(Self::parse_element_start_impl(s), TokenType::ElementStart, s, -1)
     }
 
     // '<' Name (S Attribute)* S? '>'
@@ -672,11 +672,7 @@ impl<'a> Tokenizer<'a> {
     }
 
     fn parse_close_element(s: &mut Stream<'a>) -> Result<Token<'a>> {
-        let start = s.pos() - 2;
-
-        Self::parse_close_element_impl(s).map_err(|e|
-            Error::InvalidToken(TokenType::ElementClose, s.gen_error_pos_from(start), Some(e))
-        )
+        map_err_at!(Self::parse_close_element_impl(s), TokenType::ElementClose, s, -2)
     }
 
     // '</' Name S? '>'
