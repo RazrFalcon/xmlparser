@@ -316,10 +316,12 @@ impl<'a> Stream<'a> {
     /// ```
     pub fn consume_byte(&mut self, c: u8) -> Result<()> {
         if self.curr_byte()? != c {
+            let mut s = String::new();
+            s.push(c as char);
             return Err(
                 StreamError::InvalidChar(
                     self.curr_byte_unchecked() as char,
-                    String::from_utf8(vec![c]).unwrap(),
+                    s,
                     self.gen_error_pos(),
                 )
             );
@@ -587,11 +589,11 @@ impl<'a> Stream<'a> {
             }?;
 
             let c = char::from_u32(n).unwrap_or('\u{FFFD}');
-            if c.is_xml_char() {
-                Reference::CharRef(c)
-            } else {
+            if !c.is_xml_char() {
                 return Err(StreamError::InvalidReference);
             }
+
+            Reference::CharRef(c)
         } else {
             let name = self.consume_name()?;
             match name.to_str() {

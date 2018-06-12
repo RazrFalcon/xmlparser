@@ -581,7 +581,6 @@ impl<'a> Tokenizer<'a> {
         let is_ge = if s.curr_byte()? == b'%' {
             s.consume_byte(b'%')?;
             s.consume_spaces()?;
-
             false
         } else {
             true
