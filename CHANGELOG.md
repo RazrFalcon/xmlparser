@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Changed
+- `Stream::consume_reference` will return only `InvalidReference` error from now.
+
 ### Removed
 - `failure` dependency.
 - `log` dependency.

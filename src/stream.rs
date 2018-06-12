@@ -565,11 +565,11 @@ impl<'a> Stream<'a> {
     /// # Errors
     ///
     /// - `InvalidReference`
-    /// - `InvalidName`
-    /// - `InvalidChar`
     pub fn consume_reference(&mut self) -> Result<Reference<'a>> {
-        // TODO: return only a single error type or Option
+        self._consume_reference().map_err(|_| StreamError::InvalidReference)
+    }
 
+    fn _consume_reference(&mut self) -> Result<Reference<'a>> {
         if self.curr_byte()? != b'&' {
             return Err(StreamError::InvalidReference);
         }
