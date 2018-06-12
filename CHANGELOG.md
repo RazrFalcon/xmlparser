@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Removed
 - `failure` dependency.
+- `log` dependency.
 
 ## [0.4.1] - 2018-05-23
 ### Added

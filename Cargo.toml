@@ -11,9 +11,6 @@ repository = "https://github.com/RazrFalcon/xmlparser"
 documentation = "https://docs.rs/xmlparser/"
 readme = "README.md"
 
-[dependencies]
-log = "0.4"
-
 [dev-dependencies]
 serde = "1.0"
 serde_json = "1.0"

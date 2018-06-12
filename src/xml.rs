@@ -393,10 +393,6 @@ impl<'a> Tokenizer<'a> {
 
         s.consume_quote()?;
 
-        if ver.to_str() != "1.0" {
-            warn!("Only XML 1.0 is supported.");
-        }
-
         Ok(ver)
     }
 
@@ -410,41 +406,18 @@ impl<'a> Tokenizer<'a> {
 
         s.consume_eq()?;
         s.consume_quote()?;
-        let name = Self::parse_encoding_name(s)?;
-        s.consume_quote()?;
-
-        // TODO: should we keep it?
-        // match name.slice() {
-        //     "UTF-8" | "utf-8" => {}
-        //     _ => {
-        //         // It's not an error, since we already know that input data
-        //         // is a valid UTF-8 string.
-        //         // Probably, the input data has non-UTF-8 encoding, but do not
-        //         // use any of non-Latin-1 characters.
-        //         warn!("Unsupported encoding: {}", name);
-        //     }
-        // }
-
-        Ok(Some(name))
-    }
-
-    // [A-Za-z] ([A-Za-z0-9._] | '-')*
-    fn parse_encoding_name(s: &mut Stream<'a>) -> StreamResult<StrSpan<'a>> {
-        // if !s.at_end() {
-        //     let c = s.curr_byte_unchecked();
-        //     if !Stream::is_letter(c) {
-        //         return Err(XmlXmlError::new(ErrorKind::String("Invalid encoding name".into()),
-        //                                  Some(s.gen_error_pos())));
-        //     }
-        // }
-
-        Ok(s.consume_bytes(|_, c| {
+        // [A-Za-z] ([A-Za-z0-9._] | '-')*
+        // TODO: check that first byte is [A-Za-z]
+        let name = s.consume_bytes(|_, c| {
                c.is_xml_letter()
             || c.is_xml_digit()
             || c == b'.'
             || c == b'-'
             || c == b'_'
-        }))
+        });
+        s.consume_quote()?;
+
+        Ok(Some(name))
     }
 
     // S 'standalone' Eq (("'" ('yes' | 'no') "'") | ('"' ('yes' | 'no') '"'))
@@ -500,11 +473,6 @@ impl<'a> Tokenizer<'a> {
             let pos = s.gen_error_pos_from(start);
             return Err(Error::InvalidToken(TokenType::Comment, pos));
         }
-
-        // if text.slice().ends_with("-") {
-        //     warn!("Comment should not end with '--->'. Last '-' is removed.");
-        //     text = text.slice_region(0, text.len() - 1);
-        // }
 
         Ok(Token::Comment(text))
     }
@@ -659,7 +627,7 @@ impl<'a> Tokenizer<'a> {
                             s.skip_string(b"NDATA")?;
                             s.consume_spaces()?;
                             s.skip_name()?;
-                            warn!("NDataDecl is not supported.")
+                            // TODO: NDataDecl is not supported
                         }
                     }
 
@@ -679,9 +647,6 @@ impl<'a> Tokenizer<'a> {
         s.consume_spaces()?;
         s.skip_bytes(|_, c| c != b'>');
         s.consume_byte(b'>')?;
-
-        // warn!("'{}' skipped.", s.slice_back(start));
-
         Ok(())
     }
 
@@ -757,11 +722,6 @@ impl<'a> Tokenizer<'a> {
         s.consume_eq()?;
         let quote = s.consume_quote()?;
         let value = s.consume_bytes(|_, c| c != quote);
-
-        // if s.curr_byte()? == b'<' {
-        //     let kind = StreamErrorKind::InvalidChar('<', "Char".into(), s.gen_error_pos());
-        //     return Err(StreamXmlError::from(kind).into());
-        // }
 
         s.consume_byte(quote)?;
         s.skip_ascii_spaces();
