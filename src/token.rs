@@ -4,9 +4,11 @@ use {
 
 
 /// An XML token.
-#[derive(Debug)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub enum Token<'a> {
     /// Declaration token.
+    ///
+    /// Version, encoding and standalone.
     ///
     /// Example: `<?xml version="1.0"?>`
     Declaration(StrSpan<'a>, Option<StrSpan<'a>>, Option<StrSpan<'a>>),
@@ -75,7 +77,7 @@ pub enum Token<'a> {
 
 
 /// `ElementEnd` token.
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub enum ElementEnd<'a> {
     /// Indicates `>`
     Open,
@@ -88,7 +90,7 @@ pub enum ElementEnd<'a> {
 
 /// Representation of the [ExternalID](https://www.w3.org/TR/xml/#NT-ExternalID) value.
 #[allow(missing_docs)]
-#[derive(Debug)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub enum ExternalId<'a> {
     System(StrSpan<'a>),
     Public(StrSpan<'a>, StrSpan<'a>),
@@ -97,7 +99,7 @@ pub enum ExternalId<'a> {
 
 /// Representation of the [EntityDef](https://www.w3.org/TR/xml/#NT-EntityDef) value.
 #[allow(missing_docs)]
-#[derive(Debug)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub enum EntityDefinition<'a> {
     EntityValue(StrSpan<'a>),
     ExternalId(ExternalId<'a>),

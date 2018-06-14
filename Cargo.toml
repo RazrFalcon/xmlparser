@@ -11,12 +11,6 @@ repository = "https://github.com/RazrFalcon/xmlparser"
 documentation = "https://docs.rs/xmlparser/"
 readme = "README.md"
 
-[dev-dependencies]
-serde = "1.0"
-serde_json = "1.0"
-serde_derive = "1.0"
-rustc-test = "0.3"
-
 [lib]
 path = "src/lib.rs" # for cargo-readme
 doctest = true

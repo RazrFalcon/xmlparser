@@ -487,6 +487,7 @@ impl<'a> Stream<'a> {
     ///
     /// - `InvalidChar`
     pub fn consume_quote(&mut self) -> Result<u8> {
+        // TODO: custom error
         let c = self.curr_byte()?;
         if c == b'\'' || c == b'"' {
             self.advance(1);
