@@ -33,6 +33,7 @@ token positions.
   A properer text escaping is very hard without the DOM construction.
 - Good error processing. All error types contain position (line:column) where it occurred.
 - No heap allocations.
+- No dependencies.
 - Tiny. ~1500 LOC and ~35KiB in the release build according to the `cargo-bloat`.
 
 ## Limitations
@@ -54,7 +55,7 @@ token positions.
 
 #![cfg_attr(feature = "cargo-clippy", allow(unreadable_literal))]
 
-#![doc(html_root_url = "https://docs.rs/xmlparser/0.4.1")]
+#![doc(html_root_url = "https://docs.rs/xmlparser/0.5.0")]
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]

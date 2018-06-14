@@ -36,6 +36,7 @@ token positions.
   A properer text escaping is very hard without the DOM construction.
 - Good error processing. All error types contain position (line:column) where it occurred.
 - No heap allocations.
+- No dependencies.
 - Tiny. ~1500 LOC and ~35KiB in the release build according to the `cargo-bloat`.
 
 ### Limitations

@@ -13,7 +13,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-{{crate}} = "0.4"
+{{crate}} = "0.5"
 ```
 
 ### License

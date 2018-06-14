@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.5.0] - 2018-06-14
 ### Added
 - `StreamError::InvalidChar`.
 - `StreamError::InvalidSpace`.
@@ -60,7 +62,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - `log` 0.3 -> 0.4
 
-[Unreleased]: https://github.com/RazrFalcon/xmlparser/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/RazrFalcon/xmlparser/compare/v0.5.0...HEAD
+[0.4.1]: https://github.com/RazrFalcon/xmlparser/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/RazrFalcon/xmlparser/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/RazrFalcon/xmlparser/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/RazrFalcon/xmlparser/compare/v0.2.0...v0.3.0
