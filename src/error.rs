@@ -51,6 +51,7 @@ impl error::Error for Error {
 
 /// A stream parser errors.
 #[derive(Debug)]
+#[allow(missing_docs)] // Required for struct fields.
 pub enum StreamError {
     /// The steam ended earlier than we expected.
     ///
@@ -62,9 +63,7 @@ pub enum StreamError {
     InvalidName,
 
     /// An invalid/unexpected character.
-    ///
-    /// Values: actual, expected, pos.
-    InvalidChar(char, String, ErrorPos),
+    InvalidChar { actual: char, expected: String, pos: ErrorPos },
 
     /// An unexpected character instead of `"` or `'`.
     InvalidQuote(char, ErrorPos),
@@ -75,9 +74,7 @@ pub enum StreamError {
     InvalidSpace(char, ErrorPos),
 
     /// An unexpected character instead of an XML space.
-    ///
-    /// Values: actual, expected, pos.
-    InvalidString(String, String, ErrorPos),
+    InvalidString { actual: String, expected: String, pos: ErrorPos },
 
     /// An invalid reference.
     InvalidReference,
@@ -95,8 +92,8 @@ impl fmt::Display for StreamError {
             StreamError::InvalidName => {
                 write!(f, "invalid name token")
             }
-            StreamError::InvalidChar(c, ref s, pos) => {
-                write!(f, "expected '{}' not '{}' at {}", s, c, pos)
+            StreamError::InvalidChar { actual, ref expected, pos } => {
+                write!(f, "expected '{}' not '{}' at {}", expected, actual, pos)
             }
             StreamError::InvalidQuote(c, pos) => {
                 write!(f, "expected quote mark not '{}' at {}", c, pos)
@@ -104,7 +101,7 @@ impl fmt::Display for StreamError {
             StreamError::InvalidSpace(c, pos) => {
                 write!(f, "expected space not '{}' at {}", c, pos)
             }
-            StreamError::InvalidString(ref actual, ref expected, pos) => {
+            StreamError::InvalidString { ref actual, ref expected, pos } => {
                 write!(f, "expected '{}' not '{}' at {}", expected, actual, pos)
             }
             StreamError::InvalidReference => {

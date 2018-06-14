@@ -443,7 +443,7 @@ impl<'a> Tokenizer<'a> {
             _ => {
                 let c = value.to_str().chars().next().unwrap();
                 let pos = s.gen_error_pos_from(start);
-                return Err(StreamError::InvalidChar(c, "yn".into(), pos));
+                return Err(StreamError::InvalidChar { actual: c, expected: "yn".into(), pos });
             }
         }
 
@@ -629,7 +629,7 @@ impl<'a> Tokenizer<'a> {
             }
             _ => {
                 let pos = s.gen_error_pos();
-                Err(StreamError::InvalidChar(c as char, "\"'SP".into(), pos))
+                Err(StreamError::InvalidChar { actual: c as char, expected: "\"'SP".into(), pos })
             }
         }
     }

@@ -318,14 +318,14 @@ impl<'a> Stream<'a> {
     /// ```
     pub fn consume_byte(&mut self, c: u8) -> Result<()> {
         if self.curr_byte()? != c {
-            let mut s = String::new();
-            s.push(c as char);
+            let mut expected = String::new();
+            expected.push(c as char);
             return Err(
-                StreamError::InvalidChar(
-                    self.curr_byte_unchecked() as char,
-                    s,
-                    self.gen_error_pos(),
-                )
+                StreamError::InvalidChar {
+                    actual: self.curr_byte_unchecked() as char,
+                    expected,
+                    pos: self.gen_error_pos(),
+                }
             );
         }
 
@@ -346,8 +346,10 @@ impl<'a> Stream<'a> {
 
         let c = self.curr_byte()?;
         if !list.contains(&c) {
-            let s = String::from_utf8(list.to_vec()).unwrap();
-            return Err(StreamError::InvalidChar(c as char, s, self.gen_error_pos()));
+            let expected = String::from_utf8(list.to_vec()).unwrap();
+            return Err(StreamError::InvalidChar {
+                actual: c as char, expected, pos: self.gen_error_pos()
+            });
         }
 
         self.advance(1);
@@ -370,7 +372,9 @@ impl<'a> Stream<'a> {
             // Assume that all input `text` are valid UTF-8 strings, so unwrap is safe.
             let expected = str::from_utf8(text).unwrap().to_owned();
 
-            return Err(StreamError::InvalidString(actual, expected, self.gen_error_pos()));
+            let pos = self.gen_error_pos();
+
+            return Err(StreamError::InvalidString { actual, expected, pos });
         }
 
         self.advance(text.len());
