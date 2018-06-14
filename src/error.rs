@@ -74,6 +74,11 @@ pub enum StreamError {
     /// Includes: `' ' \n \r \t &#x20; &#x9; &#xD; &#xA;`.
     InvalidSpace(char, ErrorPos),
 
+    /// An unexpected character instead of an XML space.
+    ///
+    /// Values: actual, expected, pos.
+    InvalidString(String, String, ErrorPos),
+
     /// An invalid reference.
     InvalidReference,
 
@@ -98,6 +103,9 @@ impl fmt::Display for StreamError {
             }
             StreamError::InvalidSpace(c, pos) => {
                 write!(f, "expected space not '{}' at {}", c, pos)
+            }
+            StreamError::InvalidString(ref actual, ref expected, pos) => {
+                write!(f, "expected '{}' not '{}' at {}", expected, actual, pos)
             }
             StreamError::InvalidReference => {
                 write!(f, "invalid reference")

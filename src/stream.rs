@@ -1,5 +1,6 @@
 use std::char;
 use std::str;
+use std::cmp;
 
 use {
     ErrorPos,
@@ -359,13 +360,17 @@ impl<'a> Stream<'a> {
     ///
     /// - `InvalidChar`
     pub fn skip_string(&mut self, text: &[u8]) -> Result<()> {
-        // TODO: use custom error
         if !self.starts_with(text) {
-            for c in text {
-                self.consume_byte(*c)?;
-            }
+            let len = cmp::min(text.len(), self.end - self.pos);
+            // Collect chars and do not slice a string,
+            // because the `len` can be on the char boundary.
+            // Which lead to a panic.
+            let actual = self.span.to_str()[self.pos..].chars().take(len).collect();
 
-            // unreachable
+            // Assume that all input `text` are valid UTF-8 strings, so unwrap is safe.
+            let expected = str::from_utf8(text).unwrap().to_owned();
+
+            return Err(StreamError::InvalidString(actual, expected, self.gen_error_pos()));
         }
 
         self.advance(text.len());
@@ -456,7 +461,7 @@ impl<'a> Stream<'a> {
             (prefix, local)
         } else {
             let local = self.slice_back(start);
-            (StrSpan::from(""), local)
+            ("".into(), local)
         };
 
         if local.is_empty() {
@@ -616,12 +621,12 @@ impl<'a> Stream<'a> {
     }
 
     /// Slices data from `pos` to the current position.
-    pub fn slice_back(&mut self, pos: usize) -> StrSpan<'a> {
+    pub fn slice_back(&self, pos: usize) -> StrSpan<'a> {
         self.span.slice_region(pos, self.pos())
     }
 
     /// Slices data from the current position to the end.
-    pub fn slice_tail(&mut self) -> StrSpan<'a> {
+    pub fn slice_tail(&self) -> StrSpan<'a> {
         self.span.slice_region(self.pos(), self.end)
     }
 
