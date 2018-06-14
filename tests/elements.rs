@@ -156,7 +156,7 @@ test!(attribute_07, "<c q:a='b'/>",
 
 test!(attribute_err_01, "<c az=test>",
     Token::ElementStart("", "c"),
-    Token::Error("invalid token 'Attribute' at 1:3 cause expected ''\"' not 't' at 1:7".to_string())
+    Token::Error("invalid token 'Attribute' at 1:3 cause expected quote mark not 't' at 1:7".to_string())
 );
 
 test!(attribute_err_02, "<c a>",

@@ -61,14 +61,16 @@ pub enum StreamError {
     /// An unknown token.
     InvalidName,
 
-    /// An invalid/unexpected character in the stream.
+    /// An invalid/unexpected character.
     InvalidChar(char, String, ErrorPos),
+
+    /// An unexpected character instead of `"` or `'`.
+    InvalidQuote(char, ErrorPos),
 
     /// An invalid reference.
     InvalidReference,
 
-    // TODO: to Error
-    /// An invalid ExternalID in DTD.
+    /// An invalid ExternalID in the DTD.
     InvalidExternalID,
 }
 
@@ -83,6 +85,9 @@ impl fmt::Display for StreamError {
             }
             StreamError::InvalidChar(c, ref s, pos) => {
                 write!(f, "expected '{}' not '{}' at {}", s, c, pos)
+            }
+            StreamError::InvalidQuote(c, pos) => {
+                write!(f, "expected quote mark not '{}' at {}", c, pos)
             }
             StreamError::InvalidReference => {
                 write!(f, "invalid reference")

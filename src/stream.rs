@@ -487,16 +487,15 @@ impl<'a> Stream<'a> {
     ///
     /// # Errors
     ///
-    /// - `InvalidChar`
+    /// - `InvalidQuote`
     /// - `UnexpectedEndOfStream`
     pub fn consume_quote(&mut self) -> Result<u8> {
-        // TODO: custom error
         let c = self.curr_byte()?;
         if c == b'\'' || c == b'"' {
             self.advance(1);
             Ok(c)
         } else {
-            Err(StreamError::InvalidChar(c as char, "'\"".into(), self.gen_error_pos()))
+            Err(StreamError::InvalidQuote(c as char, self.gen_error_pos()))
         }
     }
 
