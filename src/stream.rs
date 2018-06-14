@@ -318,14 +318,11 @@ impl<'a> Stream<'a> {
     /// ```
     pub fn consume_byte(&mut self, c: u8) -> Result<()> {
         if self.curr_byte()? != c {
-            let mut expected = String::new();
-            expected.push(c as char);
             return Err(
-                StreamError::InvalidChar {
-                    actual: self.curr_byte_unchecked() as char,
-                    expected,
-                    pos: self.gen_error_pos(),
-                }
+                StreamError::InvalidChar(
+                    vec![self.curr_byte_unchecked(), c],
+                    self.gen_error_pos(),
+                )
             );
         }
 
@@ -346,10 +343,9 @@ impl<'a> Stream<'a> {
 
         let c = self.curr_byte()?;
         if !list.contains(&c) {
-            let expected = String::from_utf8(list.to_vec()).unwrap();
-            return Err(StreamError::InvalidChar {
-                actual: c as char, expected, pos: self.gen_error_pos()
-            });
+            let mut v = list.to_vec();
+            v.insert(0, c);
+            return Err(StreamError::InvalidChar(v, self.gen_error_pos()));
         }
 
         self.advance(1);
@@ -374,7 +370,7 @@ impl<'a> Stream<'a> {
 
             let pos = self.gen_error_pos();
 
-            return Err(StreamError::InvalidString { actual, expected, pos });
+            return Err(StreamError::InvalidString(vec![actual, expected], pos));
         }
 
         self.advance(text.len());
@@ -657,7 +653,7 @@ impl<'a> Stream<'a> {
         e
     }
 
-    fn calc_current_row(&self) -> usize {
+    fn calc_current_row(&self) -> u32 {
         let text = self.span.full_str();
         let mut row = 1;
         let end = self.pos + self.span.start();
@@ -665,10 +661,10 @@ impl<'a> Stream<'a> {
                    .take(end)
                    .filter(|c| *c == b'\n')
                    .count();
-        row
+        row as u32
     }
 
-    fn calc_current_col(&self) -> usize {
+    fn calc_current_col(&self) -> u32 {
         let text = self.span.full_str();
         let bytes = text.as_bytes();
         let end = self.pos + self.span.start();

@@ -441,9 +441,9 @@ impl<'a> Tokenizer<'a> {
         match value.to_str() {
             "yes" | "no" => {}
             _ => {
-                let c = value.to_str().chars().next().unwrap();
+                let values = vec![value.to_str().into(), "yes".into(), "no".into()];
                 let pos = s.gen_error_pos_from(start);
-                return Err(StreamError::InvalidChar { actual: c, expected: "yn".into(), pos });
+                return Err(StreamError::InvalidString(values, pos));
             }
         }
 
@@ -628,8 +628,9 @@ impl<'a> Tokenizer<'a> {
                 }
             }
             _ => {
+                let chars = vec![c, b'"', b'\'', b'S', b'P'];
                 let pos = s.gen_error_pos();
-                Err(StreamError::InvalidChar { actual: c as char, expected: "\"'SP".into(), pos })
+                Err(StreamError::InvalidChar(chars, pos))
             }
         }
     }

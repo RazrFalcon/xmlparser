@@ -51,7 +51,6 @@ impl error::Error for Error {
 
 /// A stream parser errors.
 #[derive(Debug)]
-#[allow(missing_docs)] // Required for struct fields.
 pub enum StreamError {
     /// The steam ended earlier than we expected.
     ///
@@ -63,7 +62,11 @@ pub enum StreamError {
     InvalidName,
 
     /// An invalid/unexpected character.
-    InvalidChar { actual: char, expected: String, pos: ErrorPos },
+    ///
+    /// The first byte is an actual one, others - expected.
+    ///
+    /// We are using a single value to reduce the struct size.
+    InvalidChar(Vec<u8>, ErrorPos),
 
     /// An unexpected character instead of `"` or `'`.
     InvalidQuote(char, ErrorPos),
@@ -74,7 +77,11 @@ pub enum StreamError {
     InvalidSpace(char, ErrorPos),
 
     /// An unexpected character instead of an XML space.
-    InvalidString { actual: String, expected: String, pos: ErrorPos },
+    ///
+    /// The first string is an actual one, others - expected.
+    ///
+    /// We are using a single value to reduce the struct size.
+    InvalidString(Vec<String>, ErrorPos),
 
     /// An invalid reference.
     InvalidReference,
@@ -92,8 +99,13 @@ impl fmt::Display for StreamError {
             StreamError::InvalidName => {
                 write!(f, "invalid name token")
             }
-            StreamError::InvalidChar { actual, ref expected, pos } => {
-                write!(f, "expected '{}' not '{}' at {}", expected, actual, pos)
+            StreamError::InvalidChar(ref chars, pos) => {
+                // Vec<u8> -> Vec<String>
+                let list: Vec<String> =
+                    chars.iter().skip(1).map(|c| String::from_utf8(vec![*c]).unwrap()).collect();
+
+                write!(f, "expected '{}' not '{}' at {}",
+                       list.join("', '"), chars[0] as char, pos)
             }
             StreamError::InvalidQuote(c, pos) => {
                 write!(f, "expected quote mark not '{}' at {}", c, pos)
@@ -101,8 +113,9 @@ impl fmt::Display for StreamError {
             StreamError::InvalidSpace(c, pos) => {
                 write!(f, "expected space not '{}' at {}", c, pos)
             }
-            StreamError::InvalidString { ref actual, ref expected, pos } => {
-                write!(f, "expected '{}' not '{}' at {}", expected, actual, pos)
+            StreamError::InvalidString(ref strings, pos) => {
+                write!(f, "expected '{}' not '{}' at {}",
+                       strings[1..].join("', '"), strings[0], pos)
             }
             StreamError::InvalidReference => {
                 write!(f, "invalid reference")
@@ -127,13 +140,13 @@ impl error::Error for StreamError {
 #[derive(Clone, Copy, PartialEq, Debug)]
 #[allow(missing_docs)]
 pub struct ErrorPos {
-    pub row: usize,
-    pub col: usize,
+    pub row: u32,
+    pub col: u32,
 }
 
 impl ErrorPos {
     /// Constructs a new error position.
-    pub fn new(row: usize, col: usize) -> ErrorPos {
+    pub fn new(row: u32, col: u32) -> ErrorPos {
         ErrorPos { row, col }
     }
 }
@@ -142,4 +155,15 @@ impl fmt::Display for ErrorPos {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}:{}", self.row, self.col)
     }
+}
+
+#[test]
+fn err_size_1() {
+    assert!(::std::mem::size_of::<Error>() <= 64);
+}
+
+#[test]
+fn err_size_2() {
+    println!("{}", ::std::mem::size_of::<StreamError>());
+    assert!(::std::mem::size_of::<StreamError>() <= 64);
 }

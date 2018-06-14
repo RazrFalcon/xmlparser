@@ -119,3 +119,9 @@ test!(dtd_err_02, "<!DOCTYPE s [<!ENTITY % name S YSTEM",
     Token::DtdStart("s", None),
     Token::Error("invalid token 'Doctype Entity Declaration' at 1:14 cause invalid ExternalID".to_string())
 );
+
+test!(dtd_err_03, "<!DOCTYPE s [<!ENTITY % name B",
+    Token::DtdStart("s", None),
+    Token::Error("invalid token 'Doctype Entity Declaration' at 1:14 cause \
+                  expected '\"', ''', 'S', 'P' not 'B' at 1:30".to_string())
+);

@@ -77,7 +77,7 @@ test!(declaration_err_03, "<?xml version='2.0'?>",
 );
 
 test!(declaration_err_04, "<?xml version='1.0' standalone='true'?>",
-    Token::Error("invalid token 'Declaration' at 1:1 cause expected 'yn' not 't' at 1:33".to_string())
+    Token::Error("invalid token 'Declaration' at 1:1 cause expected 'yes', 'no' not 'true' at 1:33".to_string())
 );
 
 test!(declaration_err_05, "<?xml version='1.0' yes='true'?>",

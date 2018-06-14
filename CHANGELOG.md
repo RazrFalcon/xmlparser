@@ -14,7 +14,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `Stream::consume_reference` will return only `InvalidReference` error from now.
 - `Error::InvalidTokenWithCause` merged into `Error::InvalidToken`.
 - `Stream::gen_error_pos_from` does not require `mut self` from now.
-- `StreamError::InvalidChar` is a struct now.
+- `StreamError::InvalidChar` requires `Vec<u8>` and not `String` from now.
+- `ErrorPos` uses `u32` and not `usize` from now.
 
 ### Removed
 - `failure` dependency.
