@@ -112,7 +112,7 @@ test!(dtd_entity_06,
 );
 
 test!(dtd_err_01, "<!DOCTYPEEG[<!ENTITY%ETT\u{000a}SSSSSSSS<D_IDYT;->\u{000a}<",
-    Token::Error("invalid token 'Doctype Declaration' at 1:1 cause expected 'Space' not 'E' at 1:10".to_string())
+    Token::Error("invalid token 'Doctype Declaration' at 1:1 cause expected space not 'E' at 1:10".to_string())
 );
 
 test!(dtd_err_02, "<!DOCTYPE s [<!ENTITY % name S YSTEM",

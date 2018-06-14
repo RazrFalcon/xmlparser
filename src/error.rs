@@ -62,10 +62,17 @@ pub enum StreamError {
     InvalidName,
 
     /// An invalid/unexpected character.
+    ///
+    /// Values: actual, expected, pos.
     InvalidChar(char, String, ErrorPos),
 
     /// An unexpected character instead of `"` or `'`.
     InvalidQuote(char, ErrorPos),
+
+    /// An unexpected character instead of an XML space.
+    ///
+    /// Includes: `' ' \n \r \t &#x20; &#x9; &#xD; &#xA;`.
+    InvalidSpace(char, ErrorPos),
 
     /// An invalid reference.
     InvalidReference,
@@ -88,6 +95,9 @@ impl fmt::Display for StreamError {
             }
             StreamError::InvalidQuote(c, pos) => {
                 write!(f, "expected quote mark not '{}' at {}", c, pos)
+            }
+            StreamError::InvalidSpace(c, pos) => {
+                write!(f, "expected space not '{}' at {}", c, pos)
             }
             StreamError::InvalidReference => {
                 write!(f, "invalid reference")

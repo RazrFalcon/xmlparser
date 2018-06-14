@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - `StreamError::InvalidChar`.
+- `StreamError::InvalidSpace`.
 
 ### Changed
 - `Stream::consume_reference` will return only `InvalidReference` error from now.

@@ -290,7 +290,7 @@ impl<'a> Stream<'a> {
         if !self.at_end() && !self.starts_with_space() {
             let c = self.curr_byte_unchecked() as char;
             let pos = self.gen_error_pos();
-            return Err(StreamError::InvalidChar(c, "Space".into(), pos));
+            return Err(StreamError::InvalidSpace(c, pos));
         }
 
         self.skip_spaces();
