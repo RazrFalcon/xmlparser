@@ -63,7 +63,6 @@ test!(element_err_03, "</a",
     Token::Error("unexpected token 'Element Close' at 1:1".to_string())
 );
 
-// TODO: 'unexpected' error should not appear
 test!(element_err_04, "<a x='test' /",
     Token::ElementStart("", "a"),
     Token::Attribute("", "x", "test"),

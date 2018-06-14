@@ -302,6 +302,7 @@ impl<'a> Stream<'a> {
     /// # Errors
     ///
     /// - `InvalidChar`
+    /// - `UnexpectedEndOfStream`
     ///
     /// # Examples
     ///
@@ -338,6 +339,7 @@ impl<'a> Stream<'a> {
     /// # Errors
     ///
     /// - `InvalidChar`
+    /// - `UnexpectedEndOfStream`
     pub fn consume_either(&mut self, list: &[u8]) -> Result<u8> {
         assert!(!list.is_empty());
 
@@ -486,6 +488,7 @@ impl<'a> Stream<'a> {
     /// # Errors
     ///
     /// - `InvalidChar`
+    /// - `UnexpectedEndOfStream`
     pub fn consume_quote(&mut self) -> Result<u8> {
         // TODO: custom error
         let c = self.curr_byte()?;
@@ -568,6 +571,7 @@ impl<'a> Stream<'a> {
     /// # Errors
     ///
     /// - `InvalidReference`
+    /// - `UnexpectedEndOfStream`
     pub fn consume_reference(&mut self) -> Result<Reference<'a>> {
         self._consume_reference().map_err(|_| StreamError::InvalidReference)
     }

@@ -31,26 +31,28 @@ token positions.
 
 ### Benefits
 
-- Tokens contain `StrSpan` objects, that contains a position of the data in the original document.
+- All tokens contain `StrSpan` objects which contain a position of the data in the original document.
 - Supports basic text escaping with `xml:space` (should be invoked manually).
-  A properer text escaping is very hard without a DOM construction.
+  A properer text escaping is very hard without the DOM construction.
 - Good error processing. All error types contain position (line:column) where it occurred.
 - No heap allocations.
+- Tiny. ~1500 LOC and ~35KiB in the release build according to the `cargo-bloat`.
 
 ### Limitations
 
 - Currently, only ENTITY objects are parsed from the DOCTYPE. Other ignored.
 - No tree structure validation. So an XML like `<root><child></root></child>`
   will be parsed without errors. You should check for this manually.
+  On the other hand `<a/><a/>` will lead to an error.
 - Duplicated attributes is not an error. So an XML like `<item a="v1" a="v2"/>`
   will be parsed without errors. You should check for this manually.
 - UTF-8 only.
 
 ### Safety
 
-- The library should not panic. Any panic considered as a critical bug
+- The library must not panic. Any panic considered as a critical bug
   and should be reported.
-- The library forbids unsafe code.
+- The library forbids the unsafe code.
 
 ### Usage
 
