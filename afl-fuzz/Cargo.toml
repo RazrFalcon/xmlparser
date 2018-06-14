@@ -1,0 +1,8 @@
+[package]
+name = "afl-fuzz"
+version = "0.1.0"
+authors = ["RazrFalcon <razrfalcon@gmail.com>"]
+
+[dependencies]
+afl = "0.4"
+xmlparser = { path = ".." }
