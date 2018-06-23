@@ -4,6 +4,7 @@ use std::io::Write;
 use {
     Stream,
     StrSpan,
+    Reference,
 };
 
 
@@ -111,7 +112,7 @@ impl<'a> Iterator for TextUnescape<'a> {
 
         // Check for XML character entity references.
         if c == b'&' {
-            if let Some(ch) = self.stream.try_consume_char_reference() {
+            if let Some(Reference::CharRef(ch)) = self.stream.try_consume_reference() {
                 self.buf = [0xFF; 4];
 
                 write!(&mut self.buf[..], "{}", ch).unwrap();

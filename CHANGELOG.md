@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Changed
+- `Reference::EntityRef` contains `&str` and not `StrSpan` now.
+- Rename `Stream::try_consume_char_reference` into `try_consume_reference`.
+  And it will return `Reference` and not `char` now.
 
 ## [0.5.0] - 2018-06-14
 ### Added

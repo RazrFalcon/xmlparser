@@ -19,7 +19,7 @@ pub enum Reference<'a> {
     /// An entity reference.
     ///
     /// <https://www.w3.org/TR/xml/#NT-EntityRef>
-    EntityRef(StrSpan<'a>),
+    EntityRef(&'a str),
     /// A character reference.
     ///
     /// <https://www.w3.org/TR/xml/#NT-CharRef>
@@ -268,7 +268,7 @@ impl<'a> Stream<'a> {
         } else if c == b'&' {
             // Check for (#x20 | #x9 | #xD | #xA).
             let mut s = *self;
-            if let Some(v) = s.try_consume_char_reference() {
+            if let Some(Reference::CharRef(v)) = s.try_consume_reference() {
                 if (v as u32) < 255 && (v as u8).is_xml_space() {
                     is_space = true;
                 }
@@ -557,14 +557,15 @@ impl<'a> Stream<'a> {
     /// Consumes an XML character reference if there is one.
     ///
     /// On error will reset the position to the original.
-    pub fn try_consume_char_reference(&mut self) -> Option<char> {
+    pub fn try_consume_reference(&mut self) -> Option<Reference<'a>> {
         let start = self.pos();
 
-        if let Ok(Reference::CharRef(ch)) = self.consume_reference() {
-            Some(ch)
-        } else {
-            self.pos = start;
-            None
+        match self.consume_reference() {
+            Ok(r) => Some(r),
+            Err(_) => {
+                self.pos = start;
+                None
+            }
         }
     }
 
@@ -611,7 +612,7 @@ impl<'a> Stream<'a> {
                 "apos" => Reference::CharRef('\''),
                 "lt"   => Reference::CharRef('<'),
                 "gt"   => Reference::CharRef('>'),
-                _ => Reference::EntityRef(name),
+                _ => Reference::EntityRef(name.to_str()),
             }
         };
 
