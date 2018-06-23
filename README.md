@@ -32,8 +32,6 @@ token positions.
 ### Benefits
 
 - All tokens contain `StrSpan` objects which contain a position of the data in the original document.
-- Supports basic text escaping with `xml:space` (should be invoked manually).
-  A properer text escaping is very hard without the DOM construction.
 - Good error processing. All error types contain position (line:column) where it occurred.
 - No heap allocations.
 - No dependencies.

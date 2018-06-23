@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Rename `Stream::try_consume_char_reference` into `try_consume_reference`.
   And it will return `Reference` and not `char` now.
 
+### Removed
+- `TextUnescape` and `XmlSpace` because useless.
+
 ## [0.5.0] - 2018-06-14
 ### Added
 - `StreamError::InvalidChar`.
