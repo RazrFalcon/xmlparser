@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `Reference::EntityRef` contains `&str` and not `StrSpan` now.
 - Rename `Stream::try_consume_char_reference` into `try_consume_reference`.
   And it will return `Reference` and not `char` now.
+- Rename `Tokenizer::set_fragment_mode` into `enable_fragment_mode`.
 
 ### Removed
 - `TextUnescape` and `XmlSpace` because useless.

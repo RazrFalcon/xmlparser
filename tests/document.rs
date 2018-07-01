@@ -39,7 +39,7 @@ test!(document_err_04, "<!>",
 fn parse_fragment_1() {
     let s = "<p/><p/>";
     let mut p = xml::Tokenizer::from(s);
-    p.set_fragment_mode();
+    p.enable_fragment_mode();
 
     match p.next().unwrap().unwrap() {
         xml::Token::ElementStart(_, local) => assert_eq!(local.to_str(), "p"),

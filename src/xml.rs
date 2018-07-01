@@ -119,7 +119,7 @@ impl<'a> Tokenizer<'a> {
     /// But if we have to parse an XML fragment, it will lead to an error.
     /// This method switch the parser to the root element content parsing mode.
     /// So it will treat any data as a content of the root element.
-    pub fn set_fragment_mode(&mut self) {
+    pub fn enable_fragment_mode(&mut self) {
         self.state = State::Elements;
         self.is_fragment_parsing = true;
     }
