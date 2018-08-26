@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Rename `Tokenizer::set_fragment_mode` into `enable_fragment_mode`.
 - Rename `ErrorPos` into `TextPos`.
 
+### Fixed
+- `TextPos` calculation via `Stream::gen_error_pos`.
+
 ### Removed
 - `TextUnescape` and `XmlSpace` because useless.
 

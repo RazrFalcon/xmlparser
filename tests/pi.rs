@@ -89,7 +89,7 @@ test!(declaration_err_06, "<?xml version='1.0' encoding='UTF-8' standalone='yes'
 );
 
 test!(declaration_err_07, "\u{000a}<?xml\u{001d}\u{000a}\u{0000}&jg'];",
-    Token::Error("invalid token 'Processing Instruction' at 2:2 cause expected '?>' not '\u{1d}\n' at 2:6".to_string())
+    Token::Error("invalid token 'Processing Instruction' at 2:1 cause expected '?>' not '\u{1d}\n' at 2:6".to_string())
 );
 
 test!(declaration_err_08, "<?xml \t\n ?m?>",

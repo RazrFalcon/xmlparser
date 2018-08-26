@@ -671,8 +671,8 @@ impl<'a> Stream<'a> {
         let end = self.pos + self.span.start();
         let mut col = 1;
         for n in 0..end {
-            if n > 0 && bytes[n - 1] == b'\n' {
-                col = 2;
+            if bytes[n] == b'\n' {
+                col = 1;
             } else {
                 col += 1;
             }
