@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Rename `Stream::try_consume_char_reference` into `try_consume_reference`.
   And it will return `Reference` and not `char` now.
 - Rename `Tokenizer::set_fragment_mode` into `enable_fragment_mode`.
+- Rename `ErrorPos` into `TextPos`.
 
 ### Removed
 - `TextUnescape` and `XmlSpace` because useless.
@@ -71,7 +72,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `log` 0.3 -> 0.4
 
 [Unreleased]: https://github.com/RazrFalcon/xmlparser/compare/v0.5.0...HEAD
-[0.4.1]: https://github.com/RazrFalcon/xmlparser/compare/v0.4.1...v0.5.0
+[0.5.0]: https://github.com/RazrFalcon/xmlparser/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/RazrFalcon/xmlparser/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/RazrFalcon/xmlparser/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/RazrFalcon/xmlparser/compare/v0.2.0...v0.3.0

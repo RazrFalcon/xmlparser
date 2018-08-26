@@ -10,13 +10,13 @@ use {
 #[derive(Debug)]
 pub enum Error {
     /// An invalid token with an optional cause.
-    InvalidToken(TokenType, ErrorPos, Option<StreamError>),
+    InvalidToken(TokenType, TextPos, Option<StreamError>),
 
     /// An unexpected token.
-    UnexpectedToken(TokenType, ErrorPos),
+    UnexpectedToken(TokenType, TextPos),
 
     /// An unknown token.
-    UnknownToken(ErrorPos),
+    UnknownToken(TextPos),
 }
 
 impl fmt::Display for Error {
@@ -66,22 +66,22 @@ pub enum StreamError {
     /// The first byte is an actual one, others - expected.
     ///
     /// We are using a single value to reduce the struct size.
-    InvalidChar(Vec<u8>, ErrorPos),
+    InvalidChar(Vec<u8>, TextPos),
 
     /// An unexpected character instead of `"` or `'`.
-    InvalidQuote(char, ErrorPos),
+    InvalidQuote(char, TextPos),
 
     /// An unexpected character instead of an XML space.
     ///
     /// Includes: `' ' \n \r \t &#x20; &#x9; &#xD; &#xA;`.
-    InvalidSpace(char, ErrorPos),
+    InvalidSpace(char, TextPos),
 
     /// An unexpected character instead of an XML space.
     ///
     /// The first string is an actual one, others - expected.
     ///
     /// We are using a single value to reduce the struct size.
-    InvalidString(Vec<String>, ErrorPos),
+    InvalidString(Vec<String>, TextPos),
 
     /// An invalid reference.
     InvalidReference,
@@ -134,24 +134,26 @@ impl error::Error for StreamError {
 }
 
 
-/// Position of the error.
+/// Position in text.
 ///
-/// Position indicates row/line and column. Starting positions is 1:1.
+/// Position indicates a row/line and a column in the original text. Starting from 1:1.
 #[derive(Clone, Copy, PartialEq, Debug)]
 #[allow(missing_docs)]
-pub struct ErrorPos {
+pub struct TextPos {
     pub row: u32,
     pub col: u32,
 }
 
-impl ErrorPos {
-    /// Constructs a new error position.
-    pub fn new(row: u32, col: u32) -> ErrorPos {
-        ErrorPos { row, col }
+impl TextPos {
+    /// Constructs a new `TextPos`.
+    ///
+    /// Should not be invoked manually, but rather via `Stream::gen_error_pos`.
+    pub fn new(row: u32, col: u32) -> TextPos {
+        TextPos { row, col }
     }
 }
 
-impl fmt::Display for ErrorPos {
+impl fmt::Display for TextPos {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}:{}", self.row, self.col)
     }

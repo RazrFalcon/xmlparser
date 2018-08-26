@@ -3,7 +3,7 @@ use std::str;
 use std::cmp;
 
 use {
-    ErrorPos,
+    TextPos,
     StreamError,
     StrSpan,
     XmlByteExt,
@@ -635,17 +635,17 @@ impl<'a> Stream<'a> {
     ///
     /// This operation is very expensive. Use only for errors.
     #[inline(never)]
-    pub fn gen_error_pos(&self) -> ErrorPos {
+    pub fn gen_error_pos(&self) -> TextPos {
         let row = self.calc_current_row();
         let col = self.calc_current_col();
-        ErrorPos::new(row, col)
+        TextPos::new(row, col)
     }
 
     /// Calculates an absolute position at `pos`.
     ///
     /// This operation is very expensive. Use only for errors.
     #[inline(never)]
-    pub fn gen_error_pos_from(&self, pos: usize) -> ErrorPos {
+    pub fn gen_error_pos_from(&self, pos: usize) -> TextPos {
         let mut s = *self;
         let old_pos = s.pos;
         s.pos = pos;
