@@ -53,7 +53,7 @@ token positions.
 
 #![cfg_attr(feature = "cargo-clippy", allow(unreadable_literal))]
 
-#![doc(html_root_url = "https://docs.rs/xmlparser/0.5.0")]
+#![doc(html_root_url = "https://docs.rs/xmlparser/0.6.0")]
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]

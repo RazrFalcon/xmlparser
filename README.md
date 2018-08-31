@@ -3,6 +3,7 @@
 [![Crates.io](https://img.shields.io/crates/v/xmlparser.svg)](https://crates.io/crates/xmlparser)
 [![Documentation](https://docs.rs/xmlparser/badge.svg)](https://docs.rs/xmlparser)
 
+
 *xmlparser* is a low-level, pull-based, zero-allocation
 [XML 1.0](https://www.w3.org/TR/xml/) parser.
 
@@ -61,7 +62,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-xmlparser = "0.5"
+xmlparser = "0.6"
 ```
 
 ### License
