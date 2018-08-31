@@ -646,6 +646,8 @@ impl<'a> Stream<'a> {
     /// This operation is very expensive. Use only for errors.
     #[inline(never)]
     pub fn gen_error_pos_from(&self, pos: usize) -> TextPos {
+        // TODO: rename
+
         let mut s = *self;
         let old_pos = s.pos;
         s.pos = pos;
@@ -670,8 +672,8 @@ impl<'a> Stream<'a> {
         let bytes = text.as_bytes();
         let end = self.pos + self.span.start();
         let mut col = 1;
-        for n in 0..end {
-            if bytes[n] == b'\n' {
+        for c in bytes.iter().take(end) {
+            if *c == b'\n' {
                 col = 1;
             } else {
                 col += 1;
