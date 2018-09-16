@@ -105,6 +105,16 @@ impl<'a> Stream<'a> {
         Ok(self.curr_byte_unchecked())
     }
 
+    /// Returns a byte from a current stream position.
+    ///
+    /// # Panics
+    ///
+    /// - if the current position is after the end of the data
+    #[inline]
+    pub fn curr_byte_unchecked(&self) -> u8 {
+        self.bytes[self.pos]
+    }
+
     /// Checks that current byte is equal to provided.
     ///
     /// Returns `false` if no bytes left.
@@ -115,11 +125,6 @@ impl<'a> Stream<'a> {
         } else {
             false
         }
-    }
-
-    #[inline]
-    fn curr_byte_unchecked(&self) -> u8 {
-        self.bytes[self.pos]
     }
 
     /// Returns a byte from a current stream position if there is one.
