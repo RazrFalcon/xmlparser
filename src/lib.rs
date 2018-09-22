@@ -26,6 +26,9 @@ like SVG and to construct a DOM.
 At the time of writing the only option was `quick-xml` (v0.10), which does not support DTD and
 token positions.
 
+If you are looking for a more high-level solution - checkout
+[roxmltree](https://github.com/RazrFalcon/roxmltree).
+
 ## Benefits
 
 - All tokens contain `StrSpan` objects which contain a position of the data in the original document.
