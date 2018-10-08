@@ -131,6 +131,14 @@ impl<'a> Tokenizer<'a> {
 
         let start = s.pos();
 
+        if start == 0 {
+            // Skip UTF-8 BOM.
+            if s.starts_with(&[0xEF, 0xBB, 0xBF]) {
+                s.advance(3);
+                return Self::parse_next_impl(s, state);
+            }
+        }
+
         macro_rules! parse_token_type {
             () => ({
                 match Self::parse_token_type(s, state) {
@@ -276,11 +284,6 @@ impl<'a> Tokenizer<'a> {
         let c1 = s.curr_byte()?;
 
         let t = match c1 {
-            0xEF => {
-                // Skip BOM.
-                s.advance(3);
-                Self::parse_token_type(s, state)?
-            }
             b'<' => {
                 s.advance(1);
 

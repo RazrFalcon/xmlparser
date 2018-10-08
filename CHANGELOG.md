@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - `Stream::curr_byte_unchecked`.
 
+### Fixed
+- UTF-8 BOM processing.
+
 ## [0.6.0] - 2018-08-31
 ### Changed
 - `Reference::EntityRef` contains `&str` and not `StrSpan` now.

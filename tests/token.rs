@@ -44,7 +44,9 @@ macro_rules! test {
         fn $name() {
             let mut p = xml::Tokenizer::from($text);
             $(
-                assert_eq!(to_test_token(p.next().unwrap()), $token);
+                let t = p.next().unwrap();
+//                println!("{:?}", t);
+                assert_eq!(to_test_token(t), $token);
             )*
             assert!(p.next().is_none());
         }

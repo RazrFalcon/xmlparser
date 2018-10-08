@@ -17,6 +17,14 @@ test!(text_02, "<p> text </p>",
     Token::ElementEnd(ElementEnd::Close("", "p"))
 );
 
+// 欄 is EF A4 9D. And EF can be mistreated for UTF-8 BOM.
+test!(text_03, "<p>欄</p>",
+    Token::ElementStart("", "p"),
+    Token::ElementEnd(ElementEnd::Open),
+    Token::Text("欄"),
+    Token::ElementEnd(ElementEnd::Close("", "p"))
+);
+
 test!(whitespaces_01, "<p> </p>",
     Token::ElementStart("", "p"),
     Token::ElementEnd(ElementEnd::Open),
