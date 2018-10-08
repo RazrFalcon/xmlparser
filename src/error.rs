@@ -166,6 +166,5 @@ fn err_size_1() {
 
 #[test]
 fn err_size_2() {
-    println!("{}", ::std::mem::size_of::<StreamError>());
     assert!(::std::mem::size_of::<StreamError>() <= 64);
 }
