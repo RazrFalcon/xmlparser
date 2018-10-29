@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Changed
+- `<` inside an attribute value is an error now.
 - `Token::Declaration` represents *standalone* as `bool` now.
 - XML declaration must be defined only once now.
 - XML declaration must start at 0 position.

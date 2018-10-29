@@ -278,7 +278,7 @@ impl<'a> Tokenizer<'a> {
                 }
             }
             State::Attributes => {
-                Self::consume_attribute(s).map_err(|e|
+                Self::parse_attribute(s).map_err(|e|
                     Error::InvalidToken(TokenType::Attribute,
                                         s.gen_error_pos_from(start), Some(e)))
             }
@@ -716,7 +716,7 @@ impl<'a> Tokenizer<'a> {
     }
 
     // Name Eq AttValue
-    fn consume_attribute(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
+    fn parse_attribute(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
         s.skip_ascii_spaces();
 
         if let Some(c) = s.get_curr_byte() {
@@ -738,6 +738,10 @@ impl<'a> Tokenizer<'a> {
         s.consume_eq()?;
         let quote = s.consume_quote()?;
         let value = s.consume_bytes(|_, c| c != quote);
+
+        if value.to_str().contains('<') {
+            return Err(StreamError::InvalidAttributeValue);
+        }
 
         s.consume_byte(quote)?;
         s.skip_ascii_spaces();
