@@ -35,6 +35,11 @@ test!(document_err_04, "<!>",
     Token::Error("unknown token at 1:1".to_string())
 );
 
+test!(document_err_05, "<!DOCTYPE greeting1><!DOCTYPE greeting2>",
+    Token::EmptyDtd("greeting1", None),
+    Token::Error("unexpected token 'Doctype Declaration' at 1:21".to_string())
+);
+
 #[test]
 fn parse_fragment_1() {
     let s = "<p/><p/>";

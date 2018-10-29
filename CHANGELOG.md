@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Changed
+- XML declaration must be defined only once now.
+- XML declaration must start at 0 position.
+- DTD must be defined only once now.
 
 ## [0.6.1] - 2018-10-08
 ### Added

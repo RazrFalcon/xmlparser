@@ -99,3 +99,20 @@ test!(declaration_err_08, "<?xml \t\n ?m?>",
 test!(declaration_err_09, "<?xml \t\n m?>",
     Token::Error("invalid token 'Declaration' at 1:1 cause expected 'version' not 'm?>' at 2:2".to_string())
 );
+
+// XML declaration allowed only at the start of the document.
+test!(declaration_err_10, " <?xml version='1.0'?>",
+    Token::Error("unexpected token 'Declaration' at 1:2".to_string())
+);
+
+// XML declaration allowed only at the start of the document.
+test!(declaration_err_11, "<!-- comment --><?xml version='1.0'?>",
+    Token::Comment(" comment "),
+    Token::Error("unexpected token 'Declaration' at 1:17".to_string())
+);
+
+// Duplicate.
+test!(declaration_err_12, "<?xml version='1.0'?><?xml version='1.0'?>",
+    Token::Declaration("1.0", None, None),
+    Token::Error("unexpected token 'Declaration' at 1:22".to_string())
+);

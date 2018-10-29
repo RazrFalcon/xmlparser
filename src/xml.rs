@@ -6,16 +6,6 @@ use super::*;
 type Result<T> = ::std::result::Result<T, Error>;
 type StreamResult<T> = ::std::result::Result<T, StreamError>;
 
-#[derive(Clone, Copy, PartialEq)]
-enum State {
-    Document,
-    Dtd,
-    Elements,
-    Attributes,
-    AfterElements,
-    Finished,
-}
-
 
 /// List of token types.
 ///
@@ -67,12 +57,24 @@ impl fmt::Display for TokenType {
 }
 
 
+#[derive(Clone, Copy, PartialEq)]
+enum State {
+    Start,
+    Dtd,
+    AfterDtd,
+    Elements,
+    Attributes,
+    AfterElements,
+    End,
+}
+
+
 /// Tokenizer for the XML structure.
 pub struct Tokenizer<'a> {
     stream: Stream<'a>,
     state: State,
     depth: usize,
-    is_fragment_parsing: bool,
+    fragment_parsing: bool,
 }
 
 impl<'a> From<&'a str> for Tokenizer<'a> {
@@ -85,9 +87,9 @@ impl<'a> From<StrSpan<'a>> for Tokenizer<'a> {
     fn from(span: StrSpan<'a>) -> Self {
         Tokenizer {
             stream: Stream::from(span),
-            state: State::Document,
+            state: State::Start,
             depth: 0,
-            is_fragment_parsing: false,
+            fragment_parsing: false,
         }
     }
 }
@@ -121,7 +123,7 @@ impl<'a> Tokenizer<'a> {
     /// So it will treat any data as a content of the root element.
     pub fn enable_fragment_mode(&mut self) {
         self.state = State::Elements;
-        self.is_fragment_parsing = true;
+        self.fragment_parsing = true;
     }
 
     fn parse_next_impl(s: &mut Stream<'a>, state: State) -> Option<Result<Token<'a>>> {
@@ -163,11 +165,16 @@ impl<'a> Tokenizer<'a> {
         }
 
         let t = match state {
-            State::Document => {
+            State::Start => {
                 let token_type = parse_token_type!();
                 match token_type {
                     TokenType::XMLDecl => {
-                        Self::parse_declaration(s)
+                        // XML declaration allowed only at the start of the document.
+                        if start == 0 {
+                            Self::parse_declaration(s)
+                        } else {
+                            gen_err!(token_type);
+                        }
                     }
                     TokenType::Comment => {
                         Self::parse_comment(s)
@@ -213,6 +220,27 @@ impl<'a> Tokenizer<'a> {
                     }
                     TokenType::DoctypeEnd => {
                         Ok(Token::DtdEnd)
+                    }
+                    TokenType::Whitespace => {
+                        s.skip_spaces();
+                        return Self::parse_next_impl(s, state);
+                    }
+                    _ => {
+                        gen_err!(token_type);
+                    }
+                }
+            }
+            State::AfterDtd => {
+                let token_type = parse_token_type!();
+                match token_type {
+                    TokenType::Comment => {
+                        Self::parse_comment(s)
+                    }
+                    TokenType::PI => {
+                        Self::parse_pi(s)
+                    }
+                    TokenType::ElementStart => {
+                        Self::parse_element_start(s)
                     }
                     TokenType::Whitespace => {
                         s.skip_spaces();
@@ -272,7 +300,7 @@ impl<'a> Tokenizer<'a> {
                     }
                 }
             }
-            State::Finished => {
+            State::End => {
                 return None;
             }
         };
@@ -352,7 +380,7 @@ impl<'a> Tokenizer<'a> {
             }
             _ => {
                 match state {
-                    State::Document | State::AfterElements | State::Dtd => {
+                    State::Start | State::AfterDtd | State::AfterElements | State::Dtd => {
                         if s.starts_with_space() {
                             TokenType::Whitespace
                         } else {
@@ -734,8 +762,8 @@ impl<'a> Iterator for Tokenizer<'a> {
     type Item = Result<Token<'a>>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.stream.at_end() || self.state == State::Finished {
-            self.state = State::Finished;
+        if self.stream.at_end() || self.state == State::End {
+            self.state = State::End;
             return None;
         }
 
@@ -743,7 +771,7 @@ impl<'a> Iterator for Tokenizer<'a> {
 
         if let Some(ref t) = t {
             match *t {
-                Ok(Token::ElementStart(_, _)) => {
+                Ok(Token::ElementStart(..)) => {
                     self.state = State::Attributes;
                 }
                 Ok(Token::ElementEnd(ref end)) => {
@@ -751,7 +779,7 @@ impl<'a> Iterator for Tokenizer<'a> {
                         ElementEnd::Open => {
                             self.depth += 1;
                         }
-                        ElementEnd::Close(_, _) => {
+                        ElementEnd::Close(..) => {
                             if self.depth > 0 {
                                 self.depth -= 1;
                             }
@@ -759,21 +787,21 @@ impl<'a> Iterator for Tokenizer<'a> {
                         ElementEnd::Empty => {}
                     }
 
-                    if self.depth == 0 && !self.is_fragment_parsing {
+                    if self.depth == 0 && !self.fragment_parsing {
                         self.state = State::AfterElements;
                     } else {
                         self.state = State::Elements;
                     }
                 }
-                Ok(Token::DtdStart(_, _)) => {
+                Ok(Token::DtdStart(..)) => {
                     self.state = State::Dtd;
                 }
-                Ok(Token::DtdEnd) => {
-                    self.state = State::Document;
+                Ok(Token::EmptyDtd(..)) | Ok(Token::DtdEnd) => {
+                    self.state = State::AfterDtd;
                 }
                 Err(_) => {
                     self.stream.jump_to_end();
-                    self.state = State::Finished;
+                    self.state = State::End;
                 }
                 _ => {}
             }
