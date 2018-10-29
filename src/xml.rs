@@ -456,7 +456,7 @@ impl<'a> Tokenizer<'a> {
     }
 
     // S 'standalone' Eq (("'" ('yes' | 'no') "'") | ('"' ('yes' | 'no') '"'))
-    fn parse_standalone(s: &mut Stream<'a>) -> StreamResult<Option<StrSpan<'a>>> {
+    fn parse_standalone(s: &mut Stream<'a>) -> StreamResult<Option<bool>> {
         s.skip_ascii_spaces();
 
         if s.skip_string(b"standalone").is_err() {
@@ -467,20 +467,21 @@ impl<'a> Tokenizer<'a> {
         s.consume_quote()?;
 
         let start = s.pos();
-        let value = s.consume_name()?;
+        let value = s.consume_name()?.to_str();
 
-        match value.to_str() {
-            "yes" | "no" => {}
+        let flag = match value {
+            "yes" => true,
+            "no" => false,
             _ => {
-                let values = vec![value.to_str().into(), "yes".into(), "no".into()];
+                let values = vec![value.into(), "yes".into(), "no".into()];
                 let pos = s.gen_error_pos_from(start);
                 return Err(StreamError::InvalidString(values, pos));
             }
-        }
+        };
 
         s.consume_quote()?;
 
-        Ok(Some(value))
+        Ok(Some(flag))
     }
 
     // '<!--' ((Char - '-') | ('-' (Char - '-')))* '-->'

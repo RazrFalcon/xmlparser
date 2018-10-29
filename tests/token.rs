@@ -2,7 +2,7 @@ extern crate xmlparser as xml;
 
 #[derive(PartialEq, Debug)]
 pub enum Token<'a> {
-    Declaration(&'a str, Option<&'a str>, Option<&'a str>),
+    Declaration(&'a str, Option<&'a str>, Option<bool>),
     PI(&'a str, Option<&'a str>),
     Comment(&'a str),
     DtdStart(&'a str, Option<ExternalId<'a>>),
@@ -60,7 +60,7 @@ pub fn to_test_token(token: Result<xml::Token, xml::Error>) -> Token {
             Token::Declaration(
                 version.to_str(),
                 encoding.map(|v| v.to_str()),
-                standalone.map(|v| v.to_str()),
+                standalone,
             )
         }
         Ok(xml::Token::ProcessingInstruction(target, content)) => {

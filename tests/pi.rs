@@ -52,15 +52,15 @@ test!(declaration_06, "<?xml version='1.0' encoding='EUC-JP'?>",
 );
 
 test!(declaration_07, "<?xml version='1.0' encoding='UTF-8' standalone='yes'?>",
-    Token::Declaration("1.0", Some("UTF-8"), Some("yes"))
+    Token::Declaration("1.0", Some("UTF-8"), Some(true))
 );
 
 test!(declaration_08, "<?xml version='1.0' encoding='UTF-8' standalone='no'?>",
-    Token::Declaration("1.0", Some("UTF-8"), Some("no"))
+    Token::Declaration("1.0", Some("UTF-8"), Some(false))
 );
 
 test!(declaration_09, "<?xml version='1.0' standalone='no'?>",
-    Token::Declaration("1.0", None, Some("no"))
+    Token::Declaration("1.0", None, Some(false))
 );
 
 // Declaration with an invalid order

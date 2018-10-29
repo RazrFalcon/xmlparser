@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Changed
+- `Token::Declaration` represents *standalone* as `bool` now.
 - XML declaration must be defined only once now.
 - XML declaration must start at 0 position.
 - DTD must be defined only once now.

@@ -11,7 +11,7 @@ pub enum Token<'a> {
     /// Version, encoding and standalone.
     ///
     /// Example: `<?xml version="1.0"?>`
-    Declaration(StrSpan<'a>, Option<StrSpan<'a>>, Option<StrSpan<'a>>),
+    Declaration(StrSpan<'a>, Option<StrSpan<'a>>, Option<bool>),
     /// Processing instruction token.
     ///
     /// Example: `<?target content?>`
