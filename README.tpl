@@ -5,16 +5,9 @@
 
 {{readme}}
 
-### Usage
+### Dependency
 
-Dependency: [Rust](https://www.rust-lang.org/) >= 1.18
-
-Add this to your `Cargo.toml`:
-
-```toml
-[dependencies]
-{{crate}} = "0.6"
-```
+[Rust](https://www.rust-lang.org/) >= 1.18
 
 ### License
 

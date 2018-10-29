@@ -57,16 +57,9 @@ If you are looking for a more high-level solution - checkout
   and should be reported.
 - The library forbids the unsafe code.
 
-### Usage
+### Dependency
 
-Dependency: [Rust](https://www.rust-lang.org/) >= 1.18
-
-Add this to your `Cargo.toml`:
-
-```toml
-[dependencies]
-xmlparser = "0.6"
-```
+[Rust](https://www.rust-lang.org/) >= 1.18
 
 ### License
 
