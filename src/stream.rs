@@ -661,26 +661,26 @@ impl<'a> Stream<'a> {
         e
     }
 
-    // TODO: optimize
     fn calc_curr_row(&self) -> u32 {
         let text = self.span.full_str();
-        let mut row = 1;
         let end = self.pos + self.span.start();
-        row += text.bytes()
-                   .take(end)
-                   .filter(|c| *c == b'\n')
-                   .count();
-        row as u32
+        let mut row = 1;
+        for c in &text.as_bytes()[..end] {
+            if *c == b'\n' {
+                row += 1;
+            }
+        }
+
+        row
     }
 
-    // TODO: optimize
     fn calc_curr_col(&self) -> u32 {
         let text = self.span.full_str();
         let end = self.pos + self.span.start();
         let mut col = 1;
-        for c in text[..end].chars() {
+        for c in text[..end].chars().rev() {
             if c == '\n' {
-                col = 1;
+                break;
             } else {
                 col += 1;
             }

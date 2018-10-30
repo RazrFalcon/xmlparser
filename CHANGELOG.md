@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Changed
+- `Stream::gen_error_pos` speed up.
+
 ### Fixed
 - `TextPos` is Unicode aware now.
 
