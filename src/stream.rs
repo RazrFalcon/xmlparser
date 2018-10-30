@@ -641,8 +641,8 @@ impl<'a> Stream<'a> {
     /// This operation is very expensive. Use only for errors.
     #[inline(never)]
     pub fn gen_error_pos(&self) -> TextPos {
-        let row = self.calc_current_row();
-        let col = self.calc_current_col();
+        let row = self.calc_curr_row();
+        let col = self.calc_curr_col();
         TextPos::new(row, col)
     }
 
@@ -661,7 +661,8 @@ impl<'a> Stream<'a> {
         e
     }
 
-    fn calc_current_row(&self) -> u32 {
+    // TODO: optimize
+    fn calc_curr_row(&self) -> u32 {
         let text = self.span.full_str();
         let mut row = 1;
         let end = self.pos + self.span.start();
@@ -672,13 +673,13 @@ impl<'a> Stream<'a> {
         row as u32
     }
 
-    fn calc_current_col(&self) -> u32 {
+    // TODO: optimize
+    fn calc_curr_col(&self) -> u32 {
         let text = self.span.full_str();
-        let bytes = text.as_bytes();
         let end = self.pos + self.span.start();
         let mut col = 1;
-        for c in bytes.iter().take(end) {
-            if *c == b'\n' {
+        for c in text[..end].chars() {
+            if c == '\n' {
                 col = 1;
             } else {
                 col += 1;
@@ -686,5 +687,31 @@ impl<'a> Stream<'a> {
         }
 
         col
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn text_pos_1() {
+        let mut s = Stream::from("text");
+        s.advance(2);
+        assert_eq!(s.gen_error_pos(), TextPos::new(1, 3));
+    }
+
+    #[test]
+    fn text_pos_2() {
+        let mut s = Stream::from("text\ntext");
+        s.advance(6);
+        assert_eq!(s.gen_error_pos(), TextPos::new(2, 2));
+    }
+
+    #[test]
+    fn text_pos_3() {
+        let mut s = Stream::from("текст\nтекст");
+        s.advance(15);
+        assert_eq!(s.gen_error_pos(), TextPos::new(2, 3));
     }
 }

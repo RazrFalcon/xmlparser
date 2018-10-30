@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- `TextPos` is Unicode aware now.
 
 ## [0.7.0] - 2018-10-29
 ### Changed
