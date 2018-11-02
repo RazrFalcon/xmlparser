@@ -456,13 +456,8 @@ impl<'a> Stream<'a> {
         }
 
         let (prefix, local) = if let Some(splitter) = splitter {
+            let prefix = self.span.slice_region(start, splitter);
             let local = self.slice_back(splitter + 1);
-
-            let pos = self.pos();
-            self.pos = splitter;
-            let prefix = self.slice_back(start);
-            self.pos = pos;
-
             (prefix, local)
         } else {
             let local = self.slice_back(start);
