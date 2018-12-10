@@ -6,7 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Changed
-- `Stream::gen_error_pos` speed up.
+- Rename `Stream::gen_error_pos` into `Stream::gen_text_pos`.
+- Rename `Stream::gen_error_pos_from` into `Stream::gen_text_pos_from`.
+- `Stream::gen_text_pos` speed up.
 
 ### Fixed
 - `TextPos` is Unicode aware now.

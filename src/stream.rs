@@ -295,7 +295,7 @@ impl<'a> Stream<'a> {
     pub fn consume_spaces(&mut self) -> Result<()> {
         if !self.at_end() && !self.starts_with_space() {
             let c = self.curr_byte_unchecked() as char;
-            let pos = self.gen_error_pos();
+            let pos = self.gen_text_pos();
             return Err(StreamError::InvalidSpace(c, pos));
         }
 
@@ -326,7 +326,7 @@ impl<'a> Stream<'a> {
             return Err(
                 StreamError::InvalidChar(
                     vec![self.curr_byte_unchecked(), c],
-                    self.gen_error_pos(),
+                    self.gen_text_pos(),
                 )
             );
         }
@@ -350,7 +350,7 @@ impl<'a> Stream<'a> {
         if !list.contains(&c) {
             let mut v = list.to_vec();
             v.insert(0, c);
-            return Err(StreamError::InvalidChar(v, self.gen_error_pos()));
+            return Err(StreamError::InvalidChar(v, self.gen_text_pos()));
         }
 
         self.advance(1);
@@ -373,7 +373,7 @@ impl<'a> Stream<'a> {
             // Assume that all input `text` are valid UTF-8 strings, so unwrap is safe.
             let expected = str::from_utf8(text).unwrap().to_owned();
 
-            let pos = self.gen_error_pos();
+            let pos = self.gen_text_pos();
 
             return Err(StreamError::InvalidString(vec![actual, expected], pos));
         }
@@ -388,7 +388,7 @@ impl<'a> Stream<'a> {
     ///
     /// # Errors
     ///
-    /// - `InvalidNameToken` - if name is empty or starts with an invalid char
+    /// - `InvalidName` - if name is empty or starts with an invalid char
     /// - `UnexpectedEndOfStream`
     pub fn consume_name(&mut self) -> Result<StrSpan<'a>> {
         let start = self.pos();
@@ -408,7 +408,7 @@ impl<'a> Stream<'a> {
     ///
     /// # Errors
     ///
-    /// - `InvalidNameToken` - if name is empty or starts with an invalid char
+    /// - `InvalidName` - if name is empty or starts with an invalid char
     /// - `UnexpectedEndOfStream`
     pub fn skip_name(&mut self) -> Result<()> {
         let mut iter = self.span.to_str()[self.pos..self.end].chars();
@@ -437,7 +437,7 @@ impl<'a> Stream<'a> {
     ///
     /// # Errors
     ///
-    /// - `InvalidNameToken` - if name is empty or starts with an invalid char
+    /// - `InvalidName` - if name is empty or starts with an invalid char
     /// - `UnexpectedEndOfStream`
     pub fn consume_qname(&mut self) -> Result<(StrSpan<'a>, StrSpan<'a>)> {
         let start = self.pos();
@@ -500,7 +500,7 @@ impl<'a> Stream<'a> {
             self.advance(1);
             Ok(c)
         } else {
-            Err(StreamError::InvalidQuote(c as char, self.gen_error_pos()))
+            Err(StreamError::InvalidQuote(c as char, self.gen_text_pos()))
         }
     }
 
@@ -635,7 +635,7 @@ impl<'a> Stream<'a> {
     ///
     /// This operation is very expensive. Use only for errors.
     #[inline(never)]
-    pub fn gen_error_pos(&self) -> TextPos {
+    pub fn gen_text_pos(&self) -> TextPos {
         let row = self.calc_curr_row();
         let col = self.calc_curr_col();
         TextPos::new(row, col)
@@ -645,13 +645,11 @@ impl<'a> Stream<'a> {
     ///
     /// This operation is very expensive. Use only for errors.
     #[inline(never)]
-    pub fn gen_error_pos_from(&self, pos: usize) -> TextPos {
-        // TODO: rename
-
+    pub fn gen_text_pos_from(&self, pos: usize) -> TextPos {
         let mut s = *self;
         let old_pos = s.pos;
         s.pos = pos;
-        let e = s.gen_error_pos();
+        let e = s.gen_text_pos();
         s.pos = old_pos;
         e
     }
@@ -693,20 +691,20 @@ mod tests {
     fn text_pos_1() {
         let mut s = Stream::from("text");
         s.advance(2);
-        assert_eq!(s.gen_error_pos(), TextPos::new(1, 3));
+        assert_eq!(s.gen_text_pos(), TextPos::new(1, 3));
     }
 
     #[test]
     fn text_pos_2() {
         let mut s = Stream::from("text\ntext");
         s.advance(6);
-        assert_eq!(s.gen_error_pos(), TextPos::new(2, 2));
+        assert_eq!(s.gen_text_pos(), TextPos::new(2, 2));
     }
 
     #[test]
     fn text_pos_3() {
         let mut s = Stream::from("текст\nтекст");
         s.advance(15);
-        assert_eq!(s.gen_error_pos(), TextPos::new(2, 3));
+        assert_eq!(s.gen_text_pos(), TextPos::new(2, 3));
     }
 }

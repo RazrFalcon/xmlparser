@@ -284,7 +284,7 @@ macro_rules! map_err_at {
         debug_assert!(start >= 0);
         if start < 0 { start = 0; }
         $fun.map_err(|e|
-            Error::InvalidToken($token, $stream.gen_error_pos_from(start as usize), Some(e))
+            Error::InvalidToken($token, $stream.gen_text_pos_from(start as usize), Some(e))
         )
     }}
 }
@@ -321,7 +321,7 @@ impl<'a> Tokenizer<'a> {
                 match Self::parse_token_type(s, state) {
                     Ok(v) => v,
                     Err(_) => {
-                        let pos = s.gen_error_pos_from(start);
+                        let pos = s.gen_text_pos_from(start);
                         return Some(Err(Error::UnknownToken(pos)));
                     }
                 }
@@ -330,7 +330,7 @@ impl<'a> Tokenizer<'a> {
 
         macro_rules! gen_err {
             ($token_type:expr) => ({
-                let pos = s.gen_error_pos_from(start);
+                let pos = s.gen_text_pos_from(start);
                 if $token_type == TokenType::Unknown {
                     return Some(Err(Error::UnknownToken(pos)));
                 } else {
@@ -455,7 +455,7 @@ impl<'a> Tokenizer<'a> {
             State::Attributes => {
                 Self::parse_attribute(s).map_err(|e|
                     Error::InvalidToken(TokenType::Attribute,
-                                        s.gen_error_pos_from(start), Some(e)))
+                                        s.gen_text_pos_from(start), Some(e)))
             }
             State::AfterElements => {
                 let token_type = parse_token_type!();
@@ -649,7 +649,7 @@ impl<'a> Tokenizer<'a> {
             "no" => false,
             _ => {
                 let values = vec![value.into(), "yes".into(), "no".into()];
-                let pos = s.gen_error_pos_from(start);
+                let pos = s.gen_text_pos_from(start);
                 return Err(StreamError::InvalidString(values, pos));
             }
         };
@@ -676,12 +676,12 @@ impl<'a> Tokenizer<'a> {
         });
 
         if text.to_str().contains("--") {
-            let pos = s.gen_error_pos_from(start);
+            let pos = s.gen_text_pos_from(start);
             return Err(Error::InvalidToken(TokenType::Comment, pos, None));
         }
 
         if s.skip_string(b"-->").is_err() {
-            let pos = s.gen_error_pos_from(start);
+            let pos = s.gen_text_pos_from(start);
             return Err(Error::InvalidToken(TokenType::Comment, pos, None));
         }
 
@@ -836,7 +836,7 @@ impl<'a> Tokenizer<'a> {
             }
             _ => {
                 let chars = vec![c, b'"', b'\'', b'S', b'P'];
-                let pos = s.gen_error_pos();
+                let pos = s.gen_text_pos();
                 Err(StreamError::InvalidChar(chars, pos))
             }
         }
