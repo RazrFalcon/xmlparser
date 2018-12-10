@@ -644,13 +644,24 @@ impl<'a> Stream<'a> {
     /// Calculates an absolute position at `pos`.
     ///
     /// This operation is very expensive. Use only for errors.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let s = xmlparser::Stream::from("text");
+    ///
+    /// assert_eq!(s.gen_text_pos_from(2), xmlparser::TextPos::new(1, 3));
+    /// assert_eq!(s.gen_text_pos_from(9999), xmlparser::TextPos::new(1, 5));
+    /// ```
     #[inline(never)]
     pub fn gen_text_pos_from(&self, pos: usize) -> TextPos {
         let mut s = *self;
         let old_pos = s.pos;
-        s.pos = pos;
+
+        s.pos = cmp::min(pos, s.span.full_str().len());
         let e = s.gen_text_pos();
         s.pos = old_pos;
+
         e
     }
 
