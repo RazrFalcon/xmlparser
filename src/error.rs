@@ -19,6 +19,17 @@ pub enum Error {
     UnknownToken(TextPos),
 }
 
+impl Error {
+    /// Returns the error position.
+    pub fn pos(&self) -> TextPos {
+        match *self {
+            Error::InvalidToken(_, pos, _) => pos,
+            Error::UnexpectedToken(_, pos) => pos,
+            Error::UnknownToken(pos) => pos,
+        }
+    }
+}
+
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
