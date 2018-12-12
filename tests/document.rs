@@ -19,6 +19,10 @@ test!(document_05, str::from_utf8(b"\xEF\xBB\xBF<a/>").unwrap(),
     Token::ElementEnd(ElementEnd::Empty)
 );
 
+test!(document_06, str::from_utf8(b"\xEF\xBB\xBF<?xml version='1.0'?>").unwrap(),
+    Token::Declaration("1.0", None, None)
+);
+
 test!(document_err_01, "<![CDATA[text]]>",
     Token::Error("unexpected token 'CDATA' at 1:1".to_string())
 );

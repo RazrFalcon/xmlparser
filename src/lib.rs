@@ -312,7 +312,6 @@ impl<'a> Tokenizer<'a> {
             // Skip UTF-8 BOM.
             if s.starts_with(&[0xEF, 0xBB, 0xBF]) {
                 s.advance(3);
-                return Self::parse_next_impl(s, state);
             }
         }
 

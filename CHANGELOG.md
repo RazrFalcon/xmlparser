@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - `TextPos` is Unicode aware now.
+- XML declaration parsing when file has a BOM.
 
 ## [0.7.0] - 2018-10-29
 ### Changed
