@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.8.0] - 2018-12-13
 ### Added
 - `Error::pos()`.
 
@@ -102,7 +104,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - `log` 0.3 -> 0.4
 
-[Unreleased]: https://github.com/RazrFalcon/xmlparser/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/RazrFalcon/xmlparser/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/RazrFalcon/xmlparser/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/RazrFalcon/xmlparser/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/RazrFalcon/xmlparser/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/RazrFalcon/xmlparser/compare/v0.5.0...v0.6.0
