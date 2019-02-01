@@ -1,8 +1,7 @@
 use std::fmt;
+use std::ops::Range;
 
-use {
-    Stream,
-};
+use Stream;
 
 
 /// An immutable string slice.
@@ -45,6 +44,11 @@ impl<'a> StrSpan<'a> {
     /// Returns a end position of the span.
     pub fn end(&self) -> usize {
         self.end
+    }
+
+    /// Returns a end position of the span.
+    pub fn range(&self) -> Range<usize> {
+        self.start..self.end
     }
 
     /// Returns a length of the span.

@@ -76,75 +76,203 @@ pub use xmlchar::*;
 
 
 /// An XML token.
+#[allow(missing_docs)]
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum Token<'a> {
     /// Declaration token.
     ///
-    /// Version, encoding and standalone.
-    ///
-    /// Example: `<?xml version="1.0"?>`
-    Declaration(StrSpan<'a>, Option<StrSpan<'a>>, Option<bool>),
+    /// ```text
+    /// <?xml version='1.0' encoding='UTF-8' standalone='yes'?>
+    ///                ---                                      - version
+    ///                               -----                     - encoding?
+    ///                                                  ---    - standalone?
+    /// ------------------------------------------------------- - span
+    /// ```
+    Declaration {
+        version: StrSpan<'a>,
+        encoding: Option<StrSpan<'a>>,
+        standalone: Option<bool>,
+        span: StrSpan<'a>,
+    },
+
     /// Processing instruction token.
     ///
-    /// Example: `<?target content?>`
-    ProcessingInstruction(StrSpan<'a>, Option<StrSpan<'a>>),
-    /// The comment token.
+    /// ```text
+    /// <?target content?>
+    ///   ------           - target
+    ///          -------   - content?
+    /// ------------------ - span
+    /// ```
+    ProcessingInstruction {
+        target: StrSpan<'a>,
+        content: Option<StrSpan<'a>>,
+        span: StrSpan<'a>,
+    },
+
+    /// Comment token.
     ///
-    /// Example: `<!-- text -->`
-    Comment(StrSpan<'a>),
+    /// ```text
+    /// <!-- text -->
+    ///     ------    - text
+    /// ------------- - span
+    /// ```
+    Comment {
+        text: StrSpan<'a>,
+        span: StrSpan<'a>,
+    },
+
     /// DOCTYPE start token.
     ///
-    /// Example: `<!DOCTYPE note [`
-    DtdStart(StrSpan<'a>, Option<ExternalId<'a>>),
+    /// ```text
+    /// <!DOCTYPE greeting SYSTEM "hello.dtd" [
+    ///           --------                      - name
+    ///                    ------------------   - external_id?
+    /// --------------------------------------- - span
+    /// ```
+    DtdStart {
+        name: StrSpan<'a>,
+        external_id: Option<ExternalId<'a>>,
+        span: StrSpan<'a>,
+    },
+
     /// Empty DOCTYPE token.
     ///
-    /// Example: `<!DOCTYPE note>`
-    EmptyDtd(StrSpan<'a>, Option<ExternalId<'a>>),
+    /// ```text
+    /// <!DOCTYPE greeting SYSTEM "hello.dtd">
+    ///           --------                     - name
+    ///                    ------------------  - external_id?
+    /// -------------------------------------- - span
+    /// ```
+    EmptyDtd {
+        name: StrSpan<'a>,
+        external_id: Option<ExternalId<'a>>,
+        span: StrSpan<'a>,
+    },
+
     /// ENTITY token.
     ///
     /// Can appear only inside the DTD.
     ///
-    /// Example: `<!ENTITY ns_extend "http://test.com">`
-    EntityDeclaration(StrSpan<'a>, EntityDefinition<'a>),
+    /// ```text
+    /// <!ENTITY ns_extend "http://test.com">
+    ///          ---------                    - name
+    ///                     ---------------   - definition
+    /// ------------------------------------- - span
+    /// ```
+    EntityDeclaration {
+        name: StrSpan<'a>,
+        definition: EntityDefinition<'a>,
+        span: StrSpan<'a>,
+    },
+
     /// DOCTYPE end token.
     ///
-    /// Example: `]>`
-    DtdEnd,
+    /// ```text
+    /// <!DOCTYPE svg [
+    ///    ...
+    /// ]>
+    /// -- - span
+    /// ```
+    DtdEnd {
+        span: StrSpan<'a>,
+    },
+
     /// Element start token.
     ///
-    /// Contains prefix and local part of the qualified name.
+    /// ```text
+    /// <ns:elem attr="value"/>
+    ///  --                     - prefix
+    ///     ----                - local
+    /// --------                - span
+    /// ```
+    ElementStart {
+        prefix: StrSpan<'a>,
+        local: StrSpan<'a>,
+        span: StrSpan<'a>,
+    },
+
+    /// Attribute token.
     ///
-    /// Example: `<elem`
-    ElementStart(StrSpan<'a>, StrSpan<'a>),
-    /// Attribute.
-    ///
-    /// Contains prefix and local part of the qualified name and value.
-    ///
-    /// Example: `name="value"`
-    Attribute((StrSpan<'a>, StrSpan<'a>), StrSpan<'a>),
+    /// ```text
+    /// <elem ns:attr="value"/>
+    ///       --              - prefix
+    ///          ----         - local
+    ///                -----  - value
+    ///       --------------- - span
+    /// ```
+    Attribute {
+        prefix: StrSpan<'a>,
+        local: StrSpan<'a>,
+        value: StrSpan<'a>,
+        span: StrSpan<'a>,
+    },
+
     /// Element end token.
-    ElementEnd(ElementEnd<'a>),
+    ///
+    /// ```text
+    /// <ns:elem>text</ns:elem>
+    ///                         - ElementEnd::Open
+    ///         -               - span
+    /// ```
+    ///
+    /// ```text
+    /// <ns:elem>text</ns:elem>
+    ///                -- ----  - ElementEnd::Close(prefix, local)
+    ///              ---------- - span
+    /// ```
+    ///
+    /// ```text
+    /// <ns:elem/>
+    ///                         - ElementEnd::Empty
+    ///         --              - span
+    /// ```
+    ElementEnd {
+        end: ElementEnd<'a>,
+        span: StrSpan<'a>,
+    },
+
     /// Text token.
     ///
     /// Contains text between elements including whitespaces.
     /// Basically everything between `>` and `<`.
     ///
-    /// Contains text as is. Use [`TextUnescape`] to unescape it.
+    /// ```text
+    /// <p> text </p>
+    ///    ------     - text
+    /// ```
     ///
-    /// Example: `<text>text</text>`
-    ///
-    /// [`TextUnescape`]: struct.TextUnescape.html
-    Text(StrSpan<'a>),
+    /// The token span is equal to the `text`.
+    Text {
+        text: StrSpan<'a>,
+    },
+
     /// Whitespaces token.
     ///
-    /// The same as `Text` token, but contains only spaces.
+    /// The same as `Text` token, but contains only whitespaces.
     ///
     /// Spaces can be encoded like `&#x20`.
-    Whitespaces(StrSpan<'a>),
+    ///
+    /// ```text
+    /// <p>   </p>
+    ///    ---     - text
+    /// ```
+    ///
+    /// The token span is equal to the `text`.
+    Whitespaces {
+        text: StrSpan<'a>,
+    },
+
     /// CDATA token.
     ///
-    /// Example: `<![CDATA[text]]>`
-    Cdata(StrSpan<'a>),
+    /// ```text
+    /// <p><![CDATA[text]]></p>
+    ///             ----        - text
+    ///    ----------------     - span
+    /// ```
+    Cdata {
+        text: StrSpan<'a>,
+        span: StrSpan<'a>,
+    },
 }
 
 
@@ -393,7 +521,7 @@ impl<'a> Tokenizer<'a> {
                         Self::parse_pi(s)
                     }
                     TokenType::DoctypeEnd => {
-                        Ok(Token::DtdEnd)
+                        Ok(Token::DtdEnd { span: s.slice_back(s.pos() - 2) })
                     }
                     TokenType::Whitespace => {
                         s.skip_spaces();
@@ -579,6 +707,8 @@ impl<'a> Tokenizer<'a> {
     }
 
     fn parse_declaration_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
+        let start = s.pos() - 6;
+
         let version = Self::parse_version_info(s)?;
         let encoding = Self::parse_encoding_decl(s)?;
         let standalone = Self::parse_standalone(s)?;
@@ -586,7 +716,9 @@ impl<'a> Tokenizer<'a> {
         s.skip_ascii_spaces();
         s.skip_string(b"?>")?;
 
-        Ok(Token::Declaration(version, encoding, standalone))
+        let span = s.slice_back(start);
+
+        Ok(Token::Declaration { version, encoding, standalone, span })
     }
 
     fn parse_version_info(s: &mut Stream<'a>) -> StreamResult<StrSpan<'a>> {
@@ -684,7 +816,9 @@ impl<'a> Tokenizer<'a> {
             return Err(Error::InvalidToken(TokenType::Comment, pos, None));
         }
 
-        Ok(Token::Comment(text))
+        let span = s.slice_back(start);
+
+        Ok(Token::Comment { text, span })
     }
 
     fn parse_pi(s: &mut Stream<'a>) -> Result<Token<'a>> {
@@ -694,6 +828,8 @@ impl<'a> Tokenizer<'a> {
     // PI       ::= '<?' PITarget (S (Char* - (Char* '?>' Char*)))? '?>'
     // PITarget ::= Name - (('X' | 'x') ('M' | 'm') ('L' | 'l'))
     fn parse_pi_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
+        let start = s.pos() - 2;
+
         let target = s.consume_name()?;
 
         s.skip_spaces();
@@ -718,7 +854,9 @@ impl<'a> Tokenizer<'a> {
 
         s.skip_string(b"?>")?;
 
-        Ok(Token::ProcessingInstruction(target, content))
+        let span = s.slice_back(start);
+
+        Ok(Token::ProcessingInstruction { target, content, span })
     }
 
     fn parse_doctype(s: &mut Stream<'a>) -> Result<Token<'a>> {
@@ -727,18 +865,21 @@ impl<'a> Tokenizer<'a> {
 
     // doctypedecl ::= '<!DOCTYPE' S Name (S ExternalID)? S? ('[' intSubset ']' S?)? '>'
     fn parse_doctype_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
+        let start = s.pos() - 9;
+
         s.consume_spaces()?;
         let name = s.consume_name()?;
         s.skip_spaces();
 
-        let id = Self::parse_external_id(s)?;
+        let external_id = Self::parse_external_id(s)?;
         s.skip_spaces();
 
         let c = s.consume_either(&[b'[', b'>'])?;
+        let span = s.slice_back(start);
         if c == b'[' {
-            Ok(Token::DtdStart(name, id))
+            Ok(Token::DtdStart { name, external_id, span })
         } else {
-            Ok(Token::EmptyDtd(name, id))
+            Ok(Token::EmptyDtd { name, external_id, span })
         }
     }
 
@@ -781,6 +922,8 @@ impl<'a> Tokenizer<'a> {
     // GEDecl      ::= '<!ENTITY' S Name S EntityDef S? '>'
     // PEDecl      ::= '<!ENTITY' S '%' S Name S PEDef S? '>'
     fn parse_entity_decl_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
+        let start = s.pos() - 8;
+
         s.consume_spaces()?;
 
         let is_ge = if s.curr_byte()? == b'%' {
@@ -793,11 +936,13 @@ impl<'a> Tokenizer<'a> {
 
         let name = s.consume_name()?;
         s.consume_spaces()?;
-        let def = Self::parse_entity_def(s, is_ge)?;
+        let definition = Self::parse_entity_def(s, is_ge)?;
         s.skip_spaces();
         s.consume_byte(b'>')?;
 
-        Ok(Token::EntityDeclaration(name, def))
+        let span = s.slice_back(start);
+
+        Ok(Token::EntityDeclaration { name, definition, span })
     }
 
     // EntityDef   ::= EntityValue | (ExternalID NDataDecl?)
@@ -857,13 +1002,17 @@ impl<'a> Tokenizer<'a> {
     // CData   ::= (Char* - (Char* ']]>' Char*))
     // CDEnd   ::= ']]>'
     fn parse_cdata_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
+        let start = s.pos() - 9;
+
         let text = s.consume_bytes(|s, c| {
             !(c == b']' && s.starts_with(b"]]>"))
         });
 
         s.skip_string(b"]]>")?;
 
-        Ok(Token::Cdata(text))
+        let span = s.slice_back(start);
+
+        Ok(Token::Cdata { text, span })
     }
 
     fn parse_element_start(s: &mut Stream<'a>) -> Result<Token<'a>> {
@@ -872,8 +1021,11 @@ impl<'a> Tokenizer<'a> {
 
     // '<' Name (S Attribute)* S? '>'
     fn parse_element_start_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
-        let (prefix, tag_name) = s.consume_qname()?;
-        Ok(Token::ElementStart(prefix, tag_name))
+        let start = s.pos() - 1;
+        let (prefix, local) = s.consume_qname()?;
+        let span = s.slice_back(start);
+
+        Ok(Token::ElementStart { prefix, local, span })
     }
 
     fn parse_close_element(s: &mut Stream<'a>) -> Result<Token<'a>> {
@@ -882,11 +1034,15 @@ impl<'a> Tokenizer<'a> {
 
     // '</' Name S? '>'
     fn parse_close_element_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
+        let start = s.pos() - 2;
+
         let (prefix, tag_name) = s.consume_qname()?;
         s.skip_ascii_spaces();
         s.consume_byte(b'>')?;
 
-        Ok(Token::ElementEnd(ElementEnd::Close(prefix, tag_name)))
+        let span = s.slice_back(start);
+
+        Ok(Token::ElementEnd { end: ElementEnd::Close(prefix, tag_name), span })
     }
 
     // Name Eq AttValue
@@ -894,21 +1050,27 @@ impl<'a> Tokenizer<'a> {
         s.skip_ascii_spaces();
 
         if let Some(c) = s.get_curr_byte() {
+            let start = s.pos();
+
             match c {
                 b'/' => {
                     s.advance(1);
                     s.consume_byte(b'>')?;
-                    return Ok(Token::ElementEnd(ElementEnd::Empty));
+                    let span = s.slice_back(start);
+                    return Ok(Token::ElementEnd { end: ElementEnd::Empty, span });
                 }
                 b'>' => {
                     s.advance(1);
-                    return Ok(Token::ElementEnd(ElementEnd::Open));
+                    let span = s.slice_back(start);
+                    return Ok(Token::ElementEnd { end: ElementEnd::Open, span });
                 }
                 _ => {}
             }
         }
 
-        let (prefix, name) = s.consume_qname()?;
+        let start = s.pos();
+
+        let (prefix, local) = s.consume_qname()?;
         s.consume_eq()?;
         let quote = s.consume_quote()?;
         let value = s.consume_bytes(|_, c| c != quote);
@@ -918,9 +1080,11 @@ impl<'a> Tokenizer<'a> {
         }
 
         s.consume_byte(quote)?;
+        let span = s.slice_back(start);
+
         s.skip_ascii_spaces();
 
-        Ok(Token::Attribute((prefix, name), value))
+        Ok(Token::Attribute { prefix, local, value, span })
     }
 
     fn parse_text(s: &mut Stream<'a>) -> Result<Token<'a>> {
@@ -930,9 +1094,9 @@ impl<'a> Tokenizer<'a> {
         // TODO: optimize
         ts.skip_spaces();
         if ts.at_end() {
-            Ok(Token::Whitespaces(text))
+            Ok(Token::Whitespaces { text })
         } else {
-            Ok(Token::Text(text))
+            Ok(Token::Text { text })
         }
     }
 }
@@ -950,10 +1114,10 @@ impl<'a> Iterator for Tokenizer<'a> {
 
         if let Some(ref t) = t {
             match *t {
-                Ok(Token::ElementStart(..)) => {
+                Ok(Token::ElementStart { .. }) => {
                     self.state = State::Attributes;
                 }
-                Ok(Token::ElementEnd(ref end)) => {
+                Ok(Token::ElementEnd { ref end, .. }) => {
                     match *end {
                         ElementEnd::Open => {
                             self.depth += 1;
@@ -972,10 +1136,10 @@ impl<'a> Iterator for Tokenizer<'a> {
                         self.state = State::Elements;
                     }
                 }
-                Ok(Token::DtdStart(..)) => {
+                Ok(Token::DtdStart { .. }) => {
                     self.state = State::Dtd;
                 }
-                Ok(Token::EmptyDtd(..)) | Ok(Token::DtdEnd) => {
+                Ok(Token::EmptyDtd { .. }) | Ok(Token::DtdEnd { .. }) => {
                     self.state = State::AfterDtd;
                 }
                 Err(_) => {
@@ -988,4 +1152,9 @@ impl<'a> Iterator for Tokenizer<'a> {
 
         t
     }
+}
+
+#[test]
+fn token_size() {
+    assert!(::std::mem::size_of::<Token>() <= 196);
 }

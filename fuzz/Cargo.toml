@@ -20,7 +20,3 @@ members = ["."]
 [[bin]]
 name = "fuzz_xml"
 path = "fuzz_targets/fuzz_xml.rs"
-
-[[bin]]
-name = "fuzz_unescape"
-path = "fuzz_targets/fuzz_unescape.rs"

@@ -4,23 +4,23 @@ extern crate xmlparser as xml;
 use token::*;
 
 test!(pi_01, "<?xslt ma?>",
-    Token::PI("xslt", Some("ma"))
+    Token::PI("xslt", Some("ma"), 0..11)
 );
 
 test!(pi_02, "<?xslt \t\n m?>",
-    Token::PI("xslt", Some("m"))
+    Token::PI("xslt", Some("m"), 0..13)
 );
 
 test!(pi_03, "<?xslt?>",
-    Token::PI("xslt", None)
+    Token::PI("xslt", None, 0..8)
 );
 
 test!(pi_04, "<?xslt ?>",
-    Token::PI("xslt", None)
+    Token::PI("xslt", None, 0..9)
 );
 
 test!(pi_05, "<?xml-stylesheet?>",
-    Token::PI("xml-stylesheet", None)
+    Token::PI("xml-stylesheet", None, 0..18)
 );
 
 test!(pi_err_01, "<??xml \t\n m?>",
@@ -28,39 +28,39 @@ test!(pi_err_01, "<??xml \t\n m?>",
 );
 
 test!(declaration_01, "<?xml version=\"1.0\"?>",
-    Token::Declaration("1.0", None, None)
+    Token::Declaration("1.0", None, None, 0..21)
 );
 
 test!(declaration_02, "<?xml version='1.0'?>",
-    Token::Declaration("1.0", None, None)
+    Token::Declaration("1.0", None, None, 0..21)
 );
 
 test!(declaration_03, "<?xml version='1.0' encoding=\"UTF-8\"?>",
-    Token::Declaration("1.0", Some("UTF-8"), None)
+    Token::Declaration("1.0", Some("UTF-8"), None, 0..38)
 );
 
 test!(declaration_04, "<?xml version='1.0' encoding='UTF-8'?>",
-    Token::Declaration("1.0", Some("UTF-8"), None)
+    Token::Declaration("1.0", Some("UTF-8"), None, 0..38)
 );
 
 test!(declaration_05, "<?xml version='1.0' encoding='utf-8'?>",
-    Token::Declaration("1.0", Some("utf-8"), None)
+    Token::Declaration("1.0", Some("utf-8"), None, 0..38)
 );
 
 test!(declaration_06, "<?xml version='1.0' encoding='EUC-JP'?>",
-    Token::Declaration("1.0", Some("EUC-JP"), None)
+    Token::Declaration("1.0", Some("EUC-JP"), None, 0..39)
 );
 
 test!(declaration_07, "<?xml version='1.0' encoding='UTF-8' standalone='yes'?>",
-    Token::Declaration("1.0", Some("UTF-8"), Some(true))
+    Token::Declaration("1.0", Some("UTF-8"), Some(true), 0..55)
 );
 
 test!(declaration_08, "<?xml version='1.0' encoding='UTF-8' standalone='no'?>",
-    Token::Declaration("1.0", Some("UTF-8"), Some(false))
+    Token::Declaration("1.0", Some("UTF-8"), Some(false), 0..54)
 );
 
 test!(declaration_09, "<?xml version='1.0' standalone='no'?>",
-    Token::Declaration("1.0", None, Some(false))
+    Token::Declaration("1.0", None, Some(false), 0..37)
 );
 
 // Declaration with an invalid order
@@ -107,12 +107,12 @@ test!(declaration_err_10, " <?xml version='1.0'?>",
 
 // XML declaration allowed only at the start of the document.
 test!(declaration_err_11, "<!-- comment --><?xml version='1.0'?>",
-    Token::Comment(" comment "),
+    Token::Comment(" comment ", 0..16),
     Token::Error("unexpected token 'Declaration' at 1:17".to_string())
 );
 
 // Duplicate.
 test!(declaration_err_12, "<?xml version='1.0'?><?xml version='1.0'?>",
-    Token::Declaration("1.0", None, None),
+    Token::Declaration("1.0", None, None, 0..21),
     Token::Error("unexpected token 'Declaration' at 1:22".to_string())
 );

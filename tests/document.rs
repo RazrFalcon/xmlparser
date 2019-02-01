@@ -15,12 +15,12 @@ test!(document_04, "&#x20;", );
 
 // BOM
 test!(document_05, str::from_utf8(b"\xEF\xBB\xBF<a/>").unwrap(),
-    Token::ElementStart("", "a"),
-    Token::ElementEnd(ElementEnd::Empty)
+    Token::ElementStart("", "a", 3..5),
+    Token::ElementEnd(ElementEnd::Empty, 5..7)
 );
 
 test!(document_06, str::from_utf8(b"\xEF\xBB\xBF<?xml version='1.0'?>").unwrap(),
-    Token::Declaration("1.0", None, None)
+    Token::Declaration("1.0", None, None, 3..24)
 );
 
 test!(document_err_01, "<![CDATA[text]]>",
@@ -40,7 +40,7 @@ test!(document_err_04, "<!>",
 );
 
 test!(document_err_05, "<!DOCTYPE greeting1><!DOCTYPE greeting2>",
-    Token::EmptyDtd("greeting1", None),
+    Token::EmptyDtd("greeting1", None, 0..20),
     Token::Error("unexpected token 'Doctype Declaration' at 1:21".to_string())
 );
 
@@ -51,17 +51,17 @@ fn parse_fragment_1() {
     p.enable_fragment_mode();
 
     match p.next().unwrap().unwrap() {
-        xml::Token::ElementStart(_, local) => assert_eq!(local.to_str(), "p"),
+        xml::Token::ElementStart { local, .. } => assert_eq!(local.to_str(), "p"),
         _ => panic!(),
     }
 
     match p.next().unwrap().unwrap() {
-        xml::Token::ElementEnd(_) => {}
+        xml::Token::ElementEnd { .. } => {}
         _ => panic!(),
     }
 
     match p.next().unwrap().unwrap() {
-        xml::Token::ElementStart(_, local) => assert_eq!(local.to_str(), "p"),
+        xml::Token::ElementStart { local, .. } => assert_eq!(local.to_str(), "p"),
         _ => panic!(),
     }
 }

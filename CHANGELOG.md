@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Added
+- `span` field to all `Token` variants, which contains a whole token span in bytes.
+
+### Changed
+- All `Token` variants are structs now and not tuples.
 
 ## [0.8.1] - 2019-01-02
 ### Changed
