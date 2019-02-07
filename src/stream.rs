@@ -576,7 +576,6 @@ impl<'a> Stream<'a> {
     /// # Errors
     ///
     /// - `InvalidReference`
-    /// - `UnexpectedEndOfStream`
     pub fn consume_reference(&mut self) -> Result<Reference<'a>> {
         self._consume_reference().map_err(|_| StreamError::InvalidReference)
     }

@@ -164,7 +164,7 @@ pub struct TextPos {
 impl TextPos {
     /// Constructs a new `TextPos`.
     ///
-    /// Should not be invoked manually, but rather via `Stream::gen_error_pos`.
+    /// Should not be invoked manually, but rather via `Stream::gen_text_pos`.
     pub fn new(row: u32, col: u32) -> TextPos {
         TextPos { row, col }
     }
