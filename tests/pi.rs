@@ -69,7 +69,7 @@ test!(declaration_err_01, "<?xml encoding='UTF-8' version='1.0'?>",
 );
 
 test!(declaration_err_02, "<?xml version='1.0' encoding='*invalid*'?>",
-    Token::Error("invalid token 'Declaration' at 1:1 cause expected quote mark not '*' at 1:31".to_string())
+    Token::Error("invalid token 'Declaration' at 1:1 cause expected '\'' not '*' at 1:31".to_string())
 );
 
 test!(declaration_err_03, "<?xml version='2.0'?>",
@@ -115,4 +115,8 @@ test!(declaration_err_11, "<!-- comment --><?xml version='1.0'?>",
 test!(declaration_err_12, "<?xml version='1.0'?><?xml version='1.0'?>",
     Token::Declaration("1.0", None, None, 0..21),
     Token::Error("unexpected token 'Declaration' at 1:22".to_string())
+);
+
+test!(declaration_err_13, "<?xml version=\"1.0' standalone='yes\">",
+    Token::Error("invalid token 'Declaration' at 1:1 cause expected '\"' not '\'' at 1:19".to_string())
 );

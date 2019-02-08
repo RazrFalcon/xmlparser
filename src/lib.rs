@@ -422,7 +422,7 @@ impl<'a> Tokenizer<'a> {
     ///
     /// By default, `xmlparser` will check for DTD, root element, etc.
     /// But if we have to parse an XML fragment, it will lead to an error.
-    /// This method switch the parser to the root element content parsing mode.
+    /// This method switches the parser to the root element content parsing mode.
     /// So it will treat any data as a content of the root element.
     pub fn enable_fragment_mode(&mut self) {
         self.state = State::Elements;
@@ -725,14 +725,14 @@ impl<'a> Tokenizer<'a> {
         s.skip_ascii_spaces();
         s.skip_string(b"version")?;
         s.consume_eq()?;
-        s.consume_quote()?;
+        let quote = s.consume_quote()?;
 
         let start = s.pos();
         s.skip_string(b"1.")?;
         s.skip_bytes(|_, c| c.is_xml_digit());
         let ver = s.slice_back(start);
 
-        s.consume_quote()?;
+        s.consume_byte(quote)?;
 
         Ok(ver)
     }
@@ -746,17 +746,17 @@ impl<'a> Tokenizer<'a> {
         }
 
         s.consume_eq()?;
-        s.consume_quote()?;
+        let quote = s.consume_quote()?;
         // [A-Za-z] ([A-Za-z0-9._] | '-')*
         // TODO: check that first byte is [A-Za-z]
         let name = s.consume_bytes(|_, c| {
-            c.is_xml_letter()
-                || c.is_xml_digit()
-                || c == b'.'
-                || c == b'-'
-                || c == b'_'
+               c.is_xml_letter()
+            || c.is_xml_digit()
+            || c == b'.'
+            || c == b'-'
+            || c == b'_'
         });
-        s.consume_quote()?;
+        s.consume_byte(quote)?;
 
         Ok(Some(name))
     }
@@ -770,7 +770,7 @@ impl<'a> Tokenizer<'a> {
         }
 
         s.consume_eq()?;
-        s.consume_quote()?;
+        let quote = s.consume_quote()?;
 
         let start = s.pos();
         let value = s.consume_name()?.to_str();
@@ -785,7 +785,7 @@ impl<'a> Tokenizer<'a> {
             }
         };
 
-        s.consume_quote()?;
+        s.consume_byte(quote)?;
 
         Ok(Some(flag))
     }
@@ -1106,7 +1106,6 @@ impl<'a> Iterator for Tokenizer<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.stream.at_end() || self.state == State::End {
-            self.state = State::End;
             return None;
         }
 

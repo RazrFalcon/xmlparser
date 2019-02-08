@@ -244,8 +244,6 @@ impl<'a> Stream<'a> {
     }
 
     /// Checks if the stream is starts with a space.
-    ///
-    /// Uses [`skip_spaces()`](#method.curr_byte) internally.
     pub fn starts_with_space(&self) -> bool {
         if self.at_end() {
             return false;
