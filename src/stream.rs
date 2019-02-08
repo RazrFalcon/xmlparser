@@ -60,11 +60,13 @@ impl<'a> From<StrSpan<'a>> for Stream<'a> {
 
 impl<'a> Stream<'a> {
     /// Returns an underling string span.
+    #[inline]
     pub fn span(&self) -> StrSpan<'a> {
         self.span
     }
 
     /// Returns current position.
+    #[inline]
     pub fn pos(&self) -> usize {
         self.pos
     }
@@ -72,6 +74,7 @@ impl<'a> Stream<'a> {
     /// Sets current position equal to the end.
     ///
     /// Used to indicate end of parsing on error.
+    #[inline]
     pub fn jump_to_end(&mut self) {
         self.pos = self.end;
     }
@@ -97,6 +100,7 @@ impl<'a> Stream<'a> {
     /// # Errors
     ///
     /// - `UnexpectedEndOfStream`
+    #[inline]
     pub fn curr_byte(&self) -> Result<u8> {
         if self.at_end() {
             return Err(StreamError::UnexpectedEndOfStream);
@@ -142,6 +146,7 @@ impl<'a> Stream<'a> {
     /// # Errors
     ///
     /// - `UnexpectedEndOfStream`
+    #[inline]
     pub fn next_byte(&self) -> Result<u8> {
         if self.pos + 1 >= self.end {
             return Err(StreamError::UnexpectedEndOfStream);
@@ -603,11 +608,13 @@ impl<'a> Stream<'a> {
     }
 
     /// Slices data from `pos` to the current position.
+    #[inline]
     pub fn slice_back(&self, pos: usize) -> StrSpan<'a> {
         self.span.slice_region(pos, self.pos())
     }
 
     /// Slices data from the current position to the end.
+    #[inline]
     pub fn slice_tail(&self) -> StrSpan<'a> {
         self.span.slice_region(self.pos(), self.end)
     }
