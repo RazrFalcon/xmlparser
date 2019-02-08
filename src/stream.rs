@@ -617,8 +617,11 @@ impl<'a> Stream<'a> {
     /// This operation is very expensive. Use only for errors.
     #[inline(never)]
     pub fn gen_text_pos(&self) -> TextPos {
-        let row = self.calc_curr_row();
-        let col = self.calc_curr_col();
+        let text = self.span.full_str();
+        let end = self.pos + self.span.start();
+
+        let row = Self::calc_curr_row(text, end);
+        let col = Self::calc_curr_col(text, end);
         TextPos::new(row, col)
     }
 
@@ -646,9 +649,7 @@ impl<'a> Stream<'a> {
         e
     }
 
-    fn calc_curr_row(&self) -> u32 {
-        let text = self.span.full_str();
-        let end = self.pos + self.span.start();
+    fn calc_curr_row(text: &str, end: usize) -> u32 {
         let mut row = 1;
         for c in &text.as_bytes()[..end] {
             if *c == b'\n' {
@@ -659,9 +660,7 @@ impl<'a> Stream<'a> {
         row
     }
 
-    fn calc_curr_col(&self) -> u32 {
-        let text = self.span.full_str();
-        let end = self.pos + self.span.start();
+    fn calc_curr_col(text: &str, end: usize) -> u32 {
         let mut col = 1;
         for c in text[..end].chars().rev() {
             if c == '\n' {
