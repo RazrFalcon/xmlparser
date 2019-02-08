@@ -150,24 +150,6 @@ impl<'a> Stream<'a> {
         Ok(self.bytes[self.pos + 1])
     }
 
-    /// Returns a char from a current stream position.
-    ///
-    /// # Errors
-    ///
-    /// - `UnexpectedEndOfStream`
-    pub fn curr_char(&self) -> Result<char> {
-        if self.at_end() {
-            return Err(StreamError::UnexpectedEndOfStream);
-        }
-
-        Ok(self.curr_char_unchecked())
-    }
-
-    #[inline]
-    fn curr_char_unchecked(&self) -> char {
-        self.span.to_str()[self.pos..].chars().next().unwrap()
-    }
-
     /// Advances by `n` bytes.
     ///
     /// # Examples

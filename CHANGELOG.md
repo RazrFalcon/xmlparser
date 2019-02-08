@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - All `Token` variants are structs now and not tuples.
 
+### Removed
+- `Stream::curr_char`.
+
 ## [0.8.1] - 2019-01-02
 ### Changed
 - Changed the crate category in the Cargo.toml

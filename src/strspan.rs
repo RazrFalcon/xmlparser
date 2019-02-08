@@ -69,6 +69,11 @@ impl<'a> StrSpan<'a> {
     /// Returns a span slice.
     ///
     /// A bit expensive, since Rust checks for char boundary.
+    ///
+    /// # Panics
+    ///
+    /// - if the span is out of bounds of the original string
+    /// - if the start or end positions is not on a char boundary
     pub fn to_str(&self) -> &'a str {
         &self.text[self.start..self.end]
     }
@@ -76,6 +81,10 @@ impl<'a> StrSpan<'a> {
     /// Returns a span slice as bytes.
     ///
     /// The same as `to_str` but does not involve char boundary checking.
+    ///
+    /// # Panics
+    ///
+    /// - if the span is out of bounds of the original string
     pub fn as_bytes(&self) -> &'a [u8] {
         &self.text.as_bytes()[self.start..self.end]
     }
