@@ -31,7 +31,8 @@ impl<'a> StrSpan<'a> {
     #[inline]
     pub fn from_substr(text: &str, start: usize, end: usize) -> StrSpan {
         debug_assert!(start <= end);
-        debug_assert!(text.get(start..end).is_some()); // The same check as in StrSpan::to_str.
+        debug_assert!(text.is_char_boundary(start));
+        debug_assert!(text.is_char_boundary(end));
 
         StrSpan { text, start, end }
     }
