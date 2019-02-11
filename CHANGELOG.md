@@ -6,13 +6,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
-- `span` field to all `Token` variants, which contains a whole token span in bytes.
+- (**breaking**) `span` field to all `Token` variants, which contains a whole token span in bytes.
+- `Stream::try_consume_byte`.
 
 ### Changed
-- All `Token` variants are structs now and not tuples.
+- (**breaking**) All `Token` variants are structs now and not tuples.
+- Rename `Reference::EntityRef` into `Reference::Entity`.
+- Rename `Reference::CharRef` into `Reference::Char`.
 
 ### Removed
 - `Stream::curr_char`.
+- `Stream::is_curr_byte_eq`.
+- `Stream::consume_either`.
 
 ### Fixed
 - Declaration attributes with mixed quotes parsing.

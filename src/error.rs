@@ -175,13 +175,3 @@ impl fmt::Display for TextPos {
         write!(f, "{}:{}", self.row, self.col)
     }
 }
-
-#[test]
-fn err_size_1() {
-    assert!(::std::mem::size_of::<Error>() <= 64);
-}
-
-#[test]
-fn err_size_2() {
-    assert!(::std::mem::size_of::<StreamError>() <= 64);
-}

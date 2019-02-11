@@ -96,38 +96,21 @@ pub trait XmlByteExt {
 impl XmlByteExt for u8 {
     #[inline]
     fn is_xml_digit(&self) -> bool {
-        match *self {
-            b'0'...b'9' => true,
-            _ => false,
-        }
+        matches!(*self, b'0'...b'9')
     }
 
     #[inline]
     fn is_xml_hex_digit(&self) -> bool {
-        match *self {
-              b'0'...b'9'
-            | b'A'...b'F'
-            | b'a'...b'f' => true,
-            _ => false,
-        }
+        matches!(*self, b'0'...b'9' | b'A'...b'F' | b'a'...b'f')
     }
 
     #[inline]
     fn is_xml_space(&self) -> bool {
-        match *self {
-              b' '
-            | b'\t'
-            | b'\n'
-            | b'\r' => true,
-            _ => false,
-        }
+        matches!(*self, b' ' | b'\t' | b'\n' | b'\r')
     }
 
     #[inline]
     fn is_xml_letter(&self) -> bool {
-        match *self {
-            b'A'...b'Z' | b'a'...b'z' => true,
-            _ => false,
-        }
+        matches!(*self, b'A'...b'Z' | b'a'...b'z')
     }
 }

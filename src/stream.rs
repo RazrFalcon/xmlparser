@@ -14,21 +14,21 @@ type Result<T> = ::std::result::Result<T, StreamError>;
 
 
 /// Representation of the [Reference](https://www.w3.org/TR/xml/#NT-Reference) value.
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub enum Reference<'a> {
     /// An entity reference.
     ///
     /// <https://www.w3.org/TR/xml/#NT-EntityRef>
-    EntityRef(&'a str),
+    Entity(&'a str),
     /// A character reference.
     ///
     /// <https://www.w3.org/TR/xml/#NT-CharRef>
-    CharRef(char),
+    Char(char),
 }
 
 
 /// A streaming text parsing interface.
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Stream<'a> {
     bytes: &'a [u8],
     pos: usize,
@@ -119,18 +119,6 @@ impl<'a> Stream<'a> {
         self.bytes[self.pos]
     }
 
-    /// Checks that current byte is equal to provided.
-    ///
-    /// Returns `false` if no bytes left.
-    #[inline]
-    pub fn is_curr_byte_eq(&self, c: u8) -> bool {
-        if !self.at_end() {
-            self.curr_byte_unchecked() == c
-        } else {
-            false
-        }
-    }
-
     /// Returns a byte from a current stream position if there is one.
     #[inline]
     pub fn get_curr_byte(&self) -> Option<u8> {
@@ -195,7 +183,7 @@ impl<'a> Stream<'a> {
                 // Check for (#x20 | #x9 | #xD | #xA).
                 let start = self.pos();
                 let mut is_space = false;
-                if let Ok(Reference::CharRef(ch)) = self.consume_reference() {
+                if let Ok(Reference::Char(ch)) = self.consume_reference() {
                     if (ch as u32) < 255 && (ch as u8).is_xml_space() {
                         is_space = true;
                     }
@@ -215,12 +203,8 @@ impl<'a> Stream<'a> {
     ///
     /// Accepted values: `' ' \n \r \t`.
     pub fn skip_ascii_spaces(&mut self) {
-        while !self.at_end() {
-            if self.curr_byte_unchecked().is_xml_space() {
-                self.advance(1);
-            } else {
-                break;
-            }
+        while !self.at_end() && self.curr_byte_unchecked().is_xml_space() {
+            self.advance(1);
         }
     }
 
@@ -258,7 +242,7 @@ impl<'a> Stream<'a> {
         } else if c == b'&' {
             // Check for (#x20 | #x9 | #xD | #xA).
             let mut s = *self;
-            if let Some(Reference::CharRef(v)) = s.try_consume_reference() {
+            if let Some(Reference::Char(v)) = s.try_consume_reference() {
                 if (v as u32) < 255 && (v as u8).is_xml_space() {
                     is_space = true;
                 }
@@ -288,7 +272,7 @@ impl<'a> Stream<'a> {
         Ok(())
     }
 
-    /// Consumes current byte if it's equal to the provided byte.
+    /// Consumes the current byte if it's equal to the provided byte.
     ///
     /// # Errors
     ///
@@ -320,29 +304,20 @@ impl<'a> Stream<'a> {
         Ok(())
     }
 
-    /// Consumes current byte if it's equal to one of the provided bytes.
+    /// Tries to consume the current byte if it's equal to the provided byte.
     ///
-    /// Returns a coincidental byte.
-    ///
-    /// # Errors
-    ///
-    /// - `InvalidChar`
-    /// - `UnexpectedEndOfStream`
-    pub fn consume_either(&mut self, list: &[u8]) -> Result<u8> {
-        assert!(!list.is_empty());
-
-        let c = self.curr_byte()?;
-        if !list.contains(&c) {
-            let mut v = list.to_vec();
-            v.insert(0, c);
-            return Err(StreamError::InvalidChar(v, self.gen_text_pos()));
+    /// Unlike `consume_byte()` will not return any errors.
+    pub fn try_consume_byte(&mut self, c: u8) -> bool {
+        match self.curr_byte() {
+            Ok(b) if b == c => {
+                self.advance(1);
+                true
+            }
+            _ => false,
         }
-
-        self.advance(1);
-        Ok(c)
     }
 
-    /// Consumes selected string.
+    /// Skips selected string.
     ///
     /// # Errors
     ///
@@ -500,17 +475,12 @@ impl<'a> Stream<'a> {
         self.slice_back(start)
     }
 
-    /// Consumes bytes by the predicate.
+    /// Skips bytes by the predicate.
     pub fn skip_bytes<F>(&mut self, f: F)
         where F: Fn(&Stream, u8) -> bool
     {
-        while !self.at_end() {
-            let c = self.curr_byte_unchecked();
-            if f(self, c) {
-                self.advance(1);
-            } else {
-                break;
-            }
+        while !self.at_end() && f(self, self.curr_byte_unchecked()) {
+            self.advance(1);
         }
     }
 
@@ -525,7 +495,7 @@ impl<'a> Stream<'a> {
         self.slice_back(start)
     }
 
-    /// Consumes chars by the predicate.
+    /// Skips chars by the predicate.
     pub fn skip_chars<F>(&mut self, f: F)
         where F: Fn(&Stream, char) -> bool
     {
@@ -566,37 +536,36 @@ impl<'a> Stream<'a> {
     }
 
     fn _consume_reference(&mut self) -> Result<Reference<'a>> {
-        if self.curr_byte()? != b'&' {
+        if !self.try_consume_byte(b'&') {
             return Err(StreamError::InvalidReference);
         }
 
-        self.advance(1);
-        let reference = if self.curr_byte()? == b'#' {
-            self.advance(1);
-            let n = if self.curr_byte()? == b'x' {
-                self.advance(1);
+        let reference = if self.try_consume_byte(b'#') {
+            let (value, radix) = if self.try_consume_byte(b'x') {
                 let value = self.consume_bytes(|_, c| c.is_xml_hex_digit()).to_str();
-                u32::from_str_radix(value, 16).map_err(|_| StreamError::InvalidReference)
+                (value, 16)
             } else {
                 let value = self.consume_bytes(|_, c| c.is_xml_digit()).to_str();
-                u32::from_str_radix(value, 10).map_err(|_| StreamError::InvalidReference)
-            }?;
+                (value, 10)
+            };
+
+            let n = u32::from_str_radix(value, radix).map_err(|_| StreamError::InvalidReference)?;
 
             let c = char::from_u32(n).unwrap_or('\u{FFFD}');
             if !c.is_xml_char() {
                 return Err(StreamError::InvalidReference);
             }
 
-            Reference::CharRef(c)
+            Reference::Char(c)
         } else {
             let name = self.consume_name()?;
             match name.to_str() {
-                "quot" => Reference::CharRef('"'),
-                "amp"  => Reference::CharRef('&'),
-                "apos" => Reference::CharRef('\''),
-                "lt"   => Reference::CharRef('<'),
-                "gt"   => Reference::CharRef('>'),
-                _ => Reference::EntityRef(name.to_str()),
+                "quot" => Reference::Char('"'),
+                "amp"  => Reference::Char('&'),
+                "apos" => Reference::Char('\''),
+                "lt"   => Reference::Char('<'),
+                "gt"   => Reference::Char('>'),
+                _ => Reference::Entity(name.to_str()),
             }
         };
 
@@ -676,31 +645,5 @@ impl<'a> Stream<'a> {
         }
 
         col
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn text_pos_1() {
-        let mut s = Stream::from("text");
-        s.advance(2);
-        assert_eq!(s.gen_text_pos(), TextPos::new(1, 3));
-    }
-
-    #[test]
-    fn text_pos_2() {
-        let mut s = Stream::from("text\ntext");
-        s.advance(6);
-        assert_eq!(s.gen_text_pos(), TextPos::new(2, 2));
-    }
-
-    #[test]
-    fn text_pos_3() {
-        let mut s = Stream::from("текст\nтекст");
-        s.advance(15);
-        assert_eq!(s.gen_text_pos(), TextPos::new(2, 3));
     }
 }

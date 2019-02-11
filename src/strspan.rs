@@ -31,8 +31,7 @@ impl<'a> StrSpan<'a> {
     #[inline]
     pub fn from_substr(text: &str, start: usize, end: usize) -> StrSpan {
         debug_assert!(start <= end);
-        debug_assert!(text.is_char_boundary(start));
-        debug_assert!(text.is_char_boundary(end));
+        debug_assert!(text.get(start..end).is_some()); // The same check as in StrSpan::to_str.
 
         StrSpan { text, start, end }
     }
@@ -147,40 +146,5 @@ impl<'a> fmt::Debug for StrSpan<'a> {
 impl<'a> fmt::Display for StrSpan<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.to_str())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn trim_1() {
-        assert_eq!(StrSpan::from("  text  ").trim().to_str(), "text");
-    }
-
-    #[test]
-    fn trim_2() {
-        assert_eq!(StrSpan::from("  text  text  ").trim().to_str(), "text  text");
-    }
-
-    #[test]
-    fn trim_3() {
-        assert_eq!(StrSpan::from("&#x20;text&#x20;").trim().to_str(), "text");
-    }
-
-    #[test]
-    fn trim_4() {
-        assert_eq!(StrSpan::from("&#x20;text&#x20;text&#x20;").trim().to_str(), "text&#x20;text");
-    }
-
-    #[test]
-    fn do_not_trim_1() {
-        assert_eq!(StrSpan::from("&#x40;text&#x50;").trim().to_str(), "&#x40;text&#x50;");
-    }
-
-    #[test]
-    fn do_not_trim_2() {
-        assert_eq!(StrSpan::from("&ref;text&apos;").trim().to_str(), "&ref;text&apos;");
     }
 }

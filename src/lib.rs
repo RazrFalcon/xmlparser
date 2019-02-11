@@ -64,6 +64,17 @@ If you are looking for a more high-level solution - checkout
 
 use std::fmt;
 
+
+macro_rules! matches {
+    ($expression:expr, $($pattern:tt)+) => {
+        match $expression {
+            $($pattern)+ => true,
+            _ => false
+        }
+    }
+}
+
+
 mod error;
 mod stream;
 mod strspan;
@@ -790,8 +801,14 @@ impl<'a> Tokenizer<'a> {
         Ok(Some(flag))
     }
 
-    // '<!--' ((Char - '-') | ('-' (Char - '-')))* '-->'
     fn parse_comment(s: &mut Stream<'a>) -> Result<Token<'a>> {
+        let start = s.pos() - 4;
+        Self::parse_comment_impl(s)
+            .map_err(|_| Error::InvalidToken(TokenType::Comment, s.gen_text_pos_from(start), None))
+    }
+
+    // '<!--' ((Char - '-') | ('-' (Char - '-')))* '-->'
+    fn parse_comment_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
         let start = s.pos() - 4;
 
         let text = s.consume_chars(|s, c| {
@@ -799,21 +816,13 @@ impl<'a> Tokenizer<'a> {
                 return false;
             }
 
-            if !c.is_xml_char() {
-                return false;
-            }
-
-            true
+            c.is_xml_char()
         });
 
-        if text.to_str().contains("--") {
-            let pos = s.gen_text_pos_from(start);
-            return Err(Error::InvalidToken(TokenType::Comment, pos, None));
-        }
+        s.skip_string(b"-->")?;
 
-        if s.skip_string(b"-->").is_err() {
-            let pos = s.gen_text_pos_from(start);
-            return Err(Error::InvalidToken(TokenType::Comment, pos, None));
+        if text.to_str().contains("--") {
+            return Err(StreamError::UnexpectedEndOfStream); // Error type doesn't matter.
         }
 
         let span = s.slice_back(start);
@@ -874,7 +883,14 @@ impl<'a> Tokenizer<'a> {
         let external_id = Self::parse_external_id(s)?;
         s.skip_spaces();
 
-        let c = s.consume_either(&[b'[', b'>'])?;
+        let c = s.curr_byte()?;
+        if c != b'[' && c !=  b'>' {
+            let chars = vec![c, b'[', b'>'];
+            return Err(StreamError::InvalidChar(chars, s.gen_text_pos()));
+        }
+
+        s.advance(1);
+
         let span = s.slice_back(start);
         if c == b'[' {
             Ok(Token::DtdStart { name, external_id, span })
@@ -926,8 +942,7 @@ impl<'a> Tokenizer<'a> {
 
         s.consume_spaces()?;
 
-        let is_ge = if s.curr_byte()? == b'%' {
-            s.consume_byte(b'%')?;
+        let is_ge = if s.try_consume_byte(b'%') {
             s.consume_spaces()?;
             false
         } else {
@@ -966,7 +981,7 @@ impl<'a> Tokenizer<'a> {
                     if is_ge {
                         s.skip_spaces();
                         if s.starts_with(b"NDATA") {
-                            s.skip_string(b"NDATA")?;
+                            s.advance(5);
                             s.consume_spaces()?;
                             s.skip_name()?;
                             // TODO: NDataDecl is not supported
@@ -1113,47 +1128,38 @@ impl<'a> Iterator for Tokenizer<'a> {
 
         if let Some(ref t) = t {
             match *t {
-                Ok(Token::ElementStart { .. }) => {
-                    self.state = State::Attributes;
-                }
-                Ok(Token::ElementEnd { ref end, .. }) => {
-                    match *end {
-                        ElementEnd::Open => {
-                            self.depth += 1;
-                        }
-                        ElementEnd::Close(..) => {
-                            if self.depth > 0 {
-                                self.depth -= 1;
-                            }
-                        }
-                        ElementEnd::Empty => {}
+                Ok(t) => match t {
+                    Token::ElementStart { .. } => {
+                        self.state = State::Attributes;
                     }
+                    Token::ElementEnd { ref end, .. } => {
+                        match *end {
+                            ElementEnd::Open => self.depth += 1,
+                            ElementEnd::Close(..) if self.depth > 0 => self.depth -= 1,
+                            _ => {}
+                        }
 
-                    if self.depth == 0 && !self.fragment_parsing {
-                        self.state = State::AfterElements;
-                    } else {
-                        self.state = State::Elements;
+                        if self.depth == 0 && !self.fragment_parsing {
+                            self.state = State::AfterElements;
+                        } else {
+                            self.state = State::Elements;
+                        }
                     }
-                }
-                Ok(Token::DtdStart { .. }) => {
-                    self.state = State::Dtd;
-                }
-                Ok(Token::EmptyDtd { .. }) | Ok(Token::DtdEnd { .. }) => {
-                    self.state = State::AfterDtd;
-                }
+                    Token::DtdStart { .. } => {
+                        self.state = State::Dtd;
+                    }
+                    Token::EmptyDtd { .. } | Token::DtdEnd { .. } => {
+                        self.state = State::AfterDtd;
+                    }
+                    _ => {}
+                },
                 Err(_) => {
                     self.stream.jump_to_end();
                     self.state = State::End;
                 }
-                _ => {}
             }
         }
 
         t
     }
-}
-
-#[test]
-fn token_size() {
-    assert!(::std::mem::size_of::<Token>() <= 196);
 }
