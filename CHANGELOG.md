@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - `Stream::curr_char`.
 - `Stream::is_curr_byte_eq`.
 - `Stream::consume_either`.
+- `StrSpan::trim`.
 
 ### Fixed
 - Declaration attributes with mixed quotes parsing.

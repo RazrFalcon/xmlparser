@@ -1,8 +1,6 @@
 use std::fmt;
 use std::ops::Range;
 
-use Stream;
-
 
 /// An immutable string slice.
 ///
@@ -111,30 +109,6 @@ impl<'a> StrSpan<'a> {
     #[inline]
     pub fn full_str(&self) -> &'a str {
         self.text
-    }
-
-    /// Returns a trimmed version of this `StrSpan`.
-    ///
-    /// Removes only leading and trailing spaces.
-    ///
-    /// This function will trim escaped spaces (aka `&#x20;`) too.
-    pub fn trim(&self) -> StrSpan<'a> {
-        let mut s = Stream::from(*self);
-        s.skip_spaces();
-
-        let start = s.pos();
-        let mut end;
-        loop {
-            s.skip_bytes(|s, _| !s.starts_with_space());
-            end = s.pos();
-            s.skip_spaces();
-
-            if s.at_end() {
-                break;
-            }
-        }
-
-        self.slice_region(start, end)
     }
 }
 
