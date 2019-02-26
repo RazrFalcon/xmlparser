@@ -1,9 +1,9 @@
 use std::char;
 use std::str;
-use std::cmp;
+use std::ops::{Deref, DerefMut};
 
 use {
-    TextPos,
+    ByteStream,
     StreamError,
     StrSpan,
     XmlByteExt,
@@ -28,126 +28,45 @@ pub enum Reference<'a> {
 }
 
 
-/// A streaming text parsing interface.
-#[derive(Clone, Copy, PartialEq, Debug)]
+/// A streaming XML parsing interface.
+#[derive(Clone, Copy, PartialEq)]
 pub struct Stream<'a> {
-    pos: usize,
-    end: usize,
-    span: StrSpan<'a>,
+    d: ByteStream<'a>,
+}
+
+impl<'a> Deref for Stream<'a> {
+    type Target = ByteStream<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.d
+    }
+}
+
+impl<'a> DerefMut for Stream<'a> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.d
+    }
+}
+
+impl<'a> From<ByteStream<'a>> for Stream<'a> {
+    fn from(d: ByteStream<'a>) -> Self {
+        Stream { d }
+    }
 }
 
 impl<'a> From<&'a str> for Stream<'a> {
     fn from(text: &'a str) -> Self {
-        Stream {
-            pos: 0,
-            end: text.len(),
-            span: text.into(),
-        }
+        ByteStream::new(text.into()).into()
     }
 }
 
 impl<'a> From<StrSpan<'a>> for Stream<'a> {
     fn from(span: StrSpan<'a>) -> Self {
-        Stream {
-            pos: 0,
-            end: span.as_str().len(),
-            span,
-        }
+        ByteStream::new(span).into()
     }
 }
 
 impl<'a> Stream<'a> {
-    /// Returns an underling string span.
-    #[inline]
-    pub fn span(&self) -> StrSpan<'a> {
-        self.span
-    }
-
-    /// Returns current position.
-    #[inline]
-    pub fn pos(&self) -> usize {
-        self.pos
-    }
-
-    /// Sets current position equal to the end.
-    ///
-    /// Used to indicate end of parsing on error.
-    #[inline]
-    pub fn jump_to_end(&mut self) {
-        self.pos = self.end;
-    }
-
-    /// Checks if the stream is reached the end.
-    ///
-    /// Any [`pos()`] value larger than original text length indicates stream end.
-    ///
-    /// Accessing stream after reaching end via safe methods will produce
-    /// an `UnexpectedEndOfStream` error.
-    ///
-    /// Accessing stream after reaching end via *_unchecked methods will produce
-    /// a Rust's bound checking error.
-    ///
-    /// [`pos()`]: #method.pos
-    #[inline]
-    pub fn at_end(&self) -> bool {
-        self.pos >= self.end
-    }
-
-    /// Returns a byte from a current stream position.
-    ///
-    /// # Errors
-    ///
-    /// - `UnexpectedEndOfStream`
-    #[inline]
-    pub fn curr_byte(&self) -> Result<u8> {
-        if self.at_end() {
-            return Err(StreamError::UnexpectedEndOfStream);
-        }
-
-        Ok(self.curr_byte_unchecked())
-    }
-
-    /// Returns a byte from a current stream position.
-    ///
-    /// # Panics
-    ///
-    /// - if the current position is after the end of the data
-    #[inline]
-    pub fn curr_byte_unchecked(&self) -> u8 {
-        self.span.as_bytes()[self.pos]
-    }
-
-    /// Returns a next byte from a current stream position.
-    ///
-    /// # Errors
-    ///
-    /// - `UnexpectedEndOfStream`
-    #[inline]
-    pub fn next_byte(&self) -> Result<u8> {
-        if self.pos + 1 >= self.end {
-            return Err(StreamError::UnexpectedEndOfStream);
-        }
-
-        Ok(self.span.as_bytes()[self.pos + 1])
-    }
-
-    /// Advances by `n` bytes.
-    ///
-    /// # Examples
-    ///
-    /// ```rust,should_panic
-    /// use xmlparser::Stream;
-    ///
-    /// let mut s = Stream::from("text");
-    /// s.advance(2); // ok
-    /// s.advance(20); // will cause a panic via debug_assert!().
-    /// ```
-    #[inline]
-    pub fn advance(&mut self, n: usize) {
-        debug_assert!(self.pos + n <= self.end);
-        self.pos += n;
-    }
-
     /// Skips whitespaces.
     ///
     /// Accepted values: `' ' \n \r \t &#x20; &#x9; &#xD; &#xA;`.
@@ -169,16 +88,14 @@ impl<'a> Stream<'a> {
                 self.advance(1);
             } else if c == b'&' {
                 // Check for (#x20 | #x9 | #xD | #xA).
-                let start = self.pos;
                 let mut is_space = false;
-                if let Ok(Reference::Char(ch)) = self.consume_reference() {
+                if let Some(Reference::Char(ch)) = self.try_consume_reference() {
                     if (ch as u32) < 255 && (ch as u8).is_xml_space() {
                         is_space = true;
                     }
                 }
 
                 if !is_space {
-                    self.pos = start;
                     break;
                 }
             } else {
@@ -196,25 +113,6 @@ impl<'a> Stream<'a> {
         }
     }
 
-    /// Checks that the stream starts with a selected text.
-    ///
-    /// We are using `&[u8]` instead of `&str` for performance reasons.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use xmlparser::Stream;
-    ///
-    /// let mut s = Stream::from("Some text.");
-    /// s.advance(5);
-    /// assert_eq!(s.starts_with(b"text"), true);
-    /// assert_eq!(s.starts_with(b"long"), false);
-    /// ```
-    #[inline]
-    pub fn starts_with(&self, text: &[u8]) -> bool {
-        self.span.as_bytes()[self.pos..self.end].starts_with(text)
-    }
-
     /// Checks if the stream is starts with a space.
     pub fn starts_with_space(&self) -> bool {
         if self.at_end() {
@@ -229,8 +127,8 @@ impl<'a> Stream<'a> {
             is_space = true;
         } else if c == b'&' {
             // Check for (#x20 | #x9 | #xD | #xA).
-            let mut s = *self;
-            if let Some(Reference::Char(v)) = s.try_consume_reference() {
+            let mut s = self.clone();
+            if let Ok(Reference::Char(v)) = s.consume_reference() {
                 if (v as u32) < 255 && (v as u8).is_xml_space() {
                     is_space = true;
                 }
@@ -264,252 +162,22 @@ impl<'a> Stream<'a> {
         Ok(())
     }
 
-    /// Consumes the current byte if it's equal to the provided byte.
-    ///
-    /// # Errors
-    ///
-    /// - `InvalidChar`
-    /// - `UnexpectedEndOfStream`
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use xmlparser::Stream;
-    ///
-    /// let mut s = Stream::from("Some text.");
-    /// assert!(s.consume_byte(b'S').is_ok());
-    /// assert!(s.consume_byte(b'o').is_ok());
-    /// assert!(s.consume_byte(b'm').is_ok());
-    /// assert!(s.consume_byte(b'q').is_err());
-    /// ```
-    pub fn consume_byte(&mut self, c: u8) -> Result<()> {
-        if self.curr_byte()? != c {
-            return Err(
-                StreamError::InvalidChar(
-                    vec![self.curr_byte_unchecked(), c],
-                    self.gen_text_pos(),
-                )
-            );
-        }
-
-        self.advance(1);
-        Ok(())
-    }
-
-    /// Tries to consume the current byte if it's equal to the provided byte.
-    ///
-    /// Unlike `consume_byte()` will not return any errors.
-    pub fn try_consume_byte(&mut self, c: u8) -> bool {
-        match self.curr_byte() {
-            Ok(b) if b == c => {
-                self.advance(1);
-                true
-            }
-            _ => false,
-        }
-    }
-
-    /// Skips selected string.
-    ///
-    /// # Errors
-    ///
-    /// - `InvalidString`
-    pub fn skip_string(&mut self, text: &[u8]) -> Result<()> {
-        if !self.starts_with(text) {
-            let len = cmp::min(text.len(), self.end - self.pos);
-            // Collect chars and do not slice a string,
-            // because the `len` can be on the char boundary.
-            // Which lead to a panic.
-            let actual = self.span.as_str()[self.pos..].chars().take(len).collect();
-
-            // Assume that all input `text` are valid UTF-8 strings, so unwrap is safe.
-            let expected = str::from_utf8(text).unwrap().to_owned();
-
-            let pos = self.gen_text_pos();
-
-            return Err(StreamError::InvalidString(vec![actual, expected], pos));
-        }
-
-        self.advance(text.len());
-        Ok(())
-    }
-
-    /// Consumes an XML name and returns it.
-    ///
-    /// Consumes according to: <https://www.w3.org/TR/xml/#NT-Name>
-    ///
-    /// # Errors
-    ///
-    /// - `InvalidName` - if name is empty or starts with an invalid char
-    /// - `UnexpectedEndOfStream`
-    pub fn consume_name(&mut self) -> Result<StrSpan<'a>> {
-        let start = self.pos;
-        self.skip_name()?;
-
-        let name = self.slice_back(start);
-        if name.is_empty() {
-            return Err(StreamError::InvalidName);
-        }
-
-        Ok(name)
-    }
-
-    /// Skips an XML name.
-    ///
-    /// The same as `consume_name()`, but does not return a consumed name.
-    ///
-    /// # Errors
-    ///
-    /// - `InvalidName` - if name is empty or starts with an invalid char
-    pub fn skip_name(&mut self) -> Result<()> {
-        let mut iter = self.span.as_str()[self.pos..self.end].chars();
-        if let Some(c) = iter.next() {
-            if c.is_xml_name_start() {
-                self.advance(c.len_utf8());
-            } else {
-                return Err(StreamError::InvalidName);
-            }
-        }
-
-        for c in iter {
-            if c.is_xml_name() {
-                self.advance(c.len_utf8());
-            } else {
-                break;
-            }
-        }
-
-        Ok(())
-    }
-
-    /// Consumes a qualified XML name and returns it.
-    ///
-    /// Consumes according to: <https://www.w3.org/TR/xml-names/#ns-qualnames>
-    ///
-    /// # Errors
-    ///
-    /// - `InvalidName` - if name is empty or starts with an invalid char
-    pub fn consume_qname(&mut self) -> Result<(StrSpan<'a>, StrSpan<'a>)> {
-        let start = self.pos;
-
-        let mut splitter = None;
-        let iter = self.span.as_str()[self.pos..self.end].chars();
-        for c in iter {
-            if c == ':' {
-                splitter = Some(self.pos);
-                self.advance(1);
-            } else if c.is_xml_name() {
-                self.advance(c.len_utf8());
-            } else {
-                break;
-            }
-        }
-
-        let (prefix, local) = if let Some(splitter) = splitter {
-            let prefix = self.span.slice_region(start, splitter);
-            let local = self.slice_back(splitter + 1);
-            (prefix, local)
-        } else {
-            let local = self.slice_back(start);
-            ("".into(), local)
-        };
-
-        if local.is_empty() {
-            return Err(StreamError::InvalidName);
-        }
-
-        Ok((prefix, local))
-    }
-
-    /// Consumes `=`.
-    ///
-    /// Consumes according to: <https://www.w3.org/TR/xml/#NT-Eq>
-    ///
-    /// # Errors
-    ///
-    /// - `InvalidChar`
-    /// - `UnexpectedEndOfStream`
-    pub fn consume_eq(&mut self) -> Result<()> {
-        self.skip_ascii_spaces();
-        self.consume_byte(b'=')?;
-        self.skip_ascii_spaces();
-
-        Ok(())
-    }
-
-    /// Consumes quote.
-    ///
-    /// Consumes `'` or `"` and returns it.
-    ///
-    /// # Errors
-    ///
-    /// - `InvalidQuote`
-    /// - `UnexpectedEndOfStream`
-    pub fn consume_quote(&mut self) -> Result<u8> {
-        let c = self.curr_byte()?;
-        if c == b'\'' || c == b'"' {
-            self.advance(1);
-            Ok(c)
-        } else {
-            Err(StreamError::InvalidQuote(c as char, self.gen_text_pos()))
-        }
-    }
-
-    /// Consumes bytes by the predicate and returns them.
-    ///
-    /// The result can be empty.
-    pub fn consume_bytes<F>(&mut self, f: F) -> StrSpan<'a>
-        where F: Fn(&Stream, u8) -> bool
-    {
-        let start = self.pos;
-        self.skip_bytes(f);
-        self.slice_back(start)
-    }
-
-    /// Skips bytes by the predicate.
-    pub fn skip_bytes<F>(&mut self, f: F)
-        where F: Fn(&Stream, u8) -> bool
-    {
-        while !self.at_end() && f(self, self.curr_byte_unchecked()) {
-            self.advance(1);
-        }
-    }
-
-    /// Consumes chars by the predicate and returns them.
-    ///
-    /// The result can be empty.
-    pub fn consume_chars<F>(&mut self, f: F) -> StrSpan<'a>
-        where F: Fn(&Stream, char) -> bool
-    {
-        let start = self.pos;
-        self.skip_chars(f);
-        self.slice_back(start)
-    }
-
-    /// Skips chars by the predicate.
-    pub fn skip_chars<F>(&mut self, f: F)
-        where F: Fn(&Stream, char) -> bool
-    {
-        let t = &self.span.as_str()[self.pos..self.end];
-        for c in t.chars() {
-            if f(self, c) {
-                self.advance(c.len_utf8());
-            } else {
-                break;
-            }
-        }
-    }
-
     /// Consumes an XML character reference if there is one.
     ///
     /// On error will reset the position to the original.
     pub fn try_consume_reference(&mut self) -> Option<Reference<'a>> {
-        let start = self.pos;
+        let start = self.pos();
 
-        match self.consume_reference() {
-            Ok(r) => Some(r),
+        // Consume reference on a substream.
+        let mut s = self.clone();
+        match s.consume_reference() {
+            Ok(r) => {
+                // If the current data is a reference than advance the current stream
+                // by number of bytes read by substream.
+                self.advance(s.pos() - start);
+                Some(r)
+            }
             Err(_) => {
-                self.pos = start;
                 None
             }
         }
@@ -565,71 +233,123 @@ impl<'a> Stream<'a> {
         Ok(reference)
     }
 
-    /// Slices data from `pos` to the current position.
-    #[inline]
-    pub fn slice_back(&self, pos: usize) -> StrSpan<'a> {
-        self.span.slice_region(pos, self.pos)
-    }
-
-    /// Slices data from the current position to the end.
-    #[inline]
-    pub fn slice_tail(&self) -> StrSpan<'a> {
-        self.span.slice_region(self.pos, self.end)
-    }
-
-    /// Calculates a current absolute position.
+    /// Consumes an XML name and returns it.
     ///
-    /// This operation is very expensive. Use only for errors.
-    #[inline(never)]
-    pub fn gen_text_pos(&self) -> TextPos {
-        let text = self.span.full_str();
-        let end = self.pos + self.span.start();
+    /// Consumes according to: <https://www.w3.org/TR/xml/#NT-Name>
+    ///
+    /// # Errors
+    ///
+    /// - `InvalidName` - if name is empty or starts with an invalid char
+    /// - `UnexpectedEndOfStream`
+    pub fn consume_name(&mut self) -> Result<StrSpan<'a>> {
+        let start = self.pos();
+        self.skip_name()?;
 
-        let row = Self::calc_curr_row(text, end);
-        let col = Self::calc_curr_col(text, end);
-        TextPos::new(row, col)
-    }
-
-    /// Calculates an absolute position at `pos`.
-    ///
-    /// This operation is very expensive. Use only for errors.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let s = xmlparser::Stream::from("text");
-    ///
-    /// assert_eq!(s.gen_text_pos_from(2), xmlparser::TextPos::new(1, 3));
-    /// assert_eq!(s.gen_text_pos_from(9999), xmlparser::TextPos::new(1, 5));
-    /// ```
-    #[inline(never)]
-    pub fn gen_text_pos_from(&self, pos: usize) -> TextPos {
-        let mut s = self.clone();
-        s.pos = cmp::min(pos, s.span.full_str().len());
-        s.gen_text_pos()
-    }
-
-    fn calc_curr_row(text: &str, end: usize) -> u32 {
-        let mut row = 1;
-        for c in &text.as_bytes()[..end] {
-            if *c == b'\n' {
-                row += 1;
-            }
+        let name = self.slice_back(start);
+        if name.is_empty() {
+            return Err(StreamError::InvalidName);
         }
 
-        row
+        Ok(name)
     }
 
-    fn calc_curr_col(text: &str, end: usize) -> u32 {
-        let mut col = 1;
-        for c in text[..end].chars().rev() {
-            if c == '\n' {
-                break;
+    /// Skips an XML name.
+    ///
+    /// The same as `consume_name()`, but does not return a consumed name.
+    ///
+    /// # Errors
+    ///
+    /// - `InvalidName` - if name is empty or starts with an invalid char
+    pub fn skip_name(&mut self) -> Result<()> {
+        let mut iter = self.chars();
+        if let Some(c) = iter.next() {
+            if c.is_xml_name_start() {
+                self.advance(c.len_utf8());
             } else {
-                col += 1;
+                return Err(StreamError::InvalidName);
             }
         }
 
-        col
+        for c in iter {
+            if c.is_xml_name() {
+                self.advance(c.len_utf8());
+            } else {
+                break;
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Consumes a qualified XML name and returns it.
+    ///
+    /// Consumes according to: <https://www.w3.org/TR/xml-names/#ns-qualnames>
+    ///
+    /// # Errors
+    ///
+    /// - `InvalidName` - if name is empty or starts with an invalid char
+    pub fn consume_qname(&mut self) -> Result<(StrSpan<'a>, StrSpan<'a>)> {
+        let start = self.pos();
+
+        let mut splitter = None;
+        for c in self.chars() {
+            if c == ':' {
+                splitter = Some(self.pos());
+                self.advance(1);
+            } else if c.is_xml_name() {
+                self.advance(c.len_utf8());
+            } else {
+                break;
+            }
+        }
+
+        let (prefix, local) = if let Some(splitter) = splitter {
+            let prefix = self.span().slice_region(start, splitter);
+            let local = self.slice_back(splitter + 1);
+            (prefix, local)
+        } else {
+            let local = self.slice_back(start);
+            ("".into(), local)
+        };
+
+        if local.is_empty() {
+            return Err(StreamError::InvalidName);
+        }
+
+        Ok((prefix, local))
+    }
+
+    /// Consumes `=`.
+    ///
+    /// Consumes according to: <https://www.w3.org/TR/xml/#NT-Eq>
+    ///
+    /// # Errors
+    ///
+    /// - `InvalidChar`
+    /// - `UnexpectedEndOfStream`
+    pub fn consume_eq(&mut self) -> Result<()> {
+        self.skip_ascii_spaces();
+        self.consume_byte(b'=')?;
+        self.skip_ascii_spaces();
+
+        Ok(())
+    }
+
+    /// Consumes quote.
+    ///
+    /// Consumes `'` or `"` and returns it.
+    ///
+    /// # Errors
+    ///
+    /// - `InvalidQuote`
+    /// - `UnexpectedEndOfStream`
+    pub fn consume_quote(&mut self) -> Result<u8> {
+        let c = self.curr_byte()?;
+        if c == b'\'' || c == b'"' {
+            self.advance(1);
+            Ok(c)
+        } else {
+            Err(StreamError::InvalidQuote(c as char, self.gen_text_pos()))
+        }
     }
 }

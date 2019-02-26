@@ -75,11 +75,13 @@ macro_rules! matches {
 }
 
 
+mod bytestream;
 mod error;
 mod stream;
 mod strspan;
 mod xmlchar;
 
+pub use bytestream::*;
 pub use error::*;
 pub use stream::*;
 pub use strspan::*;

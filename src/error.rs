@@ -1,9 +1,7 @@
 use std::fmt;
 use std::error;
 
-use {
-    TokenType,
-};
+use TokenType;
 
 
 /// An XML parser errors.

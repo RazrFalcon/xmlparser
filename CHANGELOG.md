@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
   So we can use a non-panic and zero-cost `StrSpan::as_str` instead
   of `StrSpan::to_str`, that was performing slicing each time.
+- Split `Stream` into `ByteStream` and `Stream`.
 - Rename `StrSpan::to_str` into `StrSpan::as_str`.
 - Rename `Reference::EntityRef` into `Reference::Entity`.
 - Rename `Reference::CharRef` into `Reference::Char`.
