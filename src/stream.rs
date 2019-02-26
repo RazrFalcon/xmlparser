@@ -31,7 +31,6 @@ pub enum Reference<'a> {
 /// A streaming text parsing interface.
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Stream<'a> {
-    bytes: &'a [u8],
     pos: usize,
     end: usize,
     span: StrSpan<'a>,
@@ -40,7 +39,6 @@ pub struct Stream<'a> {
 impl<'a> From<&'a str> for Stream<'a> {
     fn from(text: &'a str) -> Self {
         Stream {
-            bytes: text.as_bytes(),
             pos: 0,
             end: text.len(),
             span: text.into(),
@@ -51,7 +49,6 @@ impl<'a> From<&'a str> for Stream<'a> {
 impl<'a> From<StrSpan<'a>> for Stream<'a> {
     fn from(span: StrSpan<'a>) -> Self {
         Stream {
-            bytes: span.as_str().as_bytes(),
             pos: 0,
             end: span.as_str().len(),
             span,
@@ -117,7 +114,7 @@ impl<'a> Stream<'a> {
     /// - if the current position is after the end of the data
     #[inline]
     pub fn curr_byte_unchecked(&self) -> u8 {
-        self.bytes[self.pos]
+        self.span.as_bytes()[self.pos]
     }
 
     /// Returns a next byte from a current stream position.
@@ -131,7 +128,7 @@ impl<'a> Stream<'a> {
             return Err(StreamError::UnexpectedEndOfStream);
         }
 
-        Ok(self.bytes[self.pos + 1])
+        Ok(self.span.as_bytes()[self.pos + 1])
     }
 
     /// Advances by `n` bytes.
@@ -215,7 +212,7 @@ impl<'a> Stream<'a> {
     /// ```
     #[inline]
     pub fn starts_with(&self, text: &[u8]) -> bool {
-        self.bytes[self.pos..self.end].starts_with(text)
+        self.span.as_bytes()[self.pos..self.end].starts_with(text)
     }
 
     /// Checks if the stream is starts with a space.

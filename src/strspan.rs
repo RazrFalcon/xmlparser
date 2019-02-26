@@ -62,6 +62,12 @@ impl<'a> StrSpan<'a> {
         &self.span
     }
 
+    /// Returns a span slice as bytes.
+    #[inline]
+    pub(crate) fn as_bytes(&self) -> &'a [u8] {
+        self.span.as_bytes()
+    }
+
     /// Returns an underling string.
     #[inline]
     pub fn full_str(&self) -> &'a str {
