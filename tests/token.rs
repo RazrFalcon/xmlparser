@@ -59,40 +59,40 @@ pub fn to_test_token(token: Result<xml::Token, xml::Error>) -> Token {
     match token {
         Ok(xml::Token::Declaration { version, encoding, standalone, span }) => {
             Token::Declaration(
-                version.to_str(),
-                encoding.map(|v| v.to_str()),
+                version.as_str(),
+                encoding.map(|v| v.as_str()),
                 standalone,
                 span.range(),
             )
         }
         Ok(xml::Token::ProcessingInstruction { target, content, span }) => {
             Token::PI(
-                target.to_str(),
-                content.map(|v| v.to_str()),
+                target.as_str(),
+                content.map(|v| v.as_str()),
                 span.range(),
             )
         }
-        Ok(xml::Token::Comment { text, span }) => Token::Comment(text.to_str(), span.range()),
+        Ok(xml::Token::Comment { text, span }) => Token::Comment(text.as_str(), span.range()),
         Ok(xml::Token::DtdStart { name, external_id, span }) => {
             Token::DtdStart(
-                name.to_str(),
+                name.as_str(),
                 external_id.map(|v| to_test_external_id(v)),
                 span.range(),
             )
         }
         Ok(xml::Token::EmptyDtd { name, external_id, span }) => {
             Token::EmptyDtd(
-                name.to_str(),
+                name.as_str(),
                 external_id.map(|v| to_test_external_id(v)),
                 span.range(),
             )
         }
         Ok(xml::Token::EntityDeclaration { name, definition, span }) => {
             Token::EntityDecl(
-                name.to_str(),
+                name.as_str(),
                 match definition {
                     xml::EntityDefinition::EntityValue(name) => {
-                        EntityDefinition::EntityValue(name.to_str())
+                        EntityDefinition::EntityValue(name.as_str())
                     }
                     xml::EntityDefinition::ExternalId(id) => {
                         EntityDefinition::ExternalId(to_test_external_id(id))
@@ -103,26 +103,26 @@ pub fn to_test_token(token: Result<xml::Token, xml::Error>) -> Token {
         }
         Ok(xml::Token::DtdEnd { span }) => Token::DtdEnd(span.range()),
         Ok(xml::Token::ElementStart { prefix, local, span }) => {
-            Token::ElementStart(prefix.to_str(), local.to_str(), span.range())
+            Token::ElementStart(prefix.as_str(), local.as_str(), span.range())
         }
         Ok(xml::Token::Attribute { prefix, local, value, span }) => {
-            Token::Attribute(prefix.to_str(), local.to_str(), value.to_str(), span.range())
+            Token::Attribute(prefix.as_str(), local.as_str(), value.as_str(), span.range())
         }
         Ok(xml::Token::ElementEnd { end, span }) => {
             Token::ElementEnd(
                 match end {
                     xml::ElementEnd::Open => ElementEnd::Open,
                     xml::ElementEnd::Close(prefix, local) => {
-                        ElementEnd::Close(prefix.to_str(), local.to_str())
+                        ElementEnd::Close(prefix.as_str(), local.as_str())
                     }
                     xml::ElementEnd::Empty => ElementEnd::Empty,
                 },
                 span.range()
             )
         }
-        Ok(xml::Token::Text { text }) => Token::Text(text.to_str(), text.range()),
-        Ok(xml::Token::Whitespaces { text }) => Token::Whitespaces(text.to_str(), text.range()),
-        Ok(xml::Token::Cdata { text, span }) => Token::Cdata(text.to_str(), span.range()),
+        Ok(xml::Token::Text { text }) => Token::Text(text.as_str(), text.range()),
+        Ok(xml::Token::Whitespaces { text }) => Token::Whitespaces(text.as_str(), text.range()),
+        Ok(xml::Token::Cdata { text, span }) => Token::Cdata(text.as_str(), span.range()),
         Err(ref e) => Token::Error(e.to_string()),
     }
 }
@@ -130,10 +130,10 @@ pub fn to_test_token(token: Result<xml::Token, xml::Error>) -> Token {
 fn to_test_external_id(id: xml::ExternalId) -> ExternalId {
     match id {
         xml::ExternalId::System(name) => {
-            ExternalId::System(name.to_str())
+            ExternalId::System(name.as_str())
         }
         xml::ExternalId::Public(name, value) => {
-            ExternalId::Public(name.to_str(), value.to_str())
+            ExternalId::Public(name.as_str(), value.as_str())
         }
     }
 }

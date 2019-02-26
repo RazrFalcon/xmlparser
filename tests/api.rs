@@ -31,6 +31,11 @@ fn token_size() {
 }
 
 #[test]
+fn span_size() {
+    assert!(::std::mem::size_of::<StrSpan>() <= 48);
+}
+
+#[test]
 fn err_size_1() {
     assert!(::std::mem::size_of::<Error>() <= 64);
 }

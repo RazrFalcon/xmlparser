@@ -10,8 +10,8 @@ use std::ops::Range;
 #[derive(Clone, Copy, PartialEq)]
 pub struct StrSpan<'a> {
     text: &'a str,
+    span: &'a str,
     start: usize,
-    end: usize,
 }
 
 impl<'a> From<&'a str> for StrSpan<'a> {
@@ -19,7 +19,7 @@ impl<'a> From<&'a str> for StrSpan<'a> {
         StrSpan {
             text,
             start: 0,
-            end: text.len(),
+            span: text,
         }
     }
 }
@@ -27,12 +27,9 @@ impl<'a> From<&'a str> for StrSpan<'a> {
 impl<'a> StrSpan<'a> {
     /// Constructs a new `StrSpan` from substring.
     #[inline]
-    pub fn from_substr(text: &str, start: usize, end: usize) -> StrSpan {
+    pub(crate) fn from_substr(text: &str, start: usize, end: usize) -> StrSpan {
         debug_assert!(start <= end);
-        debug_assert!(text.is_char_boundary(start));
-        debug_assert!(text.is_char_boundary(end));
-
-        StrSpan { text, start, end }
+        StrSpan { text, span: &text[start..end], start }
     }
 
     /// Returns a start position of the span.
@@ -44,65 +41,25 @@ impl<'a> StrSpan<'a> {
     /// Returns a end position of the span.
     #[inline]
     pub fn end(&self) -> usize {
-        self.end
+        self.start + self.span.len()
     }
 
     /// Returns a end position of the span.
     #[inline]
     pub fn range(&self) -> Range<usize> {
-        self.start..self.end
-    }
-
-    /// Returns a length of the span.
-    #[inline]
-    pub fn len(&self) -> usize {
-        self.end - self.start
+        self.start..self.end()
     }
 
     /// Returns a length of the span.
     #[inline]
     pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    /// Returns a length of the span underling string.
-    #[inline]
-    pub fn full_len(&self) -> usize {
-        self.text.len()
+        self.span.len() == 0
     }
 
     /// Returns a span slice.
-    ///
-    /// A bit expensive, since Rust checks for char boundary.
-    ///
-    /// # Panics
-    ///
-    /// - if the span is out of bounds of the original string
-    /// - if the start or end positions is not on a char boundary
     #[inline]
-    pub fn to_str(&self) -> &'a str {
-        &self.text[self.start..self.end]
-    }
-
-    /// Returns a span slice as bytes.
-    ///
-    /// The same as `to_str` but does not involve char boundary checking.
-    ///
-    /// # Panics
-    ///
-    /// - if the span is out of bounds of the original string
-    #[inline]
-    pub fn as_bytes(&self) -> &'a [u8] {
-        &self.text.as_bytes()[self.start..self.end]
-    }
-
-    /// Returns an underling string region as `StrSpan`.
-    #[inline]
-    pub fn slice_region(&self, start: usize, end: usize) -> StrSpan<'a> {
-        let start = self.start + start;
-        let end = self.start + end;
-
-        StrSpan::from_substr(self.text, start, end)
+    pub fn as_str(&self) -> &'a str {
+        &self.span
     }
 
     /// Returns an underling string.
@@ -110,16 +67,25 @@ impl<'a> StrSpan<'a> {
     pub fn full_str(&self) -> &'a str {
         self.text
     }
+
+    /// Returns an underling string region as `StrSpan`.
+    #[inline]
+    pub(crate) fn slice_region(&self, start: usize, end: usize) -> StrSpan<'a> {
+        let start = self.start + start;
+        let end = self.start + end;
+
+        StrSpan::from_substr(self.text, start, end)
+    }
 }
 
 impl<'a> fmt::Debug for StrSpan<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "StrSpan({:?} {}..{})", self.to_str(), self.start, self.end)
+        write!(f, "StrSpan({:?} {}..{})", self.as_str(), self.start(), self.end())
     }
 }
 
 impl<'a> fmt::Display for StrSpan<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_str())
+        write!(f, "{}", self.as_str())
     }
 }

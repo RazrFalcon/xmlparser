@@ -51,7 +51,7 @@ fn parse_fragment_1() {
     p.enable_fragment_mode();
 
     match p.next().unwrap().unwrap() {
-        xml::Token::ElementStart { local, .. } => assert_eq!(local.to_str(), "p"),
+        xml::Token::ElementStart { local, .. } => assert_eq!(local.as_str(), "p"),
         _ => panic!(),
     }
 
@@ -61,7 +61,7 @@ fn parse_fragment_1() {
     }
 
     match p.next().unwrap().unwrap() {
-        xml::Token::ElementStart { local, .. } => assert_eq!(local.to_str(), "p"),
+        xml::Token::ElementStart { local, .. } => assert_eq!(local.as_str(), "p"),
         _ => panic!(),
     }
 }

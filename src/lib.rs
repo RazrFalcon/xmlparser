@@ -784,7 +784,7 @@ impl<'a> Tokenizer<'a> {
         let quote = s.consume_quote()?;
 
         let start = s.pos();
-        let value = s.consume_name()?.to_str();
+        let value = s.consume_name()?.as_str();
 
         let flag = match value {
             "yes" => true,
@@ -821,7 +821,7 @@ impl<'a> Tokenizer<'a> {
 
         s.skip_string(b"-->")?;
 
-        if text.to_str().contains("--") {
+        if text.as_str().contains("--") {
             return Err(StreamError::UnexpectedEndOfStream); // Error type doesn't matter.
         }
 
@@ -911,7 +911,7 @@ impl<'a> Tokenizer<'a> {
             let literal1 = s.consume_bytes(|_, c| c != quote);
             s.consume_byte(quote)?;
 
-            let v = if id.to_str() == "SYSTEM" {
+            let v = if id.as_str() == "SYSTEM" {
                 ExternalId::System(literal1)
             } else {
                 s.consume_spaces()?;
@@ -1090,7 +1090,7 @@ impl<'a> Tokenizer<'a> {
         let quote = s.consume_quote()?;
         let value = s.consume_bytes(|_, c| c != quote);
 
-        if value.to_str().contains('<') {
+        if value.as_str().contains('<') {
             return Err(StreamError::InvalidAttributeValue);
         }
 

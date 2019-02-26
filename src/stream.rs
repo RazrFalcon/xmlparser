@@ -51,9 +51,9 @@ impl<'a> From<&'a str> for Stream<'a> {
 impl<'a> From<StrSpan<'a>> for Stream<'a> {
     fn from(span: StrSpan<'a>) -> Self {
         Stream {
-            bytes: span.to_str().as_bytes(),
+            bytes: span.as_str().as_bytes(),
             pos: 0,
-            end: span.len(),
+            end: span.as_str().len(),
             span,
         }
     }
@@ -323,7 +323,7 @@ impl<'a> Stream<'a> {
             // Collect chars and do not slice a string,
             // because the `len` can be on the char boundary.
             // Which lead to a panic.
-            let actual = self.span.to_str()[self.pos..].chars().take(len).collect();
+            let actual = self.span.as_str()[self.pos..].chars().take(len).collect();
 
             // Assume that all input `text` are valid UTF-8 strings, so unwrap is safe.
             let expected = str::from_utf8(text).unwrap().to_owned();
@@ -365,7 +365,7 @@ impl<'a> Stream<'a> {
     ///
     /// - `InvalidName` - if name is empty or starts with an invalid char
     pub fn skip_name(&mut self) -> Result<()> {
-        let mut iter = self.span.to_str()[self.pos..self.end].chars();
+        let mut iter = self.span.as_str()[self.pos..self.end].chars();
         if let Some(c) = iter.next() {
             if c.is_xml_name_start() {
                 self.advance(c.len_utf8());
@@ -396,7 +396,7 @@ impl<'a> Stream<'a> {
         let start = self.pos;
 
         let mut splitter = None;
-        let iter = self.span.to_str()[self.pos..self.end].chars();
+        let iter = self.span.as_str()[self.pos..self.end].chars();
         for c in iter {
             if c == ':' {
                 splitter = Some(self.pos);
@@ -493,7 +493,7 @@ impl<'a> Stream<'a> {
     pub fn skip_chars<F>(&mut self, f: F)
         where F: Fn(&Stream, char) -> bool
     {
-        let t = &self.span.to_str()[self.pos..self.end];
+        let t = &self.span.as_str()[self.pos..self.end];
         for c in t.chars() {
             if f(self, c) {
                 self.advance(c.len_utf8());
@@ -536,10 +536,10 @@ impl<'a> Stream<'a> {
 
         let reference = if self.try_consume_byte(b'#') {
             let (value, radix) = if self.try_consume_byte(b'x') {
-                let value = self.consume_bytes(|_, c| c.is_xml_hex_digit()).to_str();
+                let value = self.consume_bytes(|_, c| c.is_xml_hex_digit()).as_str();
                 (value, 16)
             } else {
-                let value = self.consume_bytes(|_, c| c.is_xml_digit()).to_str();
+                let value = self.consume_bytes(|_, c| c.is_xml_digit()).as_str();
                 (value, 10)
             };
 
@@ -553,13 +553,13 @@ impl<'a> Stream<'a> {
             Reference::Char(c)
         } else {
             let name = self.consume_name()?;
-            match name.to_str() {
+            match name.as_str() {
                 "quot" => Reference::Char('"'),
                 "amp"  => Reference::Char('&'),
                 "apos" => Reference::Char('\''),
                 "lt"   => Reference::Char('<'),
                 "gt"   => Reference::Char('>'),
-                _ => Reference::Entity(name.to_str()),
+                _ => Reference::Entity(name.as_str()),
             }
         };
 

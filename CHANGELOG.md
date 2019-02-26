@@ -6,19 +6,28 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
-- (**breaking**) `span` field to all `Token` variants, which contains a whole token span in bytes.
+- `span` field to all `Token` variants, which contains a whole token span in bytes.
 - `Stream::try_consume_byte`.
 
 ### Changed
-- (**breaking**) All `Token` variants are structs now and not tuples.
+- All `Token` variants are structs now and not tuples.
+- `StrSpan` contains an actual string span an not only region now.
+
+  So we can use a non-panic and zero-cost `StrSpan::as_str` instead
+  of `StrSpan::to_str`, that was performing slicing each time.
+- Rename `StrSpan::to_str` into `StrSpan::as_str`.
 - Rename `Reference::EntityRef` into `Reference::Entity`.
 - Rename `Reference::CharRef` into `Reference::Char`.
+- `StrSpan::from_substr` and `StrSpan::slice_region` are private now.
 
 ### Removed
 - `Stream::curr_char`.
 - `Stream::is_curr_byte_eq`.
 - `Stream::consume_either`.
 - `StrSpan::trim`.
+- `StrSpan::len`.
+- `StrSpan::full_len`.
+- `StrSpan::as_bytes`.
 
 ### Fixed
 - Declaration attributes with mixed quotes parsing.
