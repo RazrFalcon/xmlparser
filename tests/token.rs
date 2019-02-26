@@ -62,29 +62,29 @@ pub fn to_test_token(token: Result<xml::Token, xml::Error>) -> Token {
                 version.to_str(),
                 encoding.map(|v| v.to_str()),
                 standalone,
-                span_to_range(span),
+                span.range(),
             )
         }
         Ok(xml::Token::ProcessingInstruction { target, content, span }) => {
             Token::PI(
                 target.to_str(),
                 content.map(|v| v.to_str()),
-                span_to_range(span),
+                span.range(),
             )
         }
-        Ok(xml::Token::Comment { text, span }) => Token::Comment(text.to_str(), span_to_range(span)),
+        Ok(xml::Token::Comment { text, span }) => Token::Comment(text.to_str(), span.range()),
         Ok(xml::Token::DtdStart { name, external_id, span }) => {
             Token::DtdStart(
                 name.to_str(),
                 external_id.map(|v| to_test_external_id(v)),
-                span_to_range(span),
+                span.range(),
             )
         }
         Ok(xml::Token::EmptyDtd { name, external_id, span }) => {
             Token::EmptyDtd(
                 name.to_str(),
                 external_id.map(|v| to_test_external_id(v)),
-                span_to_range(span),
+                span.range(),
             )
         }
         Ok(xml::Token::EntityDeclaration { name, definition, span }) => {
@@ -98,15 +98,15 @@ pub fn to_test_token(token: Result<xml::Token, xml::Error>) -> Token {
                         EntityDefinition::ExternalId(to_test_external_id(id))
                     }
                 },
-                span_to_range(span),
+                span.range(),
             )
         }
-        Ok(xml::Token::DtdEnd { span }) => Token::DtdEnd(span_to_range(span)),
+        Ok(xml::Token::DtdEnd { span }) => Token::DtdEnd(span.range()),
         Ok(xml::Token::ElementStart { prefix, local, span }) => {
-            Token::ElementStart(prefix.to_str(), local.to_str(), span_to_range(span))
+            Token::ElementStart(prefix.to_str(), local.to_str(), span.range())
         }
         Ok(xml::Token::Attribute { prefix, local, value, span }) => {
-            Token::Attribute(prefix.to_str(), local.to_str(), value.to_str(), span_to_range(span))
+            Token::Attribute(prefix.to_str(), local.to_str(), value.to_str(), span.range())
         }
         Ok(xml::Token::ElementEnd { end, span }) => {
             Token::ElementEnd(
@@ -117,12 +117,12 @@ pub fn to_test_token(token: Result<xml::Token, xml::Error>) -> Token {
                     }
                     xml::ElementEnd::Empty => ElementEnd::Empty,
                 },
-                span_to_range(span)
+                span.range()
             )
         }
-        Ok(xml::Token::Text { text }) => Token::Text(text.to_str(), span_to_range(text)),
-        Ok(xml::Token::Whitespaces { text }) => Token::Whitespaces(text.to_str(), span_to_range(text)),
-        Ok(xml::Token::Cdata { text, span }) => Token::Cdata(text.to_str(), span_to_range(span)),
+        Ok(xml::Token::Text { text }) => Token::Text(text.to_str(), text.range()),
+        Ok(xml::Token::Whitespaces { text }) => Token::Whitespaces(text.to_str(), text.range()),
+        Ok(xml::Token::Cdata { text, span }) => Token::Cdata(text.to_str(), span.range()),
         Err(ref e) => Token::Error(e.to_string()),
     }
 }
@@ -136,8 +136,4 @@ fn to_test_external_id(id: xml::ExternalId) -> ExternalId {
             ExternalId::Public(name.to_str(), value.to_str())
         }
     }
-}
-
-fn span_to_range(span: xml::StrSpan) -> Range {
-    span.start()..span.end()
 }

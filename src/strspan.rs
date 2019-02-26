@@ -7,9 +7,9 @@ use Stream;
 /// An immutable string slice.
 ///
 /// Unlike `&str` contains a reference to the original string
-/// and a span position.
+/// and a span region.
 #[must_use]
-#[derive(PartialEq, Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct StrSpan<'a> {
     text: &'a str,
     start: usize,

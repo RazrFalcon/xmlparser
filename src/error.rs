@@ -90,7 +90,7 @@ pub enum StreamError {
     /// Includes: `' ' \n \r \t &#x20; &#x9; &#xD; &#xA;`.
     InvalidSpace(char, TextPos),
 
-    /// An unexpected character instead of an XML space.
+    /// An unexpected string.
     ///
     /// The first string is an actual one, others - expected.
     ///

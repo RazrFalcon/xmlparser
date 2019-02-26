@@ -1064,7 +1064,7 @@ impl<'a> Tokenizer<'a> {
     fn parse_attribute(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
         s.skip_ascii_spaces();
 
-        if let Some(c) = s.get_curr_byte() {
+        if let Ok(c) = s.curr_byte() {
             let start = s.pos();
 
             match c {
