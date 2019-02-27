@@ -39,7 +39,7 @@ If you are looking for a more high-level solution - checkout
 - Good error processing. All error types contain position (line:column) where it occurred.
 - No heap allocations.
 - No dependencies.
-- Tiny. ~1500 LOC and ~35KiB in the release build according to the `cargo-bloat`.
+- Tiny. ~1500 LOC and ~40KiB in the release build according to the `cargo-bloat`.
 
 ### Limitations
 
