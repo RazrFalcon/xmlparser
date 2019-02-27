@@ -259,22 +259,6 @@ pub enum Token<'a> {
         text: StrSpan<'a>,
     },
 
-    /// Whitespaces token.
-    ///
-    /// The same as `Text` token, but contains only whitespaces.
-    ///
-    /// Spaces can be encoded like `&#x20`.
-    ///
-    /// ```text
-    /// <p>   </p>
-    ///    ---     - text
-    /// ```
-    ///
-    /// The token span is equal to the `text`.
-    Whitespaces {
-        text: StrSpan<'a>,
-    },
-
     /// CDATA token.
     ///
     /// ```text
@@ -515,7 +499,7 @@ impl<'a> Tokenizer<'a> {
             State::Dtd => {
                 let token_type = parse_token_type!();
                 match token_type {
-                    TokenType::ElementDecl
+                      TokenType::ElementDecl
                     | TokenType::NotationDecl
                     | TokenType::AttlistDecl => {
                         if Self::consume_decl(s).is_err() {
@@ -719,6 +703,7 @@ impl<'a> Tokenizer<'a> {
         map_err_at!(Self::parse_declaration_impl(s), TokenType::XMLDecl, s, -6)
     }
 
+    // XMLDecl ::= '<?xml' VersionInfo EncodingDecl? SDDecl? S? '?>'
     fn parse_declaration_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
         let start = s.pos() - 6;
 
@@ -726,7 +711,7 @@ impl<'a> Tokenizer<'a> {
         let encoding = Self::parse_encoding_decl(s)?;
         let standalone = Self::parse_standalone(s)?;
 
-        s.skip_ascii_spaces();
+        s.skip_spaces();
         s.skip_string(b"?>")?;
 
         let span = s.slice_back(start);
@@ -734,8 +719,10 @@ impl<'a> Tokenizer<'a> {
         Ok(Token::Declaration { version, encoding, standalone, span })
     }
 
+    // VersionInfo ::= S 'version' Eq ("'" VersionNum "'" | '"' VersionNum '"')
+    // VersionNum  ::= '1.' [0-9]+
     fn parse_version_info(s: &mut Stream<'a>) -> StreamResult<StrSpan<'a>> {
-        s.skip_ascii_spaces();
+        s.skip_spaces();
         s.skip_string(b"version")?;
         s.consume_eq()?;
         let quote = s.consume_quote()?;
@@ -750,9 +737,11 @@ impl<'a> Tokenizer<'a> {
         Ok(ver)
     }
 
-    // S 'encoding' Eq ('"' EncName '"' | "'" EncName "'" )
+
+    // EncodingDecl ::= S 'encoding' Eq ('"' EncName '"' | "'" EncName "'" )
+    // EncName      ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
     fn parse_encoding_decl(s: &mut Stream<'a>) -> StreamResult<Option<StrSpan<'a>>> {
-        s.skip_ascii_spaces();
+        s.skip_spaces();
 
         if s.skip_string(b"encoding").is_err() {
             return Ok(None);
@@ -774,9 +763,9 @@ impl<'a> Tokenizer<'a> {
         Ok(Some(name))
     }
 
-    // S 'standalone' Eq (("'" ('yes' | 'no') "'") | ('"' ('yes' | 'no') '"'))
+    // SDDecl ::= S 'standalone' Eq (("'" ('yes' | 'no') "'") | ('"' ('yes' | 'no') '"'))
     fn parse_standalone(s: &mut Stream<'a>) -> StreamResult<Option<bool>> {
-        s.skip_ascii_spaces();
+        s.skip_spaces();
 
         if s.skip_string(b"standalone").is_err() {
             return Ok(None);
@@ -1054,7 +1043,7 @@ impl<'a> Tokenizer<'a> {
         let start = s.pos() - 2;
 
         let (prefix, tag_name) = s.consume_qname()?;
-        s.skip_ascii_spaces();
+        s.skip_spaces();
         s.consume_byte(b'>')?;
 
         let span = s.slice_back(start);
@@ -1064,7 +1053,7 @@ impl<'a> Tokenizer<'a> {
 
     // Name Eq AttValue
     fn parse_attribute(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
-        s.skip_ascii_spaces();
+        s.skip_spaces();
 
         if let Ok(c) = s.curr_byte() {
             let start = s.pos();
@@ -1099,22 +1088,14 @@ impl<'a> Tokenizer<'a> {
         s.consume_byte(quote)?;
         let span = s.slice_back(start);
 
-        s.skip_ascii_spaces();
+        s.skip_spaces();
 
         Ok(Token::Attribute { prefix, local, value, span })
     }
 
     fn parse_text(s: &mut Stream<'a>) -> Result<Token<'a>> {
         let text = s.consume_bytes(|_, c| c != b'<');
-
-        let mut ts = Stream::from(text);
-        // TODO: optimize
-        ts.skip_spaces();
-        if ts.at_end() {
-            Ok(Token::Whitespaces { text })
-        } else {
-            Ok(Token::Text { text })
-        }
+        Ok(Token::Text { text })
     }
 }
 

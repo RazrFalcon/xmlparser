@@ -56,9 +56,9 @@ test!(cdata_07, "<p><![CDATA[1]]><![CDATA[2]]></p>",
 test!(cdata_08, "<p> \n <![CDATA[data]]> \t </p>",
     Token::ElementStart("", "p", 0..2),
     Token::ElementEnd(ElementEnd::Open, 2..3),
-    Token::Whitespaces(" \n ", 3..6),
+    Token::Text(" \n ", 3..6),
     Token::Cdata("data", 6..22),
-    Token::Whitespaces(" \t ", 22..25),
+    Token::Text(" \t ", 22..25),
     Token::ElementEnd(ElementEnd::Close("", "p"), 25..29)
 );
 

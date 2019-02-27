@@ -27,11 +27,6 @@ test!(element_04, "  \t  <b><a/></b>   \n ",
     Token::ElementEnd(ElementEnd::Close("", "b"), 12..16)
 );
 
-test!(element_05, "&#x9;&#xA;&#xD;&#x20;<b/>&#x9;&#xA;&#xD;&#x20;",
-    Token::ElementStart("", "b", 21..23),
-    Token::ElementEnd(ElementEnd::Empty, 23..25)
-);
-
 test!(element_06, "<俄语 լեզու=\"ռուսերեն\">данные</俄语>",
     Token::ElementStart("", "俄语", 0..7),
     Token::Attribute("", "լեզու", "ռուսերեն", 8..37),
@@ -114,7 +109,7 @@ test!(element_err_13, "\
 </root>",
     Token::ElementStart("", "root", 0..5),
     Token::ElementEnd(ElementEnd::Open, 5..6),
-    Token::Whitespaces("\n", 6..7),
+    Token::Text("\n", 6..7),
     Token::ElementEnd(ElementEnd::Close("", "root"), 7..14),
     Token::Error("unexpected token 'Element Close' at 3:1".to_string())
 );

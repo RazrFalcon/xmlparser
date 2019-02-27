@@ -16,15 +16,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   So we can use a non-panic and zero-cost `StrSpan::as_str` instead
   of `StrSpan::to_str`, that was performing slicing each time.
 - Split `Stream` into `ByteStream` and `Stream`.
+- `Stream::skip_spaces` will parse only ASCII whitespace now.
 - Rename `StrSpan::to_str` into `StrSpan::as_str`.
 - Rename `Reference::EntityRef` into `Reference::Entity`.
 - Rename `Reference::CharRef` into `Reference::Char`.
 - `StrSpan::from_substr` and `StrSpan::slice_region` are private now.
 
 ### Removed
+- `Token::Whitespaces`. Will be parsed as `Token::Text`.
 - `Stream::curr_char`.
 - `Stream::is_curr_byte_eq`.
 - `Stream::consume_either`.
+- `Stream::skip_ascii_spaces`. Use `Stream::skip_spaces` instead.
 - `StrSpan::trim`.
 - `StrSpan::len`.
 - `StrSpan::full_len`.

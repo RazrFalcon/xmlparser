@@ -252,6 +252,7 @@ impl<'a> ByteStream<'a> {
         }
     }
 
+    #[inline]
     pub(crate) fn chars(&self) -> str::Chars<'a> {
         self.span.as_str()[self.pos..self.end].chars()
     }

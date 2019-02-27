@@ -11,8 +11,6 @@ test!(document_02, "    ", );
 
 test!(document_03, " \n\t\r ", );
 
-test!(document_04, "&#x20;", );
-
 // BOM
 test!(document_05, str::from_utf8(b"\xEF\xBB\xBF<a/>").unwrap(),
     Token::ElementStart("", "a", 3..5),
@@ -42,6 +40,10 @@ test!(document_err_04, "<!>",
 test!(document_err_05, "<!DOCTYPE greeting1><!DOCTYPE greeting2>",
     Token::EmptyDtd("greeting1", None, 0..20),
     Token::Error("unexpected token 'Doctype Declaration' at 1:21".to_string())
+);
+
+test!(document_err_06, "&#x20;",
+    Token::Error("unknown token at 1:1".to_string())
 );
 
 #[test]

@@ -69,73 +69,18 @@ impl<'a> From<StrSpan<'a>> for Stream<'a> {
 impl<'a> Stream<'a> {
     /// Skips whitespaces.
     ///
-    /// Accepted values: `' ' \n \r \t &#x20; &#x9; &#xD; &#xA;`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use xmlparser::Stream;
-    ///
-    /// let mut s = Stream::from(" \t\n\r &#x20; ");
-    /// s.skip_spaces();
-    /// assert_eq!(s.at_end(), true);
-    /// ```
-    pub fn skip_spaces(&mut self) {
-        while !self.at_end() {
-            let c = self.curr_byte_unchecked();
-
-            if c.is_xml_space() {
-                self.advance(1);
-            } else if c == b'&' {
-                // Check for (#x20 | #x9 | #xD | #xA).
-                let mut is_space = false;
-                if let Some(Reference::Char(ch)) = self.try_consume_reference() {
-                    if (ch as u32) < 255 && (ch as u8).is_xml_space() {
-                        is_space = true;
-                    }
-                }
-
-                if !is_space {
-                    break;
-                }
-            } else {
-                break;
-            }
-        }
-    }
-
-    /// Skips ASCII whitespaces.
-    ///
     /// Accepted values: `' ' \n \r \t`.
-    pub fn skip_ascii_spaces(&mut self) {
+    #[inline]
+    pub fn skip_spaces(&mut self) {
         while !self.at_end() && self.curr_byte_unchecked().is_xml_space() {
             self.advance(1);
         }
     }
 
     /// Checks if the stream is starts with a space.
+    #[inline]
     pub fn starts_with_space(&self) -> bool {
-        if self.at_end() {
-            return false;
-        }
-
-        let mut is_space = false;
-
-        let c = self.curr_byte_unchecked();
-
-        if c.is_xml_space() {
-            is_space = true;
-        } else if c == b'&' {
-            // Check for (#x20 | #x9 | #xD | #xA).
-            let mut s = self.clone();
-            if let Ok(Reference::Char(v)) = s.consume_reference() {
-                if (v as u32) < 255 && (v as u8).is_xml_space() {
-                    is_space = true;
-                }
-            }
-        }
-
-        is_space
+        !self.at_end() && self.curr_byte_unchecked().is_xml_space()
     }
 
     /// Consumes whitespaces.
@@ -328,9 +273,9 @@ impl<'a> Stream<'a> {
     /// - `InvalidChar`
     /// - `UnexpectedEndOfStream`
     pub fn consume_eq(&mut self) -> Result<()> {
-        self.skip_ascii_spaces();
+        self.skip_spaces();
         self.consume_byte(b'=')?;
-        self.skip_ascii_spaces();
+        self.skip_spaces();
 
         Ok(())
     }

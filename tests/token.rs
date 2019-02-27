@@ -15,7 +15,6 @@ pub enum Token<'a> {
     Attribute(&'a str, &'a str, &'a str, Range),
     ElementEnd(ElementEnd<'a>, Range),
     Text(&'a str, Range),
-    Whitespaces(&'a str, Range),
     Cdata(&'a str, Range),
     Error(String),
 }
@@ -121,7 +120,6 @@ pub fn to_test_token(token: Result<xml::Token, xml::Error>) -> Token {
             )
         }
         Ok(xml::Token::Text { text }) => Token::Text(text.as_str(), text.range()),
-        Ok(xml::Token::Whitespaces { text }) => Token::Whitespaces(text.as_str(), text.range()),
         Ok(xml::Token::Cdata { text, span }) => Token::Cdata(text.as_str(), span.range()),
         Err(ref e) => Token::Error(e.to_string()),
     }

@@ -25,30 +25,23 @@ test!(text_03, "<p>欄</p>",
     Token::ElementEnd(ElementEnd::Close("", "p"), 6..10)
 );
 
-test!(whitespaces_01, "<p> </p>",
+test!(text_04, "<p> </p>",
     Token::ElementStart("", "p", 0..2),
     Token::ElementEnd(ElementEnd::Open, 2..3),
-    Token::Whitespaces(" ", 3..4),
+    Token::Text(" ", 3..4),
     Token::ElementEnd(ElementEnd::Close("", "p"), 4..8)
 );
 
-test!(whitespaces_02, "<p> \r\n\t </p>",
+test!(text_05, "<p> \r\n\t </p>",
     Token::ElementStart("", "p", 0..2),
     Token::ElementEnd(ElementEnd::Open, 2..3),
-    Token::Whitespaces(" \r\n\t ", 3..8),
+    Token::Text(" \r\n\t ", 3..8),
     Token::ElementEnd(ElementEnd::Close("", "p"), 8..12)
 );
 
-test!(whitespaces_03, "<p>&#x20;</p>",
+test!(text_06, "<p>&#x20;</p>",
     Token::ElementStart("", "p", 0..2),
     Token::ElementEnd(ElementEnd::Open, 2..3),
-    Token::Whitespaces("&#x20;", 3..9),
+    Token::Text("&#x20;", 3..9),
     Token::ElementEnd(ElementEnd::Close("", "p"), 9..13)
-);
-
-test!(whitespaces_04, "<p>&#x9;&#xA;&#xD;&#x20;</p>",
-    Token::ElementStart("", "p", 0..2),
-    Token::ElementEnd(ElementEnd::Open, 2..3),
-    Token::Whitespaces("&#x9;&#xA;&#xD;&#x20;", 3..24),
-    Token::ElementEnd(ElementEnd::Close("", "p"), 24..28)
 );
