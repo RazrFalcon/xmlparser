@@ -67,7 +67,7 @@ pub enum StreamError {
     /// Errors in a valid XML should be handled by errors below.
     UnexpectedEndOfStream,
 
-    /// An unknown token.
+    /// An invalid name.
     InvalidName,
 
     /// An attribute value must not contain the `<` character.
