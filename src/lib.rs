@@ -30,6 +30,7 @@ If you are looking for a more high-level solution - checkout
 
 - Currently, only ENTITY objects are parsed from the DOCTYPE. Other ignored.
 - No tree structure validation. So an XML like `<root><child></root></child>`
+  or a string without root element
   will be parsed without errors. You should check for this manually.
   On the other hand `<a/><a/>` will lead to an error.
 - Duplicated attributes is not an error. So an XML like `<item a="v1" a="v2"/>`
