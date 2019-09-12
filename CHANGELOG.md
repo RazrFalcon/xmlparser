@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Changed
+- Merge `ByteStream` and `Stream`.
 
 ## [0.9.0] - 2019-02-27
 ### Added
