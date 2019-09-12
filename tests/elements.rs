@@ -114,6 +114,14 @@ test!(element_err_13, "\
     Token::Error("unexpected token 'Element Close' at 3:1".to_string())
 );
 
+test!(element_err_14, "<-svg/>",
+    Token::Error("invalid token 'Element Start' at 1:1 cause invalid name token".to_string())
+);
+
+test!(element_err_15, "<svg:-svg/>",
+    Token::Error("invalid token 'Element Start' at 1:1 cause invalid name token".to_string())
+);
+
 
 test!(attribute_01, "<a ax=\"test\"/>",
     Token::ElementStart("", "a", 0..2),

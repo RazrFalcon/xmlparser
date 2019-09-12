@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Merge `ByteStream` and `Stream`.
 
+### Fixed
+- Check for [NameStartChar](https://www.w3.org/TR/xml/#NT-NameStartChar)
+  during qualified name parsing.
+
 ## [0.9.0] - 2019-02-27
 ### Added
 - `span` field to all `Token` variants, which contains a whole token span in bytes.

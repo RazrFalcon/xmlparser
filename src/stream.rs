@@ -1,6 +1,5 @@
 use std::char;
 use std::cmp;
-use std::ops::{Deref, DerefMut};
 use std::str;
 
 use {
@@ -547,6 +546,20 @@ impl<'a> Stream<'a> {
 
         if local.is_empty() {
             return Err(StreamError::InvalidName);
+        }
+
+        // Prefix must start with a `NameStartChar`.
+        if let Some(c) = prefix.as_str().chars().nth(0) {
+            if !c.is_xml_name_start() {
+                return Err(StreamError::InvalidName);
+            }
+        }
+
+        // Local name must start with a `NameStartChar`.
+        if let Some(c) = local.as_str().chars().nth(0) {
+            if !c.is_xml_name_start() {
+                return Err(StreamError::InvalidName);
+            }
         }
 
         Ok((prefix, local))
