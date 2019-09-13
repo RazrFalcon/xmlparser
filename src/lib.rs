@@ -1067,12 +1067,8 @@ impl<'a> Tokenizer<'a> {
         let (prefix, local) = s.consume_qname()?;
         s.consume_eq()?;
         let quote = s.consume_quote()?;
-        let value = s.consume_bytes(|_, c| c != quote);
-
-        if value.as_str().contains('<') {
-            return Err(StreamError::InvalidAttributeValue);
-        }
-
+        // The attribute value must not contain the < character.
+        let value = s.consume_bytes(|_, c| c != quote && c != b'<');
         s.consume_byte(quote)?;
         let span = s.slice_back(start);
 

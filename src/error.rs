@@ -70,9 +70,6 @@ pub enum StreamError {
     /// An invalid name.
     InvalidName,
 
-    /// An attribute value must not contain the `<` character.
-    InvalidAttributeValue,
-
     /// An invalid/unexpected character.
     ///
     /// The first byte is an actual one, others - expected.
@@ -110,9 +107,6 @@ impl fmt::Display for StreamError {
             }
             StreamError::InvalidName => {
                 write!(f, "invalid name token")
-            }
-            StreamError::InvalidAttributeValue => {
-                write!(f, "attribute value with '<' character is not allowed")
             }
             StreamError::InvalidChar(ref chars, pos) => {
                 // Vec<u8> -> Vec<String>

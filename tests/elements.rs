@@ -191,5 +191,5 @@ test!(attribute_err_04, "<c a='b' q/>",
 
 test!(attribute_err_05, "<c a='<'/>",
     Token::ElementStart("", "c", 0..2),
-    Token::Error("invalid token 'Attribute' at 1:3 cause attribute value with '<' character is not allowed".to_string())
+    Token::Error("invalid token 'Attribute' at 1:3 cause expected ''' not '<' at 1:7".to_string())
 );
