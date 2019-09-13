@@ -240,6 +240,7 @@ impl<'a> Stream<'a> {
     /// Consumes bytes by the predicate and returns them.
     ///
     /// The result can be empty.
+    #[inline]
     pub fn consume_bytes<F>(&mut self, f: F) -> StrSpan<'a>
         where F: Fn(&Stream, u8) -> bool
     {
