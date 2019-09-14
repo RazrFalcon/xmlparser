@@ -865,8 +865,8 @@ impl<'a> Tokenizer<'a> {
 
         let c = s.curr_byte()?;
         if c != b'[' && c !=  b'>' {
-            let chars = vec![c, b'[', b'>'];
-            return Err(StreamError::InvalidChar(chars, s.gen_text_pos()));
+            static EXPECTED: &[u8] = &[b'[', b'>'];
+            return Err(StreamError::InvalidCharMultiple(c, EXPECTED, s.gen_text_pos()));
         }
 
         s.advance(1);
@@ -974,9 +974,9 @@ impl<'a> Tokenizer<'a> {
                 }
             }
             _ => {
-                let chars = vec![c, b'"', b'\'', b'S', b'P'];
+                static EXPECTED: &[u8] = &[b'"', b'\'', b'S', b'P'];
                 let pos = s.gen_text_pos();
-                Err(StreamError::InvalidChar(chars, pos))
+                Err(StreamError::InvalidCharMultiple(c, EXPECTED, pos))
             }
         }
     }

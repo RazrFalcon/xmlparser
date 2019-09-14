@@ -186,13 +186,9 @@ impl<'a> Stream<'a> {
     /// assert!(s.consume_byte(b'q').is_err());
     /// ```
     pub fn consume_byte(&mut self, c: u8) -> Result<()> {
-        if self.curr_byte()? != c {
-            return Err(
-                StreamError::InvalidChar(
-                    vec![self.curr_byte_unchecked(), c],
-                    self.gen_text_pos(),
-                )
-            );
+        let curr = self.curr_byte()?;
+        if curr != c {
+            return Err(StreamError::InvalidChar(curr, c, self.gen_text_pos()));
         }
 
         self.advance(1);

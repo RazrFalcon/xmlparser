@@ -72,10 +72,15 @@ pub enum StreamError {
 
     /// An invalid/unexpected character.
     ///
-    /// The first byte is an actual one, others - expected.
+    /// The first byte is an actual one, the second one is expected.
     ///
     /// We are using a single value to reduce the struct size.
-    InvalidChar(Vec<u8>, TextPos),
+    InvalidChar(u8, u8, TextPos),
+
+    /// An invalid/unexpected character.
+    ///
+    /// Just like `InvalidChar`, but specifies multiple expected characters.
+    InvalidCharMultiple(u8, &'static [u8], TextPos),
 
     /// An unexpected character instead of `"` or `'`.
     InvalidQuote(char, TextPos),
@@ -108,13 +113,17 @@ impl fmt::Display for StreamError {
             StreamError::InvalidName => {
                 write!(f, "invalid name token")
             }
-            StreamError::InvalidChar(ref chars, pos) => {
-                // Vec<u8> -> Vec<String>
-                let list: Vec<String> =
-                    chars.iter().skip(1).map(|c| String::from_utf8(vec![*c]).unwrap()).collect();
+            StreamError::InvalidChar(actual, expected, pos) => {
+                write!(f, "expected '{}' not '{}' at {}",
+                       expected as char, actual as char, pos)
+            }
+            StreamError::InvalidCharMultiple(actual, ref expected, pos) => {
+                // &[u8] -> Vec<String>
+                let list: Vec<_> =
+                    expected.iter().map(|c| String::from_utf8(vec![*c]).unwrap()).collect();
 
                 write!(f, "expected '{}' not '{}' at {}",
-                       list.join("', '"), chars[0] as char, pos)
+                       list.join("', '"), actual as char, pos)
             }
             StreamError::InvalidQuote(c, pos) => {
                 write!(f, "expected quote mark not '{}' at {}", c, pos)

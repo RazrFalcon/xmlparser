@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Changed
 - Merge `ByteStream` and `Stream`.
+- `StreamError::InvalidChar` signature changed.
+- `StreamError::InvalidChar` was split into `InvalidChar` and `InvalidCharMultiple`.
 
 ### Fixed
 - Check for [NameStartChar](https://www.w3.org/TR/xml/#NT-NameStartChar)
