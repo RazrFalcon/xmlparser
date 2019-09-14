@@ -661,7 +661,7 @@ impl<'a> Tokenizer<'a> {
                     }
                 }
             }
-            b']' if s.starts_with(b"]>") => {
+            b']' if state == State::Dtd && s.starts_with(b"]>") => {
                 s.advance(2);
                 TokenType::DoctypeEnd
             }

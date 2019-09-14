@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
   E.g. `<-p>` is invalid from now.
 - Qualified name with multiple `:` is an error now.
+- `]>` is a valid text/`CharData` now. Previously it was parsed as `DoctypeEnd`.
 
 ### Removed
 - `StreamError::InvalidAttributeValue`. `StreamError::InvalidChar` will be emitted instead.

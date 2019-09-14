@@ -45,3 +45,10 @@ test!(text_06, "<p>&#x20;</p>",
     Token::Text("&#x20;", 3..9),
     Token::ElementEnd(ElementEnd::Close("", "p"), 9..13)
 );
+
+test!(text_07, "<p>]></p>",
+    Token::ElementStart("", "p", 0..2),
+    Token::ElementEnd(ElementEnd::Open, 2..3),
+    Token::Text("]>", 3..5),
+    Token::ElementEnd(ElementEnd::Close("", "p"), 5..9)
+);
