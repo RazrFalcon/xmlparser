@@ -367,12 +367,14 @@ pub struct Tokenizer<'a> {
 }
 
 impl<'a> From<&'a str> for Tokenizer<'a> {
+    #[inline]
     fn from(text: &'a str) -> Self {
         Self::from(StrSpan::from(text))
     }
 }
 
 impl<'a> From<StrSpan<'a>> for Tokenizer<'a> {
+    #[inline]
     fn from(span: StrSpan<'a>) -> Self {
         Tokenizer {
             stream: Stream::from(span),
@@ -1087,6 +1089,7 @@ impl<'a> Tokenizer<'a> {
 impl<'a> Iterator for Tokenizer<'a> {
     type Item = Result<Token<'a>>;
 
+    #[inline]
     fn next(&mut self) -> Option<Self::Item> {
         if self.stream.at_end() || self.state == State::End {
             return None;

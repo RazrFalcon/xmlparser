@@ -37,6 +37,7 @@ pub struct Stream<'a> {
 }
 
 impl<'a> From<&'a str> for Stream<'a> {
+    #[inline]
     fn from(text: &'a str) -> Self {
         Stream {
             pos: 0,
@@ -47,6 +48,7 @@ impl<'a> From<&'a str> for Stream<'a> {
 }
 
 impl<'a> From<StrSpan<'a>> for Stream<'a> {
+    #[inline]
     fn from(span: StrSpan<'a>) -> Self {
         Stream {
             pos: 0,

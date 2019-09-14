@@ -15,6 +15,7 @@ pub struct StrSpan<'a> {
 }
 
 impl<'a> From<&'a str> for StrSpan<'a> {
+    #[inline]
     fn from(text: &'a str) -> Self {
         StrSpan {
             text,
