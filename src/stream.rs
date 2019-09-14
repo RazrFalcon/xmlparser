@@ -525,19 +525,32 @@ impl<'a> Stream<'a> {
         let start = self.pos();
 
         let mut splitter = None;
-        for c in self.chars() {
-            if c == ':' {
-                if splitter.is_none() {
-                    splitter = Some(self.pos());
+
+        while !self.at_end() {
+            // Check for ASCII first for performance reasons.
+            let b = self.curr_byte_unchecked();
+            if b < 128 {
+                if b == b':' {
+                    if splitter.is_none() {
+                        splitter = Some(self.pos());
+                        self.advance(1);
+                    } else {
+                        // Multiple `:` is an error.
+                        return Err(StreamError::InvalidName);
+                    }
+                } else if b.is_xml_name() {
                     self.advance(1);
                 } else {
-                    // Multiple `:` is an error.
-                    return Err(StreamError::InvalidName);
+                    break;
                 }
-            } else if c.is_xml_name() {
-                self.advance(c.len_utf8());
             } else {
-                break;
+                // Fallback to Unicode code point.
+                match self.chars().nth(0) {
+                    Some(c) if c.is_xml_name() => {
+                        self.advance(c.len_utf8());
+                    }
+                    _ => break,
+                }
             }
         }
 

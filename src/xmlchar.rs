@@ -16,41 +16,57 @@ pub trait XmlCharExt {
 impl XmlCharExt for char {
     #[inline]
     fn is_xml_name_start(&self) -> bool {
-        match *self {
-            'A'...'Z' | 'a'...'z' | ':' | '_' => true, // shortcut
-            _ => {
-                match *self as u32 {
-                      0x0000C0...0x0000D6
-                    | 0x0000D8...0x0000F6
-                    | 0x0000F8...0x0002FF
-                    | 0x000370...0x00037D
-                    | 0x00037F...0x001FFF
-                    | 0x00200C...0x00200D
-                    | 0x002070...0x00218F
-                    | 0x002C00...0x002FEF
-                    | 0x003001...0x00D7FF
-                    | 0x00F900...0x00FDCF
-                    | 0x00FDF0...0x00FFFD
-                    | 0x010000...0x0EFFFF => true,
-                    _ => false,
-                }
-            }
+        // Check for ASCII first.
+        if *self as u32 <= 128 {
+            return match *self as u8 {
+                  b'A'...b'Z'
+                | b'a'...b'z'
+                | b':'
+                | b'_' => true,
+                _ => false,
+            };
+        }
+
+        match *self as u32 {
+              0x0000C0...0x0000D6
+            | 0x0000D8...0x0000F6
+            | 0x0000F8...0x0002FF
+            | 0x000370...0x00037D
+            | 0x00037F...0x001FFF
+            | 0x00200C...0x00200D
+            | 0x002070...0x00218F
+            | 0x002C00...0x002FEF
+            | 0x003001...0x00D7FF
+            | 0x00F900...0x00FDCF
+            | 0x00FDF0...0x00FFFD
+            | 0x010000...0x0EFFFF => true,
+            _ => false,
         }
     }
 
     #[inline]
     fn is_xml_name(&self) -> bool {
-        if self.is_xml_name_start() {
-            return true;
+        // Check for ASCII first.
+        if *self as u32 <= 128 {
+            return (*self as u8).is_xml_name();
         }
 
         match *self as u32 {
-              0x002D // -
-            | 0x002E // .
-            | 0x00B7
-            | 0x0030...0x0039 // 0...9
-            | 0x0300...0x036F
-            | 0x203F...0x2040 => true,
+              0x0000B7
+            | 0x0000C0...0x0000D6
+            | 0x0000D8...0x0000F6
+            | 0x0000F8...0x0002FF
+            | 0x000300...0x00036F
+            | 0x000370...0x00037D
+            | 0x00037F...0x001FFF
+            | 0x00200C...0x00200D
+            | 0x00203F...0x002040
+            | 0x002070...0x00218F
+            | 0x002C00...0x002FEF
+            | 0x003001...0x00D7FF
+            | 0x00F900...0x00FDCF
+            | 0x00FDF0...0x00FFFD
+            | 0x010000...0x0EFFFF => true,
             _ => false,
         }
     }
@@ -91,6 +107,10 @@ pub trait XmlByteExt {
     ///
     /// `[A-Za-z]`
     fn is_xml_letter(&self) -> bool;
+
+    /// Checks if a byte is within the ASCII
+    /// [Char](https://www.w3.org/TR/xml/#NT-Char) range.
+    fn is_xml_name(&self) -> bool;
 }
 
 impl XmlByteExt for u8 {
@@ -112,5 +132,10 @@ impl XmlByteExt for u8 {
     #[inline]
     fn is_xml_letter(&self) -> bool {
         matches!(*self, b'A'...b'Z' | b'a'...b'z')
+    }
+
+    #[inline]
+    fn is_xml_name(&self) -> bool {
+        matches!(*self, b'A'...b'Z' | b'a'...b'z'| b'0'...b'9'| b':' | b'_' | b'-' | b'.')
     }
 }

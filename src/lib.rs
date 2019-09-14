@@ -50,6 +50,7 @@ If you are looking for a more high-level solution - checkout
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
+#![allow(ellipsis_inclusive_range_patterns)]
 
 
 use std::fmt;
