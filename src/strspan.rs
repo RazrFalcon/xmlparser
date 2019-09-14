@@ -53,7 +53,7 @@ impl<'a> StrSpan<'a> {
     /// Returns a length of the span.
     #[inline]
     pub fn is_empty(&self) -> bool {
-        self.span.len() == 0
+        self.span.is_empty()
     }
 
     /// Returns a span slice.

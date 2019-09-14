@@ -122,6 +122,18 @@ test!(element_err_15, "<svg:-svg/>",
     Token::Error("invalid token 'Element Start' at 1:1 cause invalid name token".to_string())
 );
 
+test!(element_err_16, "<svg::svg/>",
+    Token::Error("invalid token 'Element Start' at 1:1 cause invalid name token".to_string())
+);
+
+test!(element_err_17, "<svg:s:vg/>",
+    Token::Error("invalid token 'Element Start' at 1:1 cause invalid name token".to_string())
+);
+
+test!(element_err_18, "<::svg/>",
+    Token::Error("invalid token 'Element Start' at 1:1 cause invalid name token".to_string())
+);
+
 
 test!(attribute_01, "<a ax=\"test\"/>",
     Token::ElementStart("", "a", 0..2),

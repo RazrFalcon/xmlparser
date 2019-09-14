@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Check for [NameStartChar](https://www.w3.org/TR/xml/#NT-NameStartChar)
   during qualified name parsing.
 
+  E.g. `<-p>` is invalid from now.
+- Qualified name with multiple `:` is an error now.
+
 ### Removed
 - `StreamError::InvalidAttributeValue`. `StreamError::InvalidChar` will be emitted instead.
 

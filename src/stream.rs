@@ -527,8 +527,13 @@ impl<'a> Stream<'a> {
         let mut splitter = None;
         for c in self.chars() {
             if c == ':' {
-                splitter = Some(self.pos());
-                self.advance(1);
+                if splitter.is_none() {
+                    splitter = Some(self.pos());
+                    self.advance(1);
+                } else {
+                    // Multiple `:` is an error.
+                    return Err(StreamError::InvalidName);
+                }
             } else if c.is_xml_name() {
                 self.advance(c.len_utf8());
             } else {
@@ -545,10 +550,6 @@ impl<'a> Stream<'a> {
             ("".into(), local)
         };
 
-        if local.is_empty() {
-            return Err(StreamError::InvalidName);
-        }
-
         // Prefix must start with a `NameStartChar`.
         if let Some(c) = prefix.as_str().chars().nth(0) {
             if !c.is_xml_name_start() {
@@ -561,6 +562,9 @@ impl<'a> Stream<'a> {
             if !c.is_xml_name_start() {
                 return Err(StreamError::InvalidName);
             }
+        } else {
+            // If empty - error.
+            return Err(StreamError::InvalidName);
         }
 
         Ok((prefix, local))
