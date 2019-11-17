@@ -54,7 +54,7 @@ macro_rules! test {
 }
 
 #[inline(never)]
-pub fn to_test_token<'a>(token: Result<xml::Token<'a>, xml::Error>) -> Token<'a> {
+pub fn to_test_token(token: Result<xml::Token, xml::Error>) -> Token {
     match token {
         Ok(xml::Token::Declaration { version, encoding, standalone, span }) => {
             Token::Declaration(

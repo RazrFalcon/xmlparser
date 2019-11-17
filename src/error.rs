@@ -8,9 +8,9 @@ use TokenType;
 
 /// An XML parser errors.
 #[derive(Debug)]
-pub enum Error<'a> {
+pub enum Error {
     /// An invalid token with an optional cause.
-    InvalidToken(TokenType, TextPos, Option<StreamError<'a>>),
+    InvalidToken(TokenType, TextPos, Option<StreamError>),
 
     /// An unexpected token.
     UnexpectedToken(TokenType, TextPos),
@@ -19,7 +19,7 @@ pub enum Error<'a> {
     UnknownToken(TextPos),
 }
 
-impl<'a> Error<'a> {
+impl Error {
     /// Returns the error position.
     pub fn pos(&self) -> TextPos {
         match *self {
@@ -30,7 +30,7 @@ impl<'a> Error<'a> {
     }
 }
 
-impl<'a> fmt::Display for Error<'a> {
+impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Error::InvalidToken(token_type, pos, ref cause) => {
@@ -54,7 +54,7 @@ impl<'a> fmt::Display for Error<'a> {
 }
 
 #[cfg(feature = "std")]
-impl<'a> error::Error for Error<'a> {
+impl error::Error for Error {
     fn description(&self) -> &str {
         "an XML parsing error"
     }
@@ -63,7 +63,7 @@ impl<'a> error::Error for Error<'a> {
 
 /// A stream parser errors.
 #[derive(Debug)]
-pub enum StreamError<'a> {
+pub enum StreamError {
     /// The steam ended earlier than we expected.
     ///
     /// Should only appear on invalid input data.
@@ -95,8 +95,8 @@ pub enum StreamError<'a> {
 
     /// An unexpected string.
     ///
-    /// The first string is the actual one, the bytes string is what was expected.
-    InvalidString(&'a str, &'static str, TextPos),
+    /// Contains what string was expected.
+    InvalidString(&'static str, TextPos),
 
     /// An invalid reference.
     InvalidReference,
@@ -105,7 +105,7 @@ pub enum StreamError<'a> {
     InvalidExternalID,
 }
 
-impl<'a> fmt::Display for StreamError<'a> {
+impl fmt::Display for StreamError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             StreamError::UnexpectedEndOfStream => {
@@ -136,9 +136,8 @@ impl<'a> fmt::Display for StreamError<'a> {
             StreamError::InvalidSpace(c, pos) => {
                 write!(f, "expected space not '{}' at {}", c, pos)
             }
-            StreamError::InvalidString(actual, expected, pos) => {
-                write!(f, "expected '{}' not '{}' at {}",
-                       expected, actual, pos)
+            StreamError::InvalidString(expected, pos) => {
+                write!(f, "expected '{}' at {}", expected, pos)
             }
             StreamError::InvalidReference => {
                 write!(f, "invalid reference")
@@ -151,7 +150,7 @@ impl<'a> fmt::Display for StreamError<'a> {
 }
 
 #[cfg(feature = "std")]
-impl<'a> error::Error for StreamError<'a> {
+impl error::Error for StreamError {
     fn description(&self) -> &str {
         "an XML stream parsing error"
     }
