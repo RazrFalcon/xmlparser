@@ -1,4 +1,6 @@
-use std::fmt;
+use lib::fmt;
+use lib::str;
+#[cfg(not(feature = "no_std"))]
 use std::error;
 
 use TokenType;
@@ -51,6 +53,7 @@ impl fmt::Display for Error {
     }
 }
 
+#[cfg(not(feature = "no_std"))]
 impl error::Error for Error {
     fn description(&self) -> &str {
         "an XML parsing error"
@@ -95,7 +98,14 @@ pub enum StreamError {
     /// The first string is an actual one, others - expected.
     ///
     /// We are using a single value to reduce the struct size.
+    #[cfg(not(feature = "no_std"))]
     InvalidString(Vec<String>, TextPos),
+
+    /// An unexpected string.
+    ///
+    /// The byte string is the expected one.
+    #[cfg(feature = "no_std")]
+    InvalidString(&'static [u8], TextPos),
 
     /// An invalid reference.
     InvalidReference,
@@ -118,12 +128,16 @@ impl fmt::Display for StreamError {
                        expected as char, actual as char, pos)
             }
             StreamError::InvalidCharMultiple(actual, ref expected, pos) => {
-                // &[u8] -> Vec<String>
-                let list: Vec<_> =
-                    expected.iter().map(|c| String::from_utf8(vec![*c]).unwrap()).collect();
+                let mut expected_iter = expected.iter().peekable();
 
-                write!(f, "expected '{}' not '{}' at {}",
-                       list.join("', '"), actual as char, pos)
+                write!(f, "expected ")?;
+                while let Some(&c) = expected_iter.next() {
+                    write!(f, "'{}'", c as char)?;
+                    if expected_iter.peek().is_some() {
+                        write!(f, ", ")?;
+                    }
+                }
+                write!(f, " not '{}' at {}", actual as char, pos)
             }
             StreamError::InvalidQuote(c, pos) => {
                 write!(f, "expected quote mark not '{}' at {}", c, pos)
@@ -131,9 +145,17 @@ impl fmt::Display for StreamError {
             StreamError::InvalidSpace(c, pos) => {
                 write!(f, "expected space not '{}' at {}", c, pos)
             }
+            #[cfg(not(feature = "no_std"))]
             StreamError::InvalidString(ref strings, pos) => {
                 write!(f, "expected '{}' not '{}' at {}",
                        strings[1..].join("', '"), strings[0], pos)
+            }
+            #[cfg(feature = "no_std")]
+            StreamError::InvalidString(expected, pos) => {
+                // Assume that all input `text` are valid UTF-8 strings, so unwrap is safe.
+                let expected_str = str::from_utf8(expected).unwrap();
+                write!(f, "expected '{}' at {}, but wasn't found",
+                       expected_str, pos)
             }
             StreamError::InvalidReference => {
                 write!(f, "invalid reference")
@@ -145,6 +167,7 @@ impl fmt::Display for StreamError {
     }
 }
 
+#[cfg(not(feature = "no_std"))]
 impl error::Error for StreamError {
     fn description(&self) -> &str {
         "an XML stream parsing error"

@@ -1,6 +1,6 @@
-use std::char;
-use std::cmp;
-use std::str;
+use lib::char;
+use lib::cmp;
+use lib::str;
 
 use {
     StreamError,
@@ -10,7 +10,7 @@ use {
     XmlCharExt,
 };
 
-type Result<T> = ::std::result::Result<T, StreamError>;
+type Result<T> = ::lib::result::Result<T, StreamError>;
 
 
 /// Representation of the [Reference](https://www.w3.org/TR/xml/#NT-Reference) value.
@@ -215,20 +215,32 @@ impl<'a> Stream<'a> {
     /// # Errors
     ///
     /// - `InvalidString`
-    pub fn skip_string(&mut self, text: &[u8]) -> Result<()> {
+    pub fn skip_string(&mut self, text: &'static [u8]) -> Result<()> {
         if !self.starts_with(text) {
-            let len = cmp::min(text.len(), self.end - self.pos);
-            // Collect chars and do not slice a string,
-            // because the `len` can be on the char boundary.
-            // Which lead to a panic.
-            let actual = self.span.as_str()[self.pos..].chars().take(len).collect();
-
-            // Assume that all input `text` are valid UTF-8 strings, so unwrap is safe.
-            let expected = str::from_utf8(text).unwrap().to_owned();
-
             let pos = self.gen_text_pos();
 
-            return Err(StreamError::InvalidString(vec![actual, expected], pos));
+            #[cfg(not(feature = "no_std"))]
+            {
+                let len = cmp::min(text.len(), self.end - self.pos);
+
+                // Collect chars and do not slice a string,
+                // because the `len` can be on the char boundary.
+                // Which lead to a panic.
+                let actual = self.span.as_str()[self.pos..].chars().take(len).collect();
+
+                // Assume that all input `text` are valid UTF-8 strings, so unwrap is safe.
+                let expected = str::from_utf8(text).unwrap().to_owned();
+
+                return Err(StreamError::InvalidString(vec![actual, expected], pos));
+            }
+
+            #[cfg(feature = "no_std")]
+            {
+                // Assume that all input `text` are valid UTF-8 strings, so unwrap is safe.
+                let expected = text;
+
+                return Err(StreamError::InvalidString(expected, pos));
+            }
         }
 
         self.advance(text.len());

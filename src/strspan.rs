@@ -1,5 +1,5 @@
-use std::fmt;
-use std::ops::Range;
+use lib::fmt;
+use lib::ops::Range;
 
 
 /// An immutable string slice.
