@@ -297,8 +297,8 @@ pub enum EntityDefinition<'a> {
 }
 
 
-type Result<T> = core::result::Result<T, Error>;
-type StreamResult<T> = core::result::Result<T, StreamError>;
+type Result<'a, T> = core::result::Result<T, Error<'a>>;
+type StreamResult<'a, T> = core::result::Result<T, StreamError<'a>>;
 
 
 /// List of token types.
@@ -422,7 +422,7 @@ impl<'a> Tokenizer<'a> {
         self.fragment_parsing = true;
     }
 
-    fn parse_next_impl(s: &mut Stream<'a>, state: State) -> Option<Result<Token<'a>>> {
+    fn parse_next_impl(s: &mut Stream<'a>, state: State) -> Option<Result<'a, Token<'a>>> {
         if s.at_end() {
             return None;
         }
@@ -603,7 +603,7 @@ impl<'a> Tokenizer<'a> {
         Some(t)
     }
 
-    fn parse_token_type(s: &mut Stream, state: State) -> StreamResult<TokenType> {
+    fn parse_token_type(s: &mut Stream<'a>, state: State) -> StreamResult<'a, TokenType> {
         let c1 = s.curr_byte()?;
 
         let t = match c1 {
@@ -695,12 +695,12 @@ impl<'a> Tokenizer<'a> {
         Ok(t)
     }
 
-    fn parse_declaration(s: &mut Stream<'a>) -> Result<Token<'a>> {
+    fn parse_declaration(s: &mut Stream<'a>) -> Result<'a, Token<'a>> {
         map_err_at!(Self::parse_declaration_impl(s), TokenType::XMLDecl, s, -6)
     }
 
     // XMLDecl ::= '<?xml' VersionInfo EncodingDecl? SDDecl? S? '?>'
-    fn parse_declaration_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
+    fn parse_declaration_impl(s: &mut Stream<'a>) -> StreamResult<'a, Token<'a>> {
         let start = s.pos() - 6;
 
         let version = Self::parse_version_info(s)?;
@@ -717,7 +717,7 @@ impl<'a> Tokenizer<'a> {
 
     // VersionInfo ::= S 'version' Eq ("'" VersionNum "'" | '"' VersionNum '"')
     // VersionNum  ::= '1.' [0-9]+
-    fn parse_version_info(s: &mut Stream<'a>) -> StreamResult<StrSpan<'a>> {
+    fn parse_version_info(s: &mut Stream<'a>) -> StreamResult<'a, StrSpan<'a>> {
         s.skip_spaces();
         s.skip_string(b"version")?;
         s.consume_eq()?;
@@ -736,7 +736,7 @@ impl<'a> Tokenizer<'a> {
 
     // EncodingDecl ::= S 'encoding' Eq ('"' EncName '"' | "'" EncName "'" )
     // EncName      ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
-    fn parse_encoding_decl(s: &mut Stream<'a>) -> StreamResult<Option<StrSpan<'a>>> {
+    fn parse_encoding_decl(s: &mut Stream<'a>) -> StreamResult<'a, Option<StrSpan<'a>>> {
         s.skip_spaces();
 
         if s.skip_string(b"encoding").is_err() {
@@ -760,7 +760,7 @@ impl<'a> Tokenizer<'a> {
     }
 
     // SDDecl ::= S 'standalone' Eq (("'" ('yes' | 'no') "'") | ('"' ('yes' | 'no') '"'))
-    fn parse_standalone(s: &mut Stream<'a>) -> StreamResult<Option<bool>> {
+    fn parse_standalone(s: &mut Stream<'a>) -> StreamResult<'a, Option<bool>> {
         s.skip_spaces();
 
         if s.skip_string(b"standalone").is_err() {
@@ -778,15 +778,7 @@ impl<'a> Tokenizer<'a> {
             "no" => false,
             _ => {
                 let pos = s.gen_text_pos_from(start);
-
-                #[cfg(feature = "std")]
-                {
-                    let values = vec![value.into(), "yes".into(), "no".into()];
-                    return Err(StreamError::InvalidString(values, pos));
-                }
-
-                #[cfg(not(feature = "std"))]
-                return Err(StreamError::InvalidString(b"yes', 'no", pos));
+                return Err(StreamError::InvalidString(value, "yes', 'no", pos));
             }
         };
 
@@ -795,14 +787,14 @@ impl<'a> Tokenizer<'a> {
         Ok(Some(flag))
     }
 
-    fn parse_comment(s: &mut Stream<'a>) -> Result<Token<'a>> {
+    fn parse_comment(s: &mut Stream<'a>) -> Result<'a, Token<'a>> {
         let start = s.pos() - 4;
         Self::parse_comment_impl(s)
             .map_err(|_| Error::InvalidToken(TokenType::Comment, s.gen_text_pos_from(start), None))
     }
 
     // '<!--' ((Char - '-') | ('-' (Char - '-')))* '-->'
-    fn parse_comment_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
+    fn parse_comment_impl(s: &mut Stream<'a>) -> StreamResult<'a, Token<'a>> {
         let start = s.pos() - 4;
 
         let text = s.consume_chars(|s, c| {
@@ -824,13 +816,13 @@ impl<'a> Tokenizer<'a> {
         Ok(Token::Comment { text, span })
     }
 
-    fn parse_pi(s: &mut Stream<'a>) -> Result<Token<'a>> {
+    fn parse_pi(s: &mut Stream<'a>) -> Result<'a, Token<'a>> {
         map_err_at!(Self::parse_pi_impl(s), TokenType::PI, s, -2)
     }
 
     // PI       ::= '<?' PITarget (S (Char* - (Char* '?>' Char*)))? '?>'
     // PITarget ::= Name - (('X' | 'x') ('M' | 'm') ('L' | 'l'))
-    fn parse_pi_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
+    fn parse_pi_impl(s: &mut Stream<'a>) -> StreamResult<'a, Token<'a>> {
         let start = s.pos() - 2;
 
         let target = s.consume_name()?;
@@ -862,12 +854,12 @@ impl<'a> Tokenizer<'a> {
         Ok(Token::ProcessingInstruction { target, content, span })
     }
 
-    fn parse_doctype(s: &mut Stream<'a>) -> Result<Token<'a>> {
+    fn parse_doctype(s: &mut Stream<'a>) -> Result<'a, Token<'a>> {
         map_err_at!(Self::parse_doctype_impl(s), TokenType::DoctypeDecl, s, -9)
     }
 
     // doctypedecl ::= '<!DOCTYPE' S Name (S ExternalID)? S? ('[' intSubset ']' S?)? '>'
-    fn parse_doctype_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
+    fn parse_doctype_impl(s: &mut Stream<'a>) -> StreamResult<'a, Token<'a>> {
         let start = s.pos() - 9;
 
         s.consume_spaces()?;
@@ -894,7 +886,7 @@ impl<'a> Tokenizer<'a> {
     }
 
     // ExternalID ::= 'SYSTEM' S SystemLiteral | 'PUBLIC' S PubidLiteral S SystemLiteral
-    fn parse_external_id(s: &mut Stream<'a>) -> StreamResult<Option<ExternalId<'a>>> {
+    fn parse_external_id(s: &mut Stream<'a>) -> StreamResult<'a, Option<ExternalId<'a>>> {
         let v = if s.starts_with(b"SYSTEM") || s.starts_with(b"PUBLIC") {
             let start = s.pos();
             s.advance(6);
@@ -924,14 +916,14 @@ impl<'a> Tokenizer<'a> {
         Ok(v)
     }
 
-    fn parse_entity_decl(s: &mut Stream<'a>) -> Result<Token<'a>> {
+    fn parse_entity_decl(s: &mut Stream<'a>) -> Result<'a, Token<'a>> {
         map_err_at!(Self::parse_entity_decl_impl(s), TokenType::EntityDecl, s, -8)
     }
 
     // EntityDecl  ::= GEDecl | PEDecl
     // GEDecl      ::= '<!ENTITY' S Name S EntityDef S? '>'
     // PEDecl      ::= '<!ENTITY' S '%' S Name S PEDef S? '>'
-    fn parse_entity_decl_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
+    fn parse_entity_decl_impl(s: &mut Stream<'a>) -> StreamResult<'a, Token<'a>> {
         let start = s.pos() - 8;
 
         s.consume_spaces()?;
@@ -960,7 +952,7 @@ impl<'a> Tokenizer<'a> {
     //                             | PEReference | Reference)* "'"
     // ExternalID  ::= 'SYSTEM' S SystemLiteral | 'PUBLIC' S PubidLiteral S SystemLiteral
     // NDataDecl   ::= S 'NDATA' S Name
-    fn parse_entity_def(s: &mut Stream<'a>, is_ge: bool) -> StreamResult<EntityDefinition<'a>> {
+    fn parse_entity_def(s: &mut Stream<'a>, is_ge: bool) -> StreamResult<'a, EntityDefinition<'a>> {
         let c = s.curr_byte()?;
         match c {
             b'"' | b'\'' => {
@@ -995,14 +987,14 @@ impl<'a> Tokenizer<'a> {
         }
     }
 
-    fn consume_decl(s: &mut Stream) -> StreamResult<()> {
+    fn consume_decl(s: &mut Stream<'a>) -> StreamResult<'a, ()> {
         s.consume_spaces()?;
         s.skip_bytes(|_, c| c != b'>');
         s.consume_byte(b'>')?;
         Ok(())
     }
 
-    fn parse_cdata(s: &mut Stream<'a>) -> Result<Token<'a>> {
+    fn parse_cdata(s: &mut Stream<'a>) -> Result<'a, Token<'a>> {
         map_err_at!(Self::parse_cdata_impl(s), TokenType::CDSect, s, -9)
     }
 
@@ -1010,7 +1002,7 @@ impl<'a> Tokenizer<'a> {
     // CDStart ::= '<![CDATA['
     // CData   ::= (Char* - (Char* ']]>' Char*))
     // CDEnd   ::= ']]>'
-    fn parse_cdata_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
+    fn parse_cdata_impl(s: &mut Stream<'a>) -> StreamResult<'a, Token<'a>> {
         let start = s.pos() - 9;
 
         let text = s.consume_bytes(|s, c| {
@@ -1024,12 +1016,12 @@ impl<'a> Tokenizer<'a> {
         Ok(Token::Cdata { text, span })
     }
 
-    fn parse_element_start(s: &mut Stream<'a>) -> Result<Token<'a>> {
+    fn parse_element_start(s: &mut Stream<'a>) -> Result<'a, Token<'a>> {
         map_err_at!(Self::parse_element_start_impl(s), TokenType::ElementStart, s, -1)
     }
 
     // '<' Name (S Attribute)* S? '>'
-    fn parse_element_start_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
+    fn parse_element_start_impl(s: &mut Stream<'a>) -> StreamResult<'a, Token<'a>> {
         let start = s.pos() - 1;
         let (prefix, local) = s.consume_qname()?;
         let span = s.slice_back(start);
@@ -1037,12 +1029,12 @@ impl<'a> Tokenizer<'a> {
         Ok(Token::ElementStart { prefix, local, span })
     }
 
-    fn parse_close_element(s: &mut Stream<'a>) -> Result<Token<'a>> {
+    fn parse_close_element(s: &mut Stream<'a>) -> Result<'a, Token<'a>> {
         map_err_at!(Self::parse_close_element_impl(s), TokenType::ElementClose, s, -2)
     }
 
     // '</' Name S? '>'
-    fn parse_close_element_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
+    fn parse_close_element_impl(s: &mut Stream<'a>) -> StreamResult<'a, Token<'a>> {
         let start = s.pos() - 2;
 
         let (prefix, tag_name) = s.consume_qname()?;
@@ -1055,7 +1047,7 @@ impl<'a> Tokenizer<'a> {
     }
 
     // Name Eq AttValue
-    fn parse_attribute(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
+    fn parse_attribute(s: &mut Stream<'a>) -> StreamResult<'a, Token<'a>> {
         s.skip_spaces();
 
         if let Ok(c) = s.curr_byte() {
@@ -1092,14 +1084,14 @@ impl<'a> Tokenizer<'a> {
         Ok(Token::Attribute { prefix, local, value, span })
     }
 
-    fn parse_text(s: &mut Stream<'a>) -> Result<Token<'a>> {
+    fn parse_text(s: &mut Stream<'a>) -> Result<'a, Token<'a>> {
         let text = s.consume_bytes(|_, c| c != b'<');
         Ok(Token::Text { text })
     }
 }
 
 impl<'a> Iterator for Tokenizer<'a> {
-    type Item = Result<Token<'a>>;
+    type Item = Result<'a, Token<'a>>;
 
     #[inline]
     fn next(&mut self) -> Option<Self::Item> {

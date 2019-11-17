@@ -2,19 +2,15 @@ use core::fmt;
 use core::str;
 #[cfg(feature = "std")]
 use std::error;
-#[cfg(feature = "std")]
-use std::string::String;
-#[cfg(feature = "std")]
-use std::vec::Vec;
 
 use TokenType;
 
 
 /// An XML parser errors.
 #[derive(Debug)]
-pub enum Error {
+pub enum Error<'a> {
     /// An invalid token with an optional cause.
-    InvalidToken(TokenType, TextPos, Option<StreamError>),
+    InvalidToken(TokenType, TextPos, Option<StreamError<'a>>),
 
     /// An unexpected token.
     UnexpectedToken(TokenType, TextPos),
@@ -23,7 +19,7 @@ pub enum Error {
     UnknownToken(TextPos),
 }
 
-impl Error {
+impl<'a> Error<'a> {
     /// Returns the error position.
     pub fn pos(&self) -> TextPos {
         match *self {
@@ -34,7 +30,7 @@ impl Error {
     }
 }
 
-impl fmt::Display for Error {
+impl<'a> fmt::Display for Error<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Error::InvalidToken(token_type, pos, ref cause) => {
@@ -58,7 +54,7 @@ impl fmt::Display for Error {
 }
 
 #[cfg(feature = "std")]
-impl error::Error for Error {
+impl<'a> error::Error for Error<'a> {
     fn description(&self) -> &str {
         "an XML parsing error"
     }
@@ -67,7 +63,7 @@ impl error::Error for Error {
 
 /// A stream parser errors.
 #[derive(Debug)]
-pub enum StreamError {
+pub enum StreamError<'a> {
     /// The steam ended earlier than we expected.
     ///
     /// Should only appear on invalid input data.
@@ -99,17 +95,8 @@ pub enum StreamError {
 
     /// An unexpected string.
     ///
-    /// The first string is an actual one, others - expected.
-    ///
-    /// We are using a single value to reduce the struct size.
-    #[cfg(feature = "std")]
-    InvalidString(Vec<String>, TextPos),
-
-    /// An unexpected string.
-    ///
-    /// The byte string is the expected one.
-    #[cfg(not(feature = "std"))]
-    InvalidString(&'static [u8], TextPos),
+    /// The first byte string is the actual one, the second bytes string is what was expected.
+    InvalidString(&'a str, &'static str, TextPos),
 
     /// An invalid reference.
     InvalidReference,
@@ -118,7 +105,7 @@ pub enum StreamError {
     InvalidExternalID,
 }
 
-impl fmt::Display for StreamError {
+impl<'a> fmt::Display for StreamError<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             StreamError::UnexpectedEndOfStream => {
@@ -149,17 +136,9 @@ impl fmt::Display for StreamError {
             StreamError::InvalidSpace(c, pos) => {
                 write!(f, "expected space not '{}' at {}", c, pos)
             }
-            #[cfg(feature = "std")]
-            StreamError::InvalidString(ref strings, pos) => {
+            StreamError::InvalidString(actual, expected, pos) => {
                 write!(f, "expected '{}' not '{}' at {}",
-                       strings[1..].join("', '"), strings[0], pos)
-            }
-            #[cfg(not(feature = "std"))]
-            StreamError::InvalidString(expected, pos) => {
-                // Assume that all input `text` are valid UTF-8 strings, so unwrap is safe.
-                let expected_str = str::from_utf8(expected).unwrap();
-                write!(f, "expected '{}' at {}, but wasn't found",
-                       expected_str, pos)
+                       expected, actual, pos)
             }
             StreamError::InvalidReference => {
                 write!(f, "invalid reference")
@@ -172,7 +151,7 @@ impl fmt::Display for StreamError {
 }
 
 #[cfg(feature = "std")]
-impl error::Error for StreamError {
+impl<'a> error::Error for StreamError<'a> {
     fn description(&self) -> &str {
         "an XML stream parsing error"
     }

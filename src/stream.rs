@@ -10,7 +10,7 @@ use {
     XmlCharExt,
 };
 
-type Result<T> = ::core::result::Result<T, StreamError>;
+type Result<'a, T> = ::core::result::Result<T, StreamError<'a>>;
 
 
 /// Representation of the [Reference](https://www.w3.org/TR/xml/#NT-Reference) value.
@@ -101,7 +101,7 @@ impl<'a> Stream<'a> {
     ///
     /// - `UnexpectedEndOfStream`
     #[inline]
-    pub fn curr_byte(&self) -> Result<u8> {
+    pub fn curr_byte(&self) -> Result<'a, u8> {
         if self.at_end() {
             return Err(StreamError::UnexpectedEndOfStream);
         }
@@ -125,7 +125,7 @@ impl<'a> Stream<'a> {
     ///
     /// - `UnexpectedEndOfStream`
     #[inline]
-    pub fn next_byte(&self) -> Result<u8> {
+    pub fn next_byte(&self) -> Result<'a, u8> {
         if self.pos + 1 >= self.end {
             return Err(StreamError::UnexpectedEndOfStream);
         }
@@ -187,7 +187,7 @@ impl<'a> Stream<'a> {
     /// assert!(s.consume_byte(b'm').is_ok());
     /// assert!(s.consume_byte(b'q').is_err());
     /// ```
-    pub fn consume_byte(&mut self, c: u8) -> Result<()> {
+    pub fn consume_byte(&mut self, c: u8) -> Result<'a, ()> {
         let curr = self.curr_byte()?;
         if curr != c {
             return Err(StreamError::InvalidChar(curr, c, self.gen_text_pos()));
@@ -215,34 +215,27 @@ impl<'a> Stream<'a> {
     /// # Errors
     ///
     /// - `InvalidString`
-    pub fn skip_string(&mut self, text: &'static [u8]) -> Result<()> {
+    pub fn skip_string(&mut self, text: &'static [u8]) -> Result<'a, ()> {
         if !self.starts_with(text) {
-            let pos = self.gen_text_pos();
-
-            #[cfg(feature = "std")]
-            {
-                use std::borrow::ToOwned;
-
+            // First determine the end of the utf-8 string of length `len`
+            // before slicing, to avoid a panic.
+            let actual = {
                 let len = cmp::min(text.len(), self.end - self.pos);
 
-                // Collect chars and do not slice a string,
-                // because the `len` can be on the char boundary.
-                // Which lead to a panic.
-                let actual = self.span.as_str()[self.pos..].chars().take(len).collect();
+                let actual = &self.span.as_str()[self.pos..];
+                let end_index = actual.char_indices().map(|(i,_)| i).skip(len).next();
+                match end_index {
+                    Some(i) => &actual[..i],
+                    None => actual,
+                }
+            };
 
-                // Assume that all input `text` are valid UTF-8 strings, so unwrap is safe.
-                let expected = str::from_utf8(text).unwrap().to_owned();
+            // Assume that all input `text` are valid UTF-8 strings, so unwrap is safe.
+            let expected = str::from_utf8(text).unwrap();
 
-                return Err(StreamError::InvalidString(vec![actual, expected], pos));
-            }
+            let pos = self.gen_text_pos();
 
-            #[cfg(not(feature = "std"))]
-            {
-                // Assume that all input `text` are valid UTF-8 strings, so unwrap is safe.
-                let expected = text;
-
-                return Err(StreamError::InvalidString(expected, pos));
-            }
+            return Err(StreamError::InvalidString(actual, expected, pos));
         }
 
         self.advance(text.len());
@@ -392,7 +385,7 @@ impl<'a> Stream<'a> {
     /// # Errors
     ///
     /// - `InvalidSpace`
-    pub fn consume_spaces(&mut self) -> Result<()> {
+    pub fn consume_spaces(&mut self) -> Result<'a, ()> {
         if self.at_end() {
             return Err(StreamError::UnexpectedEndOfStream);
         }
@@ -435,11 +428,11 @@ impl<'a> Stream<'a> {
     /// # Errors
     ///
     /// - `InvalidReference`
-    pub fn consume_reference(&mut self) -> Result<Reference<'a>> {
+    pub fn consume_reference(&mut self) -> Result<'a, Reference<'a>> {
         self._consume_reference().map_err(|_| StreamError::InvalidReference)
     }
 
-    fn _consume_reference(&mut self) -> Result<Reference<'a>> {
+    fn _consume_reference(&mut self) -> Result<'a, Reference<'a>> {
         if !self.try_consume_byte(b'&') {
             return Err(StreamError::InvalidReference);
         }
@@ -486,7 +479,7 @@ impl<'a> Stream<'a> {
     ///
     /// - `InvalidName` - if name is empty or starts with an invalid char
     /// - `UnexpectedEndOfStream`
-    pub fn consume_name(&mut self) -> Result<StrSpan<'a>> {
+    pub fn consume_name(&mut self) -> Result<'a, StrSpan<'a>> {
         let start = self.pos();
         self.skip_name()?;
 
@@ -505,7 +498,7 @@ impl<'a> Stream<'a> {
     /// # Errors
     ///
     /// - `InvalidName` - if name is empty or starts with an invalid char
-    pub fn skip_name(&mut self) -> Result<()> {
+    pub fn skip_name(&mut self) -> Result<'a, ()> {
         let mut iter = self.chars();
         if let Some(c) = iter.next() {
             if c.is_xml_name_start() {
@@ -533,7 +526,7 @@ impl<'a> Stream<'a> {
     /// # Errors
     ///
     /// - `InvalidName` - if name is empty or starts with an invalid char
-    pub fn consume_qname(&mut self) -> Result<(StrSpan<'a>, StrSpan<'a>)> {
+    pub fn consume_qname(&mut self) -> Result<'a, (StrSpan<'a>, StrSpan<'a>)> {
         let start = self.pos();
 
         let mut splitter = None;
@@ -603,7 +596,7 @@ impl<'a> Stream<'a> {
     ///
     /// - `InvalidChar`
     /// - `UnexpectedEndOfStream`
-    pub fn consume_eq(&mut self) -> Result<()> {
+    pub fn consume_eq(&mut self) -> Result<'a, ()> {
         self.skip_spaces();
         self.consume_byte(b'=')?;
         self.skip_spaces();
@@ -619,7 +612,7 @@ impl<'a> Stream<'a> {
     ///
     /// - `InvalidQuote`
     /// - `UnexpectedEndOfStream`
-    pub fn consume_quote(&mut self) -> Result<u8> {
+    pub fn consume_quote(&mut self) -> Result<'a, u8> {
         let c = self.curr_byte()?;
         if c == b'\'' || c == b'"' {
             self.advance(1);
