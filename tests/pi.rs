@@ -65,10 +65,10 @@ test!(declaration_09, "<?xml version='1.0' standalone='no'?>",
 
 // Declaration with an invalid order
 test!(declaration_err_01, "<?xml encoding='UTF-8' version='1.0'?>",
-    Token::Error(if cfg!(feature = "no_std") {
-        "invalid token 'Declaration' at 1:1 cause expected 'version' at 1:7, but wasn't found"
-    } else {
+    Token::Error(if cfg!(feature = "std") {
         "invalid token 'Declaration' at 1:1 cause expected 'version' not 'encodin' at 1:7"
+    } else {
+        "invalid token 'Declaration' at 1:1 cause expected 'version' at 1:7, but wasn't found"
     }.to_string())
 );
 
@@ -77,58 +77,58 @@ test!(declaration_err_02, "<?xml version='1.0' encoding='*invalid*'?>",
 );
 
 test!(declaration_err_03, "<?xml version='2.0'?>",
-    Token::Error(if cfg!(feature = "no_std") {
-        "invalid token 'Declaration' at 1:1 cause expected '1.' at 1:16, but wasn't found"
-    } else {
+    Token::Error(if cfg!(feature = "std") {
         "invalid token 'Declaration' at 1:1 cause expected '1.' not '2.' at 1:16"
+    } else {
+        "invalid token 'Declaration' at 1:1 cause expected '1.' at 1:16, but wasn't found"
     }.to_string())
 );
 
 test!(declaration_err_04, "<?xml version='1.0' standalone='true'?>",
-    Token::Error(if cfg!(feature = "no_std") {
-        "invalid token 'Declaration' at 1:1 cause expected 'yes', 'no' at 1:33, but wasn't found"
-    } else {
+    Token::Error(if cfg!(feature = "std") {
         "invalid token 'Declaration' at 1:1 cause expected 'yes', 'no' not 'true' at 1:33"
+    } else {
+        "invalid token 'Declaration' at 1:1 cause expected 'yes', 'no' at 1:33, but wasn't found"
     }.to_string())
 );
 
 test!(declaration_err_05, "<?xml version='1.0' yes='true'?>",
-    Token::Error(if cfg!(feature = "no_std") {
-        "invalid token 'Declaration' at 1:1 cause expected '?>' at 1:21, but wasn't found"
-    } else {
+    Token::Error(if cfg!(feature = "std") {
         "invalid token 'Declaration' at 1:1 cause expected '?>' not 'ye' at 1:21"
+    } else {
+        "invalid token 'Declaration' at 1:1 cause expected '?>' at 1:21, but wasn't found"
     }.to_string())
 );
 
 test!(declaration_err_06, "<?xml version='1.0' encoding='UTF-8' standalone='yes' yes='true'?>",
-    Token::Error(if cfg!(feature = "no_std") {
-        "invalid token 'Declaration' at 1:1 cause expected '?>' at 1:55, but wasn't found"
-    } else {
+    Token::Error(if cfg!(feature = "std") {
         "invalid token 'Declaration' at 1:1 cause expected '?>' not 'ye' at 1:55"
+    } else {
+        "invalid token 'Declaration' at 1:1 cause expected '?>' at 1:55, but wasn't found"
     }.to_string())
 );
 
 test!(declaration_err_07, "\u{000a}<?xml\u{001d}\u{000a}\u{0000}&jg'];",
-    Token::Error(if cfg!(feature = "no_std") {
-        "invalid token 'Processing Instruction' at 2:1 cause expected '?>' at 2:6, but wasn't found"
-    } else {
+    Token::Error(if cfg!(feature = "std") {
         "invalid token 'Processing Instruction' at 2:1 cause expected '?>' not '\u{1d}\n' at 2:6"
+    } else {
+        "invalid token 'Processing Instruction' at 2:1 cause expected '?>' at 2:6, but wasn't found"
     }.to_string())
 );
 
 test!(declaration_err_08, "<?xml \t\n ?m?>",
-    Token::Error(if cfg!(feature = "no_std") {
-        "invalid token 'Declaration' at 1:1 cause expected 'version' at 2:2, but wasn't found"
-    } else {
+    Token::Error(if cfg!(feature = "std") {
         "invalid token 'Declaration' at 1:1 cause expected 'version' not '?m?>' at 2:2"
+    } else {
+        "invalid token 'Declaration' at 1:1 cause expected 'version' at 2:2, but wasn't found"
     }.to_string())
 );
 
 test!(declaration_err_09, "<?xml \t\n m?>",
-    Token::Error(if cfg!(feature = "no_std") {
-        "invalid token 'Declaration' at 1:1 cause expected 'version' at 2:2, but wasn't found"
-    } else {
+    Token::Error(if cfg!(feature = "std") {
         "invalid token 'Declaration' at 1:1 cause expected 'version' not 'm?>' at 2:2"
+    } else {
+        "invalid token 'Declaration' at 1:1 cause expected 'version' at 2:2, but wasn't found"
     }.to_string())
 );
 

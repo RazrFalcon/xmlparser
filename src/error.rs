@@ -1,6 +1,6 @@
 use lib::fmt;
 use lib::str;
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 use std::error;
 
 use TokenType;
@@ -53,7 +53,7 @@ impl fmt::Display for Error {
     }
 }
 
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 impl error::Error for Error {
     fn description(&self) -> &str {
         "an XML parsing error"
@@ -98,13 +98,13 @@ pub enum StreamError {
     /// The first string is an actual one, others - expected.
     ///
     /// We are using a single value to reduce the struct size.
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     InvalidString(Vec<String>, TextPos),
 
     /// An unexpected string.
     ///
     /// The byte string is the expected one.
-    #[cfg(feature = "no_std")]
+    #[cfg(not(feature = "std"))]
     InvalidString(&'static [u8], TextPos),
 
     /// An invalid reference.
@@ -145,12 +145,12 @@ impl fmt::Display for StreamError {
             StreamError::InvalidSpace(c, pos) => {
                 write!(f, "expected space not '{}' at {}", c, pos)
             }
-            #[cfg(not(feature = "no_std"))]
+            #[cfg(feature = "std")]
             StreamError::InvalidString(ref strings, pos) => {
                 write!(f, "expected '{}' not '{}' at {}",
                        strings[1..].join("', '"), strings[0], pos)
             }
-            #[cfg(feature = "no_std")]
+            #[cfg(not(feature = "std"))]
             StreamError::InvalidString(expected, pos) => {
                 // Assume that all input `text` are valid UTF-8 strings, so unwrap is safe.
                 let expected_str = str::from_utf8(expected).unwrap();
@@ -167,7 +167,7 @@ impl fmt::Display for StreamError {
     }
 }
 
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 impl error::Error for StreamError {
     fn description(&self) -> &str {
         "an XML stream parsing error"

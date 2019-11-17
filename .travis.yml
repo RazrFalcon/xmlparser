@@ -4,4 +4,4 @@ rust:
   - stable
 script:
   - cargo test --verbose
-  - cargo test --verbose --features no_std
+  - cargo test --verbose --no-default-features

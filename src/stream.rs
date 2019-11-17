@@ -219,7 +219,7 @@ impl<'a> Stream<'a> {
         if !self.starts_with(text) {
             let pos = self.gen_text_pos();
 
-            #[cfg(not(feature = "no_std"))]
+            #[cfg(feature = "std")]
             {
                 let len = cmp::min(text.len(), self.end - self.pos);
 
@@ -234,7 +234,7 @@ impl<'a> Stream<'a> {
                 return Err(StreamError::InvalidString(vec![actual, expected], pos));
             }
 
-            #[cfg(feature = "no_std")]
+            #[cfg(not(feature = "std"))]
             {
                 // Assume that all input `text` are valid UTF-8 strings, so unwrap is safe.
                 let expected = text;

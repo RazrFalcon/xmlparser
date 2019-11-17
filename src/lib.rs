@@ -45,7 +45,7 @@ If you are looking for a more high-level solution - checkout
 */
 
 #![cfg_attr(feature = "cargo-clippy", allow(unreadable_literal))]
-#![cfg_attr(feature = "no_std", no_std)]
+#![cfg_attr(not(feature = "std"), no_std)]
 
 #![doc(html_root_url = "https://docs.rs/xmlparser/0.10.0")]
 
@@ -59,9 +59,9 @@ If you are looking for a more high-level solution - checkout
 /// module. This is similar to what `serde` does.
 mod lib {
     mod core {
-        #[cfg(feature = "no_std")]
+        #[cfg(not(feature = "std"))]
         pub use core::*;
-        #[cfg(not(feature = "no_std"))]
+        #[cfg(feature = "std")]
         pub use std::*;
     }
 
@@ -794,13 +794,13 @@ impl<'a> Tokenizer<'a> {
             _ => {
                 let pos = s.gen_text_pos_from(start);
 
-                #[cfg(not(feature = "no_std"))]
+                #[cfg(feature = "std")]
                 {
                     let values = vec![value.into(), "yes".into(), "no".into()];
                     return Err(StreamError::InvalidString(values, pos));
                 }
 
-                #[cfg(feature = "no_std")]
+                #[cfg(not(feature = "std"))]
                 return Err(StreamError::InvalidString(b"yes', 'no", pos));
             }
         };
