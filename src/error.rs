@@ -95,7 +95,7 @@ pub enum StreamError<'a> {
 
     /// An unexpected string.
     ///
-    /// The first byte string is the actual one, the second bytes string is what was expected.
+    /// The first string is the actual one, the bytes string is what was expected.
     InvalidString(&'a str, &'static str, TextPos),
 
     /// An invalid reference.
