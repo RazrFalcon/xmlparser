@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/RazrFalcon/xmlparser.svg?branch=master)](https://travis-ci.org/RazrFalcon/xmlparser)
 [![Crates.io](https://img.shields.io/crates/v/xmlparser.svg)](https://crates.io/crates/xmlparser)
 [![Documentation](https://docs.rs/xmlparser/badge.svg)](https://docs.rs/xmlparser)
-[![Rust 1.18+](https://img.shields.io/badge/rust-1.18+-orange.svg)](https://www.rust-lang.org)
+[![Rust 1.24+](https://img.shields.io/badge/rust-1.24+-orange.svg)](https://www.rust-lang.org)
 
 
 *xmlparser* is a low-level, pull-based, zero-allocation
