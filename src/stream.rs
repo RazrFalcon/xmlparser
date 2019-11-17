@@ -1,6 +1,6 @@
-use lib::char;
-use lib::cmp;
-use lib::str;
+use core::char;
+use core::cmp;
+use core::str;
 
 use {
     StreamError,
@@ -10,7 +10,7 @@ use {
     XmlCharExt,
 };
 
-type Result<T> = ::lib::result::Result<T, StreamError>;
+type Result<T> = ::core::result::Result<T, StreamError>;
 
 
 /// Representation of the [Reference](https://www.w3.org/TR/xml/#NT-Reference) value.
@@ -221,6 +221,8 @@ impl<'a> Stream<'a> {
 
             #[cfg(feature = "std")]
             {
+                use std::borrow::ToOwned;
+
                 let len = cmp::min(text.len(), self.end - self.pos);
 
                 // Collect chars and do not slice a string,

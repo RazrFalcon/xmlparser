@@ -1,7 +1,11 @@
-use lib::fmt;
-use lib::str;
+use core::fmt;
+use core::str;
 #[cfg(feature = "std")]
 use std::error;
+#[cfg(feature = "std")]
+use std::string::String;
+#[cfg(feature = "std")]
+use std::vec::Vec;
 
 use TokenType;
 

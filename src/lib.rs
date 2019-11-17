@@ -44,8 +44,8 @@ If you are looking for a more high-level solution - checkout
 - The library forbids the unsafe code.
 */
 
+#![no_std]
 #![cfg_attr(feature = "cargo-clippy", allow(unreadable_literal))]
-#![cfg_attr(not(feature = "std"), no_std)]
 
 #![doc(html_root_url = "https://docs.rs/xmlparser/0.10.0")]
 
@@ -53,27 +53,12 @@ If you are looking for a more high-level solution - checkout
 #![warn(missing_docs)]
 #![allow(ellipsis_inclusive_range_patterns)]
 
+#[cfg(feature = "std")]
+#[macro_use]
+extern crate std;
 
-/// A facade around all the types we need from the `std`, `core`, and `alloc`
-/// crates. This avoids elaborate import wrangling having to happen in every
-/// module. This is similar to what `serde` does.
-mod lib {
-    mod core {
-        #[cfg(not(feature = "std"))]
-        pub use core::*;
-        #[cfg(feature = "std")]
-        pub use std::*;
-    }
 
-    pub use self::core::char;
-    pub use self::core::cmp;
-    pub use self::core::str;
-    pub use self::core::ops;
-    pub use self::core::fmt;
-    pub use self::core::result;
-}
-
-use lib::fmt;
+use core::fmt;
 
 
 macro_rules! matches {
@@ -312,8 +297,8 @@ pub enum EntityDefinition<'a> {
 }
 
 
-type Result<T> = lib::result::Result<T, Error>;
-type StreamResult<T> = lib::result::Result<T, StreamError>;
+type Result<T> = core::result::Result<T, Error>;
+type StreamResult<T> = core::result::Result<T, StreamError>;
 
 
 /// List of token types.

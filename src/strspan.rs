@@ -1,5 +1,5 @@
-use lib::fmt;
-use lib::ops::Range;
+use core::fmt;
+use core::ops::Range;
 
 
 /// An immutable string slice.
