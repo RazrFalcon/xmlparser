@@ -44,6 +44,7 @@ If you are looking for a more high-level solution - checkout
 - The library forbids the unsafe code.
 */
 
+#![no_std]
 #![cfg_attr(feature = "cargo-clippy", allow(unreadable_literal))]
 
 #![doc(html_root_url = "https://docs.rs/xmlparser/0.10.0")]
@@ -52,8 +53,12 @@ If you are looking for a more high-level solution - checkout
 #![warn(missing_docs)]
 #![allow(ellipsis_inclusive_range_patterns)]
 
+#[cfg(feature = "std")]
+#[macro_use]
+extern crate std;
 
-use std::fmt;
+
+use core::fmt;
 
 
 macro_rules! matches {
@@ -292,8 +297,8 @@ pub enum EntityDefinition<'a> {
 }
 
 
-type Result<T> = ::std::result::Result<T, Error>;
-type StreamResult<T> = ::std::result::Result<T, StreamError>;
+type Result<T> = core::result::Result<T, Error>;
+type StreamResult<T> = core::result::Result<T, StreamError>;
 
 
 /// List of token types.
@@ -772,9 +777,9 @@ impl<'a> Tokenizer<'a> {
             "yes" => true,
             "no" => false,
             _ => {
-                let values = vec![value.into(), "yes".into(), "no".into()];
                 let pos = s.gen_text_pos_from(start);
-                return Err(StreamError::InvalidString(values, pos));
+
+                return Err(StreamError::InvalidString("yes', 'no", pos));
             }
         };
 

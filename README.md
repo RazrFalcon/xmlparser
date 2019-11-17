@@ -30,6 +30,7 @@ If you are looking for a more high-level solution - checkout
 - No heap allocations.
 - No dependencies.
 - Tiny. ~1500 LOC and ~40KiB in the release build according to the `cargo-bloat`.
+- Supports `no_std` builds. To use without the standard library, disable the default features.
 
 ### Limitations
 

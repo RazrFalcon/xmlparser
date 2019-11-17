@@ -14,6 +14,10 @@ repository = "https://github.com/RazrFalcon/xmlparser"
 [badges]
 travis-ci = { repository = "RazrFalcon/xmlparser" }
 
+[features]
+default = ["std"]
+std = []
+
 [lib]
 path = "src/lib.rs" # for cargo-readme
 doctest = true
