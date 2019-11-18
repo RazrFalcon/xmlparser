@@ -47,7 +47,7 @@ If you are looking for a more high-level solution - checkout
 #![no_std]
 #![cfg_attr(feature = "cargo-clippy", allow(unreadable_literal))]
 
-#![doc(html_root_url = "https://docs.rs/xmlparser/0.10.0")]
+#![doc(html_root_url = "https://docs.rs/xmlparser/0.11.0")]
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]

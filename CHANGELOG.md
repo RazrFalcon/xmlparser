@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.11.0] - 2019-11-18
+### Added
+- `no_std` support thanks to [hugwijst](https://github.com/hugwijst).
+
+### Changed
+- `StreamError::InvalidString` doesn't store an actual string now.
+
 ## [0.10.0] - 2019-09-14
 ### Changed
 - 10-15% faster parsing.
@@ -158,7 +165,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - `log` 0.3 -> 0.4
 
-[Unreleased]: https://github.com/RazrFalcon/xmlparser/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/RazrFalcon/xmlparser/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/RazrFalcon/xmlparser/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/RazrFalcon/xmlparser/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/RazrFalcon/xmlparser/compare/v0.8.1...v0.9.0
 [0.8.1]: https://github.com/RazrFalcon/xmlparser/compare/v0.8.0...v0.8.1
