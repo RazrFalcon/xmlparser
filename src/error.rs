@@ -103,6 +103,11 @@ pub enum StreamError {
 
     /// An invalid ExternalID in the DTD.
     InvalidExternalID,
+
+    /// A Character Data node contains an invalid data.
+    ///
+    /// Currently, only `]]>` is not allowed.
+    InvalidCharacterData,
 }
 
 impl fmt::Display for StreamError {
@@ -144,6 +149,9 @@ impl fmt::Display for StreamError {
             }
             StreamError::InvalidExternalID => {
                 write!(f, "invalid ExternalID")
+            }
+            StreamError::InvalidCharacterData => {
+                write!(f, "']]>' is not allowed inside a character data")
             }
         }
     }

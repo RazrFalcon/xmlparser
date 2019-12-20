@@ -242,6 +242,7 @@ pub enum Token<'a> {
     ///
     /// Contains text between elements including whitespaces.
     /// Basically everything between `>` and `<`.
+    /// Except `]]>`, which is not allowed and will lead to an error.
     ///
     /// ```text
     /// <p> text </p>
@@ -342,7 +343,7 @@ impl fmt::Display for TokenType {
             TokenType::Attribute => "Attribute",
             TokenType::CDSect => "CDATA",
             TokenType::Whitespace => "Whitespace",
-            TokenType::CharData => "Character data",
+            TokenType::CharData => "Character Data",
             TokenType::Unknown => "Unknown",
         };
 
@@ -1086,7 +1087,22 @@ impl<'a> Tokenizer<'a> {
     }
 
     fn parse_text(s: &mut Stream<'a>) -> Result<Token<'a>> {
+        map_err_at!(Self::parse_text_impl(s), TokenType::CharData, s, 0)
+    }
+
+    fn parse_text_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
         let text = s.consume_bytes(|_, c| c != b'<');
+
+        // According to the spec, `]]>` must not appear inside a Text node.
+        // https://www.w3.org/TR/xml/#syntax
+        //
+        // Search for `>` first, since it's a bit faster than looking for `]]>`.
+        if text.as_str().contains('>') {
+            if text.as_str().contains("]]>") {
+                return Err(StreamError::InvalidCharacterData);
+            }
+        }
+
         Ok(Token::Text { text })
     }
 }

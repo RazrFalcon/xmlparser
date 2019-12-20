@@ -52,3 +52,9 @@ test!(text_07, "<p>]></p>",
     Token::Text("]>", 3..5),
     Token::ElementEnd(ElementEnd::Close("", "p"), 5..9)
 );
+
+test!(text_err_01, "<p>]]></p>",
+    Token::ElementStart("", "p", 0..2),
+    Token::ElementEnd(ElementEnd::Open, 2..3),
+    Token::Error("invalid token 'Character Data' at 1:4 cause ']]>' is not allowed inside a character data".to_string())
+);
