@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.12.0] - 2019-12-21
 ### Changed
 - `]]>` is no longer allowed inside a Text node.
 - Only [XML characters](https://www.w3.org/TR/xml/#char32) are allowed now.
@@ -172,7 +174,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - `log` 0.3 -> 0.4
 
-[Unreleased]: https://github.com/RazrFalcon/xmlparser/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/RazrFalcon/xmlparser/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/RazrFalcon/xmlparser/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/RazrFalcon/xmlparser/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/RazrFalcon/xmlparser/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/RazrFalcon/xmlparser/compare/v0.8.1...v0.9.0

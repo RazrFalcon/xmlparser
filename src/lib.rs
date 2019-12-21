@@ -25,6 +25,7 @@ If you are looking for a more high-level solution - checkout
 - No heap allocations.
 - No dependencies.
 - Tiny. ~1500 LOC and ~40KiB in the release build according to the `cargo-bloat`.
+- Supports `no_std` builds. To use without the standard library, disable the default features.
 
 ## Limitations
 
@@ -45,9 +46,8 @@ If you are looking for a more high-level solution - checkout
 */
 
 #![no_std]
-#![cfg_attr(feature = "cargo-clippy", allow(unreadable_literal))]
 
-#![doc(html_root_url = "https://docs.rs/xmlparser/0.11.0")]
+#![doc(html_root_url = "https://docs.rs/xmlparser/0.12.0")]
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
