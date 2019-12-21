@@ -63,6 +63,10 @@ test!(declaration_09, "<?xml version='1.0' standalone='no'?>",
     Token::Declaration("1.0", None, Some(false), 0..37)
 );
 
+test!(declaration_10, "<?xml version='1.0' standalone='no' ?>",
+    Token::Declaration("1.0", None, Some(false), 0..38)
+);
+
 // Declaration with an invalid order
 test!(declaration_err_01, "<?xml encoding='UTF-8' version='1.0'?>",
     Token::Error("invalid token 'Declaration' at 1:1 cause expected 'version' at 1:7".to_string())
@@ -119,4 +123,16 @@ test!(declaration_err_12, "<?xml version='1.0'?><?xml version='1.0'?>",
 
 test!(declaration_err_13, "<?target \u{0000}content>",
     Token::Error("invalid token 'Processing Instruction' at 1:1 cause a non-XML character '\\u{0}' found at 1:10".to_string())
+);
+
+test!(declaration_err_14, "<?xml version='1.0'encoding='UTF-8'?>",
+    Token::Error("invalid token 'Declaration' at 1:1 cause expected space not 'e' at 1:20".to_string())
+);
+
+test!(declaration_err_15, "<?xml version='1.0' encoding='UTF-8'standalone='yes'?>",
+    Token::Error("invalid token 'Declaration' at 1:1 cause expected space not 's' at 1:37".to_string())
+);
+
+test!(declaration_err_16, "<?xml version='1.0'",
+    Token::Error("invalid token 'Declaration' at 1:1 cause expected '?>' at 1:20".to_string())
 );

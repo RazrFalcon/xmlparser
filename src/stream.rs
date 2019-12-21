@@ -382,9 +382,7 @@ impl<'a> Stream<'a> {
         }
 
         if !self.starts_with_space() {
-            let c = self.curr_byte_unchecked() as char;
-            let pos = self.gen_text_pos();
-            return Err(StreamError::InvalidSpace(c, pos));
+            return Err(StreamError::InvalidSpace(self.curr_byte_unchecked(), self.gen_text_pos()));
         }
 
         self.skip_spaces();
@@ -609,7 +607,7 @@ impl<'a> Stream<'a> {
             self.advance(1);
             Ok(c)
         } else {
-            Err(StreamError::InvalidQuote(c as char, self.gen_text_pos()))
+            Err(StreamError::InvalidQuote(c, self.gen_text_pos()))
         }
     }
 }

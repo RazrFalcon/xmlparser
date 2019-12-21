@@ -61,7 +61,7 @@ test!(element_err_03, "</a",
 test!(element_err_04, "<a x='test' /",
     Token::ElementStart("", "a", 0..2),
     Token::Attribute("", "x", "test", 3..11),
-    Token::Error("invalid token 'Attribute' at 1:13 cause unexpected end of stream".to_string())
+    Token::Error("invalid token 'Attribute' at 1:12 cause unexpected end of stream".to_string())
 );
 
 test!(element_err_05, "<<",
@@ -198,7 +198,7 @@ test!(attribute_err_03, "<c a/>",
 test!(attribute_err_04, "<c a='b' q/>",
     Token::ElementStart("", "c", 0..2),
     Token::Attribute("", "a", "b", 3..8),
-    Token::Error("invalid token 'Attribute' at 1:10 cause expected '=' not '/' at 1:11".to_string())
+    Token::Error("invalid token 'Attribute' at 1:9 cause expected '=' not '/' at 1:11".to_string())
 );
 
 test!(attribute_err_05, "<c a='<'/>",
@@ -209,4 +209,10 @@ test!(attribute_err_05, "<c a='<'/>",
 test!(attribute_err_06, "<c a='\0'/>",
     Token::ElementStart("", "c", 0..2),
     Token::Error("invalid token 'Attribute' at 1:3 cause a non-XML character '\\u{0}' found at 1:7".to_string())
+);
+
+test!(attribute_err_07, "<c a='v'b='v'/>",
+    Token::ElementStart("", "c", 0..2),
+    Token::Attribute("", "a", "v", 3..8),
+    Token::Error("invalid token 'Attribute' at 1:9 cause expected space not 'b' at 1:9".to_string())
 );

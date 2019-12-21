@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Only [XML characters](https://www.w3.org/TR/xml/#char32) are allowed now.
   Otherwise, `StreamError::NonXmlChar` will occur.
 - Disallow `-` at the end of a comment. `<!--a--->` is an error now.
+- A missing space between attributes is an error now.
+- `StreamError::InvalidQuote` and `StreamError::InvalidSpace` signature changed.
 
 ## [0.11.0] - 2019-11-18
 ### Added

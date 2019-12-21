@@ -91,12 +91,12 @@ pub enum StreamError {
     InvalidCharMultiple(u8, &'static [u8], TextPos),
 
     /// An unexpected character instead of `"` or `'`.
-    InvalidQuote(char, TextPos),
+    InvalidQuote(u8, TextPos),
 
     /// An unexpected character instead of an XML space.
     ///
     /// Includes: `' ' \n \r \t &#x20; &#x9; &#xD; &#xA;`.
-    InvalidSpace(char, TextPos),
+    InvalidSpace(u8, TextPos),
 
     /// An unexpected string.
     ///
@@ -144,10 +144,10 @@ impl fmt::Display for StreamError {
                 write!(f, " not '{}' at {}", actual as char, pos)
             }
             StreamError::InvalidQuote(c, pos) => {
-                write!(f, "expected quote mark not '{}' at {}", c, pos)
+                write!(f, "expected quote mark not '{}' at {}", c as char, pos)
             }
             StreamError::InvalidSpace(c, pos) => {
-                write!(f, "expected space not '{}' at {}", c, pos)
+                write!(f, "expected space not '{}' at {}", c as char, pos)
             }
             StreamError::InvalidString(expected, pos) => {
                 write!(f, "expected '{}' at {}", expected, pos)

@@ -702,17 +702,32 @@ impl<'a> Tokenizer<'a> {
 
     // XMLDecl ::= '<?xml' VersionInfo EncodingDecl? SDDecl? S? '?>'
     fn parse_declaration_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
+        fn consume_spaces(s: &mut Stream) -> StreamResult<()> {
+            if s.starts_with_space() {
+                s.skip_spaces();
+            } else if !s.starts_with(b"?>") && !s.at_end() {
+                return Err(StreamError::InvalidSpace(s.curr_byte_unchecked(), s.gen_text_pos()));
+            }
+
+            Ok(())
+        }
+
         let start = s.pos() - 6;
 
         let version = Self::parse_version_info(s)?;
+        consume_spaces(s)?;
+
         let encoding = Self::parse_encoding_decl(s)?;
+        if encoding.is_some() {
+            consume_spaces(s)?;
+        }
+
         let standalone = Self::parse_standalone(s)?;
 
         s.skip_spaces();
         s.skip_string(b"?>")?;
 
         let span = s.slice_back(start);
-
         Ok(Token::Declaration { version, encoding, standalone, span })
     }
 
@@ -734,16 +749,14 @@ impl<'a> Tokenizer<'a> {
         Ok(ver)
     }
 
-
     // EncodingDecl ::= S 'encoding' Eq ('"' EncName '"' | "'" EncName "'" )
     // EncName      ::= [A-Za-z] ([A-Za-z0-9._] | '-')*
     fn parse_encoding_decl(s: &mut Stream<'a>) -> StreamResult<Option<StrSpan<'a>>> {
-        s.skip_spaces();
-
-        if s.skip_string(b"encoding").is_err() {
+        if !s.starts_with(b"encoding") {
             return Ok(None);
         }
 
+        s.advance(8);
         s.consume_eq()?;
         let quote = s.consume_quote()?;
         // [A-Za-z] ([A-Za-z0-9._] | '-')*
@@ -762,12 +775,11 @@ impl<'a> Tokenizer<'a> {
 
     // SDDecl ::= S 'standalone' Eq (("'" ('yes' | 'no') "'") | ('"' ('yes' | 'no') '"'))
     fn parse_standalone(s: &mut Stream<'a>) -> StreamResult<Option<bool>> {
-        s.skip_spaces();
-
-        if s.skip_string(b"standalone").is_err() {
+        if !s.starts_with(b"standalone") {
             return Ok(None);
         }
 
+        s.advance(10);
         s.consume_eq()?;
         let quote = s.consume_quote()?;
 
@@ -1022,6 +1034,8 @@ impl<'a> Tokenizer<'a> {
 
     // Name Eq AttValue
     fn parse_attribute(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
+        let attr_start = s.pos();
+        let has_space = s.starts_with_space();
         s.skip_spaces();
 
         if let Ok(c) = s.curr_byte() {
@@ -1043,6 +1057,16 @@ impl<'a> Tokenizer<'a> {
             }
         }
 
+        if !has_space {
+            if !s.at_end() {
+                return Err(StreamError::InvalidSpace(
+                    s.curr_byte_unchecked(), s.gen_text_pos_from(attr_start))
+                );
+            } else {
+                return Err(StreamError::UnexpectedEndOfStream);
+            }
+        }
+
         let start = s.pos();
 
         let (prefix, local) = s.consume_qname()?;
@@ -1053,8 +1077,6 @@ impl<'a> Tokenizer<'a> {
         let value = s.consume_chars(|_, c| c != quote_c && c != '<')?;
         s.consume_byte(quote)?;
         let span = s.slice_back(start);
-
-        s.skip_spaces();
 
         Ok(Token::Attribute { prefix, local, value, span })
     }
