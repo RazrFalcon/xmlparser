@@ -4,5 +4,5 @@ version = "0.1.0"
 authors = ["RazrFalcon <razrfalcon@gmail.com>"]
 
 [dependencies]
-afl = "0.4"
+afl = "0.5"
 xmlparser = { path = ".." }

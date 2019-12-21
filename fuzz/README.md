@@ -1,6 +1,12 @@
+## Prepare
+
+```
+cargo install cargo-fuzz
+```
+
 ## Run
 
 ```
 cd ..
-RUSTFLAGS="-C relocation-model=dynamic-no-pic" cargo +nightly fuzz run fuzz_xml
+cargo +nightly fuzz run fuzz_xml
 ```
