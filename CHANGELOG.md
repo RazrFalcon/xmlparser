@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Changed
 - `]]>` is no longer allowed inside a Text node.
+- Only [XML characters](https://www.w3.org/TR/xml/#char32) are allowed now.
+  Otherwise, `StreamError::NonXmlChar` will occur.
 
 ## [0.11.0] - 2019-11-18
 ### Added

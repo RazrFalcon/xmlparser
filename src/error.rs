@@ -73,6 +73,11 @@ pub enum StreamError {
     /// An invalid name.
     InvalidName,
 
+    /// A non-XML character has occurred.
+    ///
+    /// Valid characters are: <https://www.w3.org/TR/xml/#char32>
+    NonXmlChar(char, TextPos),
+
     /// An invalid/unexpected character.
     ///
     /// The first byte is an actual one, the second one is expected.
@@ -118,6 +123,9 @@ impl fmt::Display for StreamError {
             }
             StreamError::InvalidName => {
                 write!(f, "invalid name token")
+            }
+            StreamError::NonXmlChar(c, pos) => {
+                write!(f, "a non-XML character {:?} found at {}", c, pos)
             }
             StreamError::InvalidChar(actual, expected, pos) => {
                 write!(f, "expected '{}' not '{}' at {}",

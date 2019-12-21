@@ -253,25 +253,29 @@ impl<'a> Stream<'a> {
     /// Consumes chars by the predicate and returns them.
     ///
     /// The result can be empty.
-    pub fn consume_chars<F>(&mut self, f: F) -> StrSpan<'a>
+    pub fn consume_chars<F>(&mut self, f: F) -> Result<StrSpan<'a>>
         where F: Fn(&Stream, char) -> bool
     {
         let start = self.pos;
-        self.skip_chars(f);
-        self.slice_back(start)
+        self.skip_chars(f)?;
+        Ok(self.slice_back(start))
     }
 
     /// Skips chars by the predicate.
-    pub fn skip_chars<F>(&mut self, f: F)
+    pub fn skip_chars<F>(&mut self, f: F) -> Result<()>
         where F: Fn(&Stream, char) -> bool
     {
         for c in self.chars() {
-            if f(self, c) {
+            if !c.is_xml_char() {
+                return Err(StreamError::NonXmlChar(c, self.gen_text_pos()));
+            } else if f(self, c) {
                 self.advance(c.len_utf8());
             } else {
                 break;
             }
         }
+
+        Ok(())
     }
 
     #[inline]

@@ -68,3 +68,9 @@ test!(cdata_09, "<p><![CDATA[bracket ]after]]></p>",
     Token::Cdata("bracket ]after", 3..29),
     Token::ElementEnd(ElementEnd::Close("", "p"), 29..33)
 );
+
+test!(cdata_err_01, "<p><![CDATA[\0]]></p>",
+    Token::ElementStart("", "p", 0..2),
+    Token::ElementEnd(ElementEnd::Open, 2..3),
+    Token::Error("invalid token 'CDATA' at 1:4 cause a non-XML character '\\u{0}' found at 1:13".to_string())
+);

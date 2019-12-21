@@ -798,15 +798,7 @@ impl<'a> Tokenizer<'a> {
     // '<!--' ((Char - '-') | ('-' (Char - '-')))* '-->'
     fn parse_comment_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
         let start = s.pos() - 4;
-
-        let text = s.consume_chars(|s, c| {
-            if c == '-' && s.starts_with(b"-->") {
-                return false;
-            }
-
-            c.is_xml_char()
-        });
-
+        let text = s.consume_chars(|s, c| !(c == '-' && s.starts_with(b"-->")))?;
         s.skip_string(b"-->")?;
 
         if text.as_str().contains("--") {
@@ -826,23 +818,9 @@ impl<'a> Tokenizer<'a> {
     // PITarget ::= Name - (('X' | 'x') ('M' | 'm') ('L' | 'l'))
     fn parse_pi_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
         let start = s.pos() - 2;
-
         let target = s.consume_name()?;
-
         s.skip_spaces();
-
-        let content = s.consume_chars(|s, c| {
-            if c == '?' && s.starts_with(b"?>") {
-                return false;
-            }
-
-            if !c.is_xml_char() {
-                return false;
-            }
-
-            true
-        });
-
+        let content = s.consume_chars(|s, c| !(c == '?' && s.starts_with(b"?>")))?;
         let content = if !content.is_empty() {
             Some(content)
         } else {
@@ -1006,15 +984,9 @@ impl<'a> Tokenizer<'a> {
     // CDEnd   ::= ']]>'
     fn parse_cdata_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
         let start = s.pos() - 9;
-
-        let text = s.consume_bytes(|s, c| {
-            !(c == b']' && s.starts_with(b"]]>"))
-        });
-
+        let text = s.consume_chars(|s, c| !(c == ']' && s.starts_with(b"]]>")))?;
         s.skip_string(b"]]>")?;
-
         let span = s.slice_back(start);
-
         Ok(Token::Cdata { text, span })
     }
 
@@ -1076,8 +1048,9 @@ impl<'a> Tokenizer<'a> {
         let (prefix, local) = s.consume_qname()?;
         s.consume_eq()?;
         let quote = s.consume_quote()?;
+        let quote_c = quote as char;
         // The attribute value must not contain the < character.
-        let value = s.consume_bytes(|_, c| c != quote && c != b'<');
+        let value = s.consume_chars(|_, c| c != quote_c && c != '<')?;
         s.consume_byte(quote)?;
         let span = s.slice_back(start);
 
@@ -1091,7 +1064,7 @@ impl<'a> Tokenizer<'a> {
     }
 
     fn parse_text_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
-        let text = s.consume_bytes(|_, c| c != b'<');
+        let text = s.consume_chars(|_, c| c != '<')?;
 
         // According to the spec, `]]>` must not appear inside a Text node.
         // https://www.w3.org/TR/xml/#syntax

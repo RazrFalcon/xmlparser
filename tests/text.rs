@@ -58,3 +58,9 @@ test!(text_err_01, "<p>]]></p>",
     Token::ElementEnd(ElementEnd::Open, 2..3),
     Token::Error("invalid token 'Character Data' at 1:4 cause ']]>' is not allowed inside a character data".to_string())
 );
+
+test!(text_err_02, "<p>\u{0c}</p>",
+    Token::ElementStart("", "p", 0..2),
+    Token::ElementEnd(ElementEnd::Open, 2..3),
+    Token::Error("invalid token 'Character Data' at 1:4 cause a non-XML character '\\u{c}' found at 1:4".to_string())
+);

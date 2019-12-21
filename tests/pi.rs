@@ -88,8 +88,8 @@ test!(declaration_err_06, "<?xml version='1.0' encoding='UTF-8' standalone='yes'
     Token::Error("invalid token 'Declaration' at 1:1 cause expected '?>' at 1:55".to_string())
 );
 
-test!(declaration_err_07, "\u{000a}<?xml\u{001d}\u{000a}\u{0000}&jg'];",
-    Token::Error("invalid token 'Processing Instruction' at 2:1 cause expected '?>' at 2:6".to_string())
+test!(declaration_err_07, "\u{000a}<?xml\u{000a}&jg'];",
+    Token::Error("invalid token 'Processing Instruction' at 2:1 cause expected '?>' at 3:7".to_string())
 );
 
 test!(declaration_err_08, "<?xml \t\n ?m?>",
@@ -117,6 +117,6 @@ test!(declaration_err_12, "<?xml version='1.0'?><?xml version='1.0'?>",
     Token::Error("unexpected token 'Declaration' at 1:22".to_string())
 );
 
-test!(declaration_err_13, "<?xml version=\"1.0' standalone='yes\">",
-    Token::Error("invalid token 'Declaration' at 1:1 cause expected '\"' not '\'' at 1:19".to_string())
+test!(declaration_err_13, "<?target \u{0000}content>",
+    Token::Error("invalid token 'Processing Instruction' at 1:1 cause a non-XML character '\\u{0}' found at 1:10".to_string())
 );
