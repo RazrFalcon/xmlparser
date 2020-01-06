@@ -1,5 +1,4 @@
 /*!
-
 *xmlparser* is a low-level, pull-based, zero-allocation
 [XML 1.0](https://www.w3.org/TR/xml/) parser.
 
@@ -20,11 +19,12 @@ If you are looking for a more high-level solution - checkout
 
 ## Benefits
 
-- All tokens contain `StrSpan` objects which contain a position of the data in the original document.
+- All tokens contain `StrSpan` objects which contain position of the substring
+  in the original document.
 - Good error processing. All error types contain position (line:column) where it occurred.
 - No heap allocations.
 - No dependencies.
-- Tiny. ~1500 LOC and ~40KiB in the release build according to the `cargo-bloat`.
+- Tiny. ~1400 LOC and ~30KiB in the release build according to the `cargo-bloat`.
 - Supports `no_std` builds. To use without the standard library, disable the default features.
 
 ## Limitations
@@ -355,9 +355,13 @@ impl<'a> Tokenizer<'a> {
     /// But if we have to parse an XML fragment, it will lead to an error.
     /// This method switches the parser to the root element content parsing mode.
     /// So it will treat any data as a content of the root element.
-    pub fn enable_fragment_mode(&mut self) {
-        self.state = State::Elements;
-        self.fragment_parsing = true;
+    pub fn from_fragment(full_text: &'a str, fragment: std::ops::Range<usize>) -> Self {
+        Tokenizer {
+            stream: Stream::from_substr(full_text, fragment),
+            state: State::Elements,
+            depth: 0,
+            fragment_parsing: true,
+        }
     }
 
     fn parse_next_impl(s: &mut Stream<'a>, state: State) -> Option<Result<Token<'a>>> {
@@ -957,7 +961,7 @@ impl<'a> Iterator for Tokenizer<'a> {
                         self.state = State::AfterDtd;
                     }
                     _ => {}
-                },
+                }
                 Err(_) => {
                     self.stream.jump_to_end();
                     self.state = State::End;

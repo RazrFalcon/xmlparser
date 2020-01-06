@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Completely new `Error` enum.
 - New error messages.
 - 5-10% faster parsing.
+- Use `Tokenizer::from_fragment` instead of `Tokenizer::enable_fragment_mode`.
 
 ### Removed
 - `TokenType`.

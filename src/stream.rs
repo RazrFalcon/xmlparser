@@ -59,6 +59,16 @@ impl<'a> From<StrSpan<'a>> for Stream<'a> {
 }
 
 impl<'a> Stream<'a> {
+    /// Creates a new stream from a specified `text` substring.
+    #[inline]
+    pub fn from_substr(text: &'a str, fragment: std::ops::Range<usize>) -> Self {
+        Stream {
+            pos: fragment.start,
+            end: fragment.end,
+            span: text.into(),
+        }
+    }
+
     /// Returns an underling string span.
     #[inline]
     pub fn span(&self) -> StrSpan<'a> {
@@ -300,8 +310,8 @@ impl<'a> Stream<'a> {
     /// This operation is very expensive. Use only for errors.
     #[inline(never)]
     pub fn gen_text_pos(&self) -> TextPos {
-        let text = self.span.full_str();
-        let end = self.pos + self.span.start();
+        let text = self.span.as_str();
+        let end = self.pos;
 
         let row = Self::calc_curr_row(text, end);
         let col = Self::calc_curr_col(text, end);
@@ -323,7 +333,7 @@ impl<'a> Stream<'a> {
     #[inline(never)]
     pub fn gen_text_pos_from(&self, pos: usize) -> TextPos {
         let mut s = self.clone();
-        s.pos = cmp::min(pos, s.span.full_str().len());
+        s.pos = cmp::min(pos, s.span.as_str().len());
         s.gen_text_pos()
     }
 

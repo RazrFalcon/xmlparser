@@ -4,7 +4,6 @@
 [![Documentation](https://docs.rs/xmlparser/badge.svg)](https://docs.rs/xmlparser)
 [![Rust 1.18+](https://img.shields.io/badge/rust-1.18+-orange.svg)](https://www.rust-lang.org)
 
-
 *xmlparser* is a low-level, pull-based, zero-allocation
 [XML 1.0](https://www.w3.org/TR/xml/) parser.
 
@@ -25,11 +24,12 @@ If you are looking for a more high-level solution - checkout
 
 ### Benefits
 
-- All tokens contain `StrSpan` objects which contain a position of the data in the original document.
+- All tokens contain `StrSpan` objects which contain position of the substring
+  in the original document.
 - Good error processing. All error types contain position (line:column) where it occurred.
 - No heap allocations.
 - No dependencies.
-- Tiny. ~1500 LOC and ~40KiB in the release build according to the `cargo-bloat`.
+- Tiny. ~1400 LOC and ~30KiB in the release build according to the `cargo-bloat`.
 - Supports `no_std` builds. To use without the standard library, disable the default features.
 
 ### Limitations

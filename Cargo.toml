@@ -1,6 +1,5 @@
 [package]
 name = "xmlparser"
-# When updating version, also modify html_root_url in the lib.rs
 version = "0.12.0"
 authors = ["Evgeniy Reizner <razrfalcon@gmail.com>"]
 categories = ["parser-implementations"]
@@ -17,7 +16,3 @@ travis-ci = { repository = "RazrFalcon/xmlparser" }
 [features]
 default = ["std"]
 std = []
-
-[lib]
-path = "src/lib.rs" # for cargo-readme
-doctest = true
