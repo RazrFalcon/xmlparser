@@ -439,8 +439,8 @@ impl<'a> Tokenizer<'a> {
             }
             State::Elements => {
                 // Use `match` only here, because only this section is performance-critical.
-                match s.curr_byte().ok()? {
-                    b'<' => {
+                match s.curr_byte() {
+                    Ok(b'<') => {
                         match s.next_byte() {
                             Ok(b'!') => {
                                 if s.starts_with(b"<!--") {
@@ -469,8 +469,11 @@ impl<'a> Tokenizer<'a> {
                             }
                         }
                     }
-                    _ => {
+                    Ok(_) => {
                         Some(Self::parse_text(s))
+                    }
+                    Err(_) => {
+                        Some(Err(Error::UnknownToken(s.gen_text_pos())))
                     }
                 }
             }
