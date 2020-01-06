@@ -58,9 +58,6 @@ If you are looking for a more high-level solution - checkout
 extern crate std;
 
 
-use core::fmt;
-
-
 macro_rules! matches {
     ($expression:expr, $($pattern:tt)+) => {
         match $expression {
@@ -302,56 +299,6 @@ type Result<T> = core::result::Result<T, Error>;
 type StreamResult<T> = core::result::Result<T, StreamError>;
 
 
-/// List of token types.
-///
-/// For internal use and errors.
-#[derive(Clone, Copy, PartialEq, Debug)]
-#[allow(missing_docs)]
-pub enum TokenType {
-    XMLDecl,
-    Comment,
-    PI,
-    DoctypeDecl,
-    ElementDecl,
-    AttlistDecl,
-    EntityDecl,
-    NotationDecl,
-    DoctypeEnd,
-    ElementStart,
-    ElementClose,
-    Attribute,
-    CDSect,
-    Whitespace,
-    CharData,
-    Unknown,
-}
-
-impl fmt::Display for TokenType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let s = match *self {
-            TokenType::XMLDecl => "Declaration",
-            TokenType::Comment => "Comment",
-            TokenType::PI => "Processing Instruction",
-            TokenType::DoctypeDecl => "Doctype Declaration",
-            TokenType::ElementDecl => "Doctype Element Declaration",
-            TokenType::AttlistDecl => "Doctype Attributes Declaration",
-            TokenType::EntityDecl => "Doctype Entity Declaration",
-            TokenType::NotationDecl => "Doctype Notation Declaration",
-            TokenType::DoctypeEnd => "Doctype End",
-            TokenType::ElementStart => "Element Start",
-            TokenType::ElementClose => "Element Close",
-            TokenType::Attribute => "Attribute",
-            TokenType::CDSect => "CDATA",
-            TokenType::Whitespace => "Whitespace",
-            TokenType::CharData => "Character Data",
-            TokenType::Unknown => "Unknown",
-        };
-
-        write!(f, "{}", s)
-    }
-}
-
-
 #[derive(Clone, Copy, PartialEq)]
 enum State {
     Start,
@@ -392,21 +339,11 @@ impl<'a> From<StrSpan<'a>> for Tokenizer<'a> {
 }
 
 
-/// Shorthand for:
-///
-/// ```no_run
-/// let start = stream.pos() - 2; // or any other number
-/// some_func().map_err(|e|
-///     Error::InvalidToken(Token::SomeToken, stream.gen_error_pos_from(start), Some(e))
-/// )
-/// ```
 macro_rules! map_err_at {
-    ($fun:expr, $token:expr, $stream:expr, $d:expr) => {{
-        let mut start = $stream.pos() as isize + $d;
-        debug_assert!(start >= 0);
-        if start < 0 { start = 0; }
+    ($fun:expr, $stream:expr, $err:ident) => {{
+        let start = $stream.pos();
         $fun.map_err(|e|
-            Error::InvalidToken($token, $stream.gen_text_pos_from(start as usize), Some(e))
+            Error::$err(e, $stream.gen_text_pos_from(start))
         )
     }}
 }
@@ -429,275 +366,142 @@ impl<'a> Tokenizer<'a> {
         }
 
         let start = s.pos();
-
-        if start == 0 {
+        if start == 0 && state == State::Start {
             // Skip UTF-8 BOM.
             if s.starts_with(&[0xEF, 0xBB, 0xBF]) {
                 s.advance(3);
             }
         }
 
-        macro_rules! parse_token_type {
-            () => ({
-                match Self::parse_token_type(s, state) {
-                    Ok(v) => v,
-                    Err(_) => {
-                        let pos = s.gen_text_pos_from(start);
-                        return Some(Err(Error::UnknownToken(pos)));
-                    }
-                }
-            })
-        }
-
-        macro_rules! gen_err {
-            ($token_type:expr) => ({
-                let pos = s.gen_text_pos_from(start);
-                if $token_type == TokenType::Unknown {
-                    return Some(Err(Error::UnknownToken(pos)));
-                } else {
-                    return Some(Err(Error::UnexpectedToken($token_type, pos)));
-                }
-            })
-        }
-
-        let t = match state {
+        match state {
             State::Start => {
-                let token_type = parse_token_type!();
-                match token_type {
-                    TokenType::XMLDecl => {
-                        // XML declaration allowed only at the start of the document.
-                        if start == 0 {
-                            Self::parse_declaration(s)
-                        } else {
-                            gen_err!(token_type);
-                        }
-                    }
-                    TokenType::Comment => {
-                        Self::parse_comment(s)
-                    }
-                    TokenType::PI => {
-                        Self::parse_pi(s)
-                    }
-                    TokenType::DoctypeDecl => {
-                        Self::parse_doctype(s)
-                    }
-                    TokenType::ElementStart => {
-                        Self::parse_element_start(s)
-                    }
-                    TokenType::Whitespace => {
-                        s.skip_spaces();
-                        return Self::parse_next_impl(s, state);
-                    }
-                    _ => {
-                        gen_err!(token_type);
-                    }
+                if start == 0 && s.starts_with(b"<?xml ") {
+                    Some(Self::parse_declaration(s))
+                } else if s.starts_with(b"<!DOCTYPE") {
+                    Some(Self::parse_doctype(s))
+                } else if s.starts_with_space() {
+                    s.skip_spaces();
+                    Self::parse_next_impl(s, state)
+                } else {
+                    Self::parse_next_impl(s, State::AfterDtd)
                 }
             }
             State::Dtd => {
-                let token_type = parse_token_type!();
-                match token_type {
-                      TokenType::ElementDecl
-                    | TokenType::NotationDecl
-                    | TokenType::AttlistDecl => {
-                        if Self::consume_decl(s).is_err() {
-                            gen_err!(token_type);
-                        }
-
-                        return Self::parse_next_impl(s, state);
+                if s.starts_with(b"<!ENTITY") {
+                    Some(Self::parse_entity_decl(s))
+                } else if s.starts_with(b"<!--") {
+                    Some(Self::parse_comment(s))
+                } else if s.starts_with(b"<?") {
+                    if s.starts_with(b"<?xml ") {
+                        Some(Err(Error::UnknownToken(s.gen_text_pos())))
+                    } else {
+                        Some(Self::parse_pi(s))
                     }
-                    TokenType::EntityDecl => {
-                        Self::parse_entity_decl(s)
+                } else if s.starts_with(b"]>") {
+                    s.advance(2);
+                    Some(Ok(Token::DtdEnd { span: s.slice_back(start) }))
+                } else if s.starts_with_space() {
+                    s.skip_spaces();
+                    Self::parse_next_impl(s, state)
+                } else if    s.starts_with(b"<!ELEMENT")
+                          || s.starts_with(b"<!ATTLIST")
+                          || s.starts_with(b"<!NOTATION")
+                {
+                    if Self::consume_decl(s).is_err() {
+                        let pos = s.gen_text_pos_from(start);
+                        Some(Err(Error::UnknownToken(pos)))
+                    } else {
+                        Self::parse_next_impl(s, state)
                     }
-                    TokenType::Comment => {
-                        Self::parse_comment(s)
-                    }
-                    TokenType::PI => {
-                        Self::parse_pi(s)
-                    }
-                    TokenType::DoctypeEnd => {
-                        Ok(Token::DtdEnd { span: s.slice_back(s.pos() - 2) })
-                    }
-                    TokenType::Whitespace => {
-                        s.skip_spaces();
-                        return Self::parse_next_impl(s, state);
-                    }
-                    _ => {
-                        gen_err!(token_type);
-                    }
+                } else {
+                    Some(Err(Error::UnknownToken(s.gen_text_pos())))
                 }
             }
             State::AfterDtd => {
-                let token_type = parse_token_type!();
-                match token_type {
-                    TokenType::Comment => {
-                        Self::parse_comment(s)
+                if s.starts_with(b"<!--") {
+                    Some(Self::parse_comment(s))
+                } else if s.starts_with(b"<?") {
+                    if s.starts_with(b"<?xml ") {
+                        Some(Err(Error::UnknownToken(s.gen_text_pos())))
+                    } else {
+                        Some(Self::parse_pi(s))
                     }
-                    TokenType::PI => {
-                        Self::parse_pi(s)
-                    }
-                    TokenType::ElementStart => {
-                        Self::parse_element_start(s)
-                    }
-                    TokenType::Whitespace => {
-                        s.skip_spaces();
-                        return Self::parse_next_impl(s, state);
-                    }
-                    _ => {
-                        gen_err!(token_type);
-                    }
+                } else if s.starts_with(b"<!") {
+                    Some(Err(Error::UnknownToken(s.gen_text_pos())))
+                } else if s.starts_with(b"<") {
+                    Some(Self::parse_element_start(s))
+                } else if s.starts_with_space() {
+                    s.skip_spaces();
+                    Self::parse_next_impl(s, state)
+                } else {
+                    Some(Err(Error::UnknownToken(s.gen_text_pos())))
                 }
             }
             State::Elements => {
-                let token_type = parse_token_type!();
-                match token_type {
-                    TokenType::ElementStart => {
-                        Self::parse_element_start(s)
-                    }
-                    TokenType::ElementClose => {
-                        Self::parse_close_element(s)
-                    }
-                    TokenType::CDSect => {
-                        Self::parse_cdata(s)
-                    }
-                    TokenType::PI => {
-                        Self::parse_pi(s)
-                    }
-                    TokenType::Comment => {
-                        Self::parse_comment(s)
-                    }
-                    TokenType::CharData => {
-                        Self::parse_text(s)
+                // Use `match` only here, because only this section is performance-critical.
+                match s.curr_byte().ok()? {
+                    b'<' => {
+                        match s.next_byte() {
+                            Ok(b'!') => {
+                                if s.starts_with(b"<!--") {
+                                    Some(Self::parse_comment(s))
+                                } else if s.starts_with(b"<![CDATA[") {
+                                    Some(Self::parse_cdata(s))
+                                } else {
+                                    Some(Err(Error::UnknownToken(s.gen_text_pos())))
+                                }
+                            }
+                            Ok(b'?') => {
+                                if !s.starts_with(b"<?xml ") {
+                                    Some(Self::parse_pi(s))
+                                } else {
+                                    Some(Err(Error::UnknownToken(s.gen_text_pos())))
+                                }
+                            }
+                            Ok(b'/') => {
+                                Some(Self::parse_close_element(s))
+                            }
+                            Ok(_) => {
+                                Some(Self::parse_element_start(s))
+                            }
+                            Err(_) => {
+                                return Some(Err(Error::UnknownToken(s.gen_text_pos())));
+                            }
+                        }
                     }
                     _ => {
-                        gen_err!(token_type);
+                        Some(Self::parse_text(s))
                     }
                 }
             }
             State::Attributes => {
-                Self::parse_attribute(s).map_err(|e|
-                    Error::InvalidToken(TokenType::Attribute,
-                                        s.gen_text_pos_from(start), Some(e)))
+                Some(Self::parse_attribute(s)
+                    .map_err(|e| Error::InvalidAttribute(e, s.gen_text_pos_from(start))))
             }
             State::AfterElements => {
-                let token_type = parse_token_type!();
-                match token_type {
-                    TokenType::Comment => {
-                        Self::parse_comment(s)
+                if s.starts_with(b"<!--") {
+                    Some(Self::parse_comment(s))
+                } else if s.starts_with(b"<?") {
+                    if s.starts_with(b"<?xml ") {
+                        Some(Err(Error::UnknownToken(s.gen_text_pos())))
+                    } else {
+                        Some(Self::parse_pi(s))
                     }
-                    TokenType::PI => {
-                        Self::parse_pi(s)
-                    }
-                    TokenType::Whitespace => {
-                        s.skip_spaces();
-                        return Self::parse_next_impl(s, state);
-                    }
-                    _ => {
-                        gen_err!(token_type);
-                    }
+                } else if s.starts_with_space() {
+                    s.skip_spaces();
+                    Self::parse_next_impl(s, state)
+                } else {
+                    Some(Err(Error::UnknownToken(s.gen_text_pos())))
                 }
             }
             State::End => {
-                return None;
+                None
             }
-        };
-
-        Some(t)
-    }
-
-    fn parse_token_type(s: &mut Stream, state: State) -> StreamResult<TokenType> {
-        let c1 = s.curr_byte()?;
-
-        let t = match c1 {
-            b'<' => {
-                s.advance(1);
-
-                let c2 = s.curr_byte()?;
-                match c2 {
-                    b'?' => {
-                        // TODO: technically, we should check for any whitespace
-                        if s.starts_with(b"?xml ") {
-                            s.advance(5);
-                            TokenType::XMLDecl
-                        } else {
-                            s.advance(1);
-                            TokenType::PI
-                        }
-                    }
-                    b'!' => {
-                        s.advance(1);
-
-                        let c3 = s.curr_byte()?;
-                        match c3 {
-                            b'-' if s.starts_with(b"--") => {
-                                s.advance(2);
-                                TokenType::Comment
-                            }
-                            b'D' if s.starts_with(b"DOCTYPE") => {
-                                s.advance(7);
-                                TokenType::DoctypeDecl
-                            }
-                            b'E' if s.starts_with(b"ELEMENT") => {
-                                s.advance(7);
-                                TokenType::ElementDecl
-                            }
-                            b'A' if s.starts_with(b"ATTLIST") => {
-                                s.advance(7);
-                                TokenType::AttlistDecl
-                            }
-                            b'E' if s.starts_with(b"ENTITY") => {
-                                s.advance(6);
-                                TokenType::EntityDecl
-                            }
-                            b'N' if s.starts_with(b"NOTATION") => {
-                                s.advance(8);
-                                TokenType::NotationDecl
-                            }
-                            b'[' if s.starts_with(b"[CDATA[") => {
-                                s.advance(7);
-                                TokenType::CDSect
-                            }
-                            _ => {
-                                TokenType::Unknown
-                            }
-                        }
-                    }
-                    b'/' => {
-                        s.advance(1);
-                        TokenType::ElementClose
-                    }
-                    _ => {
-                        TokenType::ElementStart
-                    }
-                }
-            }
-            b']' if state == State::Dtd && s.starts_with(b"]>") => {
-                s.advance(2);
-                TokenType::DoctypeEnd
-            }
-            _ => {
-                match state {
-                    State::Start | State::AfterDtd | State::AfterElements | State::Dtd => {
-                        if s.starts_with_space() {
-                            TokenType::Whitespace
-                        } else {
-                            TokenType::Unknown
-                        }
-                    }
-                    State::Elements => {
-                        TokenType::CharData
-                    }
-                    _ => {
-                        TokenType::Unknown
-                    }
-                }
-            }
-        };
-
-        Ok(t)
+        }
     }
 
     fn parse_declaration(s: &mut Stream<'a>) -> Result<Token<'a>> {
-        map_err_at!(Self::parse_declaration_impl(s), TokenType::XMLDecl, s, -6)
+        map_err_at!(Self::parse_declaration_impl(s), s, InvalidDeclaration)
     }
 
     // XMLDecl ::= '<?xml' VersionInfo EncodingDecl? SDDecl? S? '?>'
@@ -712,7 +516,8 @@ impl<'a> Tokenizer<'a> {
             Ok(())
         }
 
-        let start = s.pos() - 6;
+        let start = s.pos();
+        s.advance(6);
 
         let version = Self::parse_version_info(s)?;
         consume_spaces(s)?;
@@ -802,19 +607,24 @@ impl<'a> Tokenizer<'a> {
     }
 
     fn parse_comment(s: &mut Stream<'a>) -> Result<Token<'a>> {
-        let start = s.pos() - 4;
+        let start = s.pos();
         Self::parse_comment_impl(s)
-            .map_err(|_| Error::InvalidToken(TokenType::Comment, s.gen_text_pos_from(start), None))
+            .map_err(|e| Error::InvalidComment(e, s.gen_text_pos_from(start)))
     }
 
     // '<!--' ((Char - '-') | ('-' (Char - '-')))* '-->'
     fn parse_comment_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
-        let start = s.pos() - 4;
+        let start = s.pos();
+        s.advance(4);
         let text = s.consume_chars(|s, c| !(c == '-' && s.starts_with(b"-->")))?;
         s.skip_string(b"-->")?;
 
-        if text.as_str().contains("--") || text.as_str().ends_with('-') {
-            return Err(StreamError::UnexpectedEndOfStream); // Error type doesn't matter.
+        if text.as_str().contains("--") {
+            return Err(StreamError::InvalidCommentData);
+        }
+
+        if text.as_str().ends_with('-') {
+            return Err(StreamError::InvalidCommentEnd);
         }
 
         let span = s.slice_back(start);
@@ -823,13 +633,14 @@ impl<'a> Tokenizer<'a> {
     }
 
     fn parse_pi(s: &mut Stream<'a>) -> Result<Token<'a>> {
-        map_err_at!(Self::parse_pi_impl(s), TokenType::PI, s, -2)
+        map_err_at!(Self::parse_pi_impl(s), s, InvalidPI)
     }
 
     // PI       ::= '<?' PITarget (S (Char* - (Char* '?>' Char*)))? '?>'
     // PITarget ::= Name - (('X' | 'x') ('M' | 'm') ('L' | 'l'))
     fn parse_pi_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
-        let start = s.pos() - 2;
+        let start = s.pos();
+        s.advance(2);
         let target = s.consume_name()?;
         s.skip_spaces();
         let content = s.consume_chars(|s, c| !(c == '?' && s.starts_with(b"?>")))?;
@@ -847,12 +658,13 @@ impl<'a> Tokenizer<'a> {
     }
 
     fn parse_doctype(s: &mut Stream<'a>) -> Result<Token<'a>> {
-        map_err_at!(Self::parse_doctype_impl(s), TokenType::DoctypeDecl, s, -9)
+        map_err_at!(Self::parse_doctype_impl(s), s, InvalidDoctype)
     }
 
     // doctypedecl ::= '<!DOCTYPE' S Name (S ExternalID)? S? ('[' intSubset ']' S?)? '>'
     fn parse_doctype_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
-        let start = s.pos() - 9;
+        let start = s.pos();
+        s.advance(9);
 
         s.consume_spaces()?;
         let name = s.consume_name()?;
@@ -909,14 +721,15 @@ impl<'a> Tokenizer<'a> {
     }
 
     fn parse_entity_decl(s: &mut Stream<'a>) -> Result<Token<'a>> {
-        map_err_at!(Self::parse_entity_decl_impl(s), TokenType::EntityDecl, s, -8)
+        map_err_at!(Self::parse_entity_decl_impl(s), s, InvalidEntity)
     }
 
     // EntityDecl  ::= GEDecl | PEDecl
     // GEDecl      ::= '<!ENTITY' S Name S EntityDef S? '>'
     // PEDecl      ::= '<!ENTITY' S '%' S Name S PEDef S? '>'
     fn parse_entity_decl_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
-        let start = s.pos() - 8;
+        let start = s.pos();
+        s.advance(8);
 
         s.consume_spaces()?;
 
@@ -980,14 +793,13 @@ impl<'a> Tokenizer<'a> {
     }
 
     fn consume_decl(s: &mut Stream) -> StreamResult<()> {
-        s.consume_spaces()?;
         s.skip_bytes(|_, c| c != b'>');
         s.consume_byte(b'>')?;
         Ok(())
     }
 
     fn parse_cdata(s: &mut Stream<'a>) -> Result<Token<'a>> {
-        map_err_at!(Self::parse_cdata_impl(s), TokenType::CDSect, s, -9)
+        map_err_at!(Self::parse_cdata_impl(s), s, InvalidCdata)
     }
 
     // CDSect  ::= CDStart CData CDEnd
@@ -995,7 +807,8 @@ impl<'a> Tokenizer<'a> {
     // CData   ::= (Char* - (Char* ']]>' Char*))
     // CDEnd   ::= ']]>'
     fn parse_cdata_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
-        let start = s.pos() - 9;
+        let start = s.pos();
+        s.advance(9);
         let text = s.consume_chars(|s, c| !(c == ']' && s.starts_with(b"]]>")))?;
         s.skip_string(b"]]>")?;
         let span = s.slice_back(start);
@@ -1003,12 +816,13 @@ impl<'a> Tokenizer<'a> {
     }
 
     fn parse_element_start(s: &mut Stream<'a>) -> Result<Token<'a>> {
-        map_err_at!(Self::parse_element_start_impl(s), TokenType::ElementStart, s, -1)
+        map_err_at!(Self::parse_element_start_impl(s), s, InvalidElement)
     }
 
     // '<' Name (S Attribute)* S? '>'
     fn parse_element_start_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
-        let start = s.pos() - 1;
+        let start = s.pos();
+        s.advance(1);
         let (prefix, local) = s.consume_qname()?;
         let span = s.slice_back(start);
 
@@ -1016,12 +830,13 @@ impl<'a> Tokenizer<'a> {
     }
 
     fn parse_close_element(s: &mut Stream<'a>) -> Result<Token<'a>> {
-        map_err_at!(Self::parse_close_element_impl(s), TokenType::ElementClose, s, -2)
+        map_err_at!(Self::parse_close_element_impl(s), s, InvalidElement)
     }
 
     // '</' Name S? '>'
     fn parse_close_element_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {
-        let start = s.pos() - 2;
+        let start = s.pos();
+        s.advance(2);
 
         let (prefix, tag_name) = s.consume_qname()?;
         s.skip_spaces();
@@ -1082,7 +897,7 @@ impl<'a> Tokenizer<'a> {
     }
 
     fn parse_text(s: &mut Stream<'a>) -> Result<Token<'a>> {
-        map_err_at!(Self::parse_text_impl(s), TokenType::CharData, s, 0)
+        map_err_at!(Self::parse_text_impl(s), s, InvalidCharData)
     }
 
     fn parse_text_impl(s: &mut Stream<'a>) -> StreamResult<Token<'a>> {

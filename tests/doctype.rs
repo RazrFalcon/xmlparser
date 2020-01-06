@@ -122,16 +122,16 @@ test!(dtd_entity_06,
 );
 
 test!(dtd_err_01, "<!DOCTYPEEG[<!ENTITY%ETT\u{000a}SSSSSSSS<D_IDYT;->\u{000a}<",
-    Token::Error("invalid token 'Doctype Declaration' at 1:1 cause expected space not 'E' at 1:10".to_string())
+    Token::Error("invalid DTD at 1:1 cause expected space not 'E' at 1:10".to_string())
 );
 
 test!(dtd_err_02, "<!DOCTYPE s [<!ENTITY % name S YSTEM",
     Token::DtdStart("s", None, 0..13),
-    Token::Error("invalid token 'Doctype Entity Declaration' at 1:14 cause invalid ExternalID".to_string())
+    Token::Error("invalid DTD entity at 1:14 cause invalid ExternalID".to_string())
 );
 
 test!(dtd_err_03, "<!DOCTYPE s [<!ENTITY % name B",
     Token::DtdStart("s", None, 0..13),
-    Token::Error("invalid token 'Doctype Entity Declaration' at 1:14 cause \
+    Token::Error("invalid DTD entity at 1:14 cause \
                   expected '\"', ''', 'S', 'P' not 'B' at 1:30".to_string())
 );

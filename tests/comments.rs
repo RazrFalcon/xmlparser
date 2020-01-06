@@ -20,8 +20,7 @@ macro_rules! test_err {
         #[test]
         fn $name() {
             let mut p = xml::Tokenizer::from($text);
-            assert_eq!(p.next().unwrap().unwrap_err().to_string(),
-                       "invalid token 'Comment' at 1:1");
+            assert!(p.next().unwrap().is_err());
         }
     )
 }

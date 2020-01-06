@@ -47,60 +47,60 @@ test!(element_08, "<:circle/>",
 );
 
 test!(element_err_01, "<>",
-    Token::Error("invalid token 'Element Start' at 1:1 cause invalid name token".to_string())
+    Token::Error("invalid element at 1:1 cause invalid name token".to_string())
 );
 
 test!(element_err_02, "</",
-    Token::Error("unexpected token 'Element Close' at 1:1".to_string())
+    Token::Error("invalid element at 1:1 cause invalid name token".to_string())
 );
 
 test!(element_err_03, "</a",
-    Token::Error("unexpected token 'Element Close' at 1:1".to_string())
+    Token::Error("invalid element at 1:1 cause invalid name token".to_string())
 );
 
 test!(element_err_04, "<a x='test' /",
     Token::ElementStart("", "a", 0..2),
     Token::Attribute("", "x", "test", 3..11),
-    Token::Error("invalid token 'Attribute' at 1:12 cause unexpected end of stream".to_string())
+    Token::Error("invalid attribute at 1:12 cause unexpected end of stream".to_string())
 );
 
 test!(element_err_05, "<<",
-    Token::Error("invalid token 'Element Start' at 1:1 cause invalid name token".to_string())
+    Token::Error("invalid element at 1:1 cause invalid name token".to_string())
 );
 
 test!(element_err_06, "< a",
-    Token::Error("invalid token 'Element Start' at 1:1 cause invalid name token".to_string())
+    Token::Error("invalid element at 1:1 cause invalid name token".to_string())
 );
 
 test!(element_err_07, "< ",
-    Token::Error("invalid token 'Element Start' at 1:1 cause invalid name token".to_string())
+    Token::Error("invalid element at 1:1 cause invalid name token".to_string())
 );
 
 test!(element_err_08, "<&#x9;",
-    Token::Error("invalid token 'Element Start' at 1:1 cause invalid name token".to_string())
+    Token::Error("invalid element at 1:1 cause invalid name token".to_string())
 );
 
 test!(element_err_09, "<a></a></a>",
     Token::ElementStart("", "a", 0..2),
     Token::ElementEnd(ElementEnd::Open, 2..3),
     Token::ElementEnd(ElementEnd::Close("", "a"), 3..7),
-    Token::Error("unexpected token 'Element Close' at 1:8".to_string())
+    Token::Error("unknown token at 1:8".to_string())
 );
 
 test!(element_err_10, "<a/><a/>",
     Token::ElementStart("", "a", 0..2),
     Token::ElementEnd(ElementEnd::Empty, 2..4),
-    Token::Error("unexpected token 'Element Start' at 1:5".to_string())
+    Token::Error("unknown token at 1:5".to_string())
 );
 
 test!(element_err_11, "<a></br/></a>",
     Token::ElementStart("", "a", 0..2),
     Token::ElementEnd(ElementEnd::Open, 2..3),
-    Token::Error("invalid token 'Element Close' at 1:4 cause expected '>' not '/' at 1:8".to_string())
+    Token::Error("invalid element at 1:4 cause expected '>' not '/' at 1:8".to_string())
 );
 
 test!(element_err_12, "<svg:/>",
-    Token::Error("invalid token 'Element Start' at 1:1 cause invalid name token".to_string())
+    Token::Error("invalid element at 1:1 cause invalid name token".to_string())
 );
 
 test!(element_err_13, "\
@@ -111,27 +111,33 @@ test!(element_err_13, "\
     Token::ElementEnd(ElementEnd::Open, 5..6),
     Token::Text("\n", 6..7),
     Token::ElementEnd(ElementEnd::Close("", "root"), 7..14),
-    Token::Error("unexpected token 'Element Close' at 3:1".to_string())
+    Token::Error("unknown token at 3:1".to_string())
 );
 
 test!(element_err_14, "<-svg/>",
-    Token::Error("invalid token 'Element Start' at 1:1 cause invalid name token".to_string())
+    Token::Error("invalid element at 1:1 cause invalid name token".to_string())
 );
 
 test!(element_err_15, "<svg:-svg/>",
-    Token::Error("invalid token 'Element Start' at 1:1 cause invalid name token".to_string())
+    Token::Error("invalid element at 1:1 cause invalid name token".to_string())
 );
 
 test!(element_err_16, "<svg::svg/>",
-    Token::Error("invalid token 'Element Start' at 1:1 cause invalid name token".to_string())
+    Token::Error("invalid element at 1:1 cause invalid name token".to_string())
 );
 
 test!(element_err_17, "<svg:s:vg/>",
-    Token::Error("invalid token 'Element Start' at 1:1 cause invalid name token".to_string())
+    Token::Error("invalid element at 1:1 cause invalid name token".to_string())
 );
 
 test!(element_err_18, "<::svg/>",
-    Token::Error("invalid token 'Element Start' at 1:1 cause invalid name token".to_string())
+    Token::Error("invalid element at 1:1 cause invalid name token".to_string())
+);
+
+test!(element_err_19, "<a><",
+    Token::ElementStart("", "a", 0..2),
+    Token::ElementEnd(ElementEnd::Open, 2..3),
+    Token::Error("unknown token at 1:4".to_string())
 );
 
 
@@ -182,37 +188,37 @@ test!(attribute_07, "<c q:a='b'/>",
 
 test!(attribute_err_01, "<c az=test>",
     Token::ElementStart("", "c", 0..2),
-    Token::Error("invalid token 'Attribute' at 1:3 cause expected quote mark not 't' at 1:7".to_string())
+    Token::Error("invalid attribute at 1:3 cause expected quote mark not 't' at 1:7".to_string())
 );
 
 test!(attribute_err_02, "<c a>",
     Token::ElementStart("", "c", 0..2),
-    Token::Error("invalid token 'Attribute' at 1:3 cause expected \'=\' not \'>\' at 1:5".to_string())
+    Token::Error("invalid attribute at 1:3 cause expected \'=\' not \'>\' at 1:5".to_string())
 );
 
 test!(attribute_err_03, "<c a/>",
     Token::ElementStart("", "c", 0..2),
-    Token::Error("invalid token 'Attribute' at 1:3 cause expected '=' not '/' at 1:5".to_string())
+    Token::Error("invalid attribute at 1:3 cause expected '=' not '/' at 1:5".to_string())
 );
 
 test!(attribute_err_04, "<c a='b' q/>",
     Token::ElementStart("", "c", 0..2),
     Token::Attribute("", "a", "b", 3..8),
-    Token::Error("invalid token 'Attribute' at 1:9 cause expected '=' not '/' at 1:11".to_string())
+    Token::Error("invalid attribute at 1:9 cause expected '=' not '/' at 1:11".to_string())
 );
 
 test!(attribute_err_05, "<c a='<'/>",
     Token::ElementStart("", "c", 0..2),
-    Token::Error("invalid token 'Attribute' at 1:3 cause expected ''' not '<' at 1:7".to_string())
+    Token::Error("invalid attribute at 1:3 cause expected ''' not '<' at 1:7".to_string())
 );
 
 test!(attribute_err_06, "<c a='\0'/>",
     Token::ElementStart("", "c", 0..2),
-    Token::Error("invalid token 'Attribute' at 1:3 cause a non-XML character '\\u{0}' found at 1:7".to_string())
+    Token::Error("invalid attribute at 1:3 cause a non-XML character '\\u{0}' found at 1:7".to_string())
 );
 
 test!(attribute_err_07, "<c a='v'b='v'/>",
     Token::ElementStart("", "c", 0..2),
     Token::Attribute("", "a", "v", 3..8),
-    Token::Error("invalid token 'Attribute' at 1:9 cause expected space not 'b' at 1:9".to_string())
+    Token::Error("invalid attribute at 1:9 cause expected space not 'b' at 1:9".to_string())
 );

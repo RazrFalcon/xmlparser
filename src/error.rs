@@ -3,19 +3,20 @@ use core::str;
 #[cfg(feature = "std")]
 use std::error;
 
-use TokenType;
-
 
 /// An XML parser errors.
-#[derive(Debug)]
+#[allow(missing_docs)]
+#[derive(Clone, Copy, Debug)]
 pub enum Error {
-    /// An invalid token with an optional cause.
-    InvalidToken(TokenType, TextPos, Option<StreamError>),
-
-    /// An unexpected token.
-    UnexpectedToken(TokenType, TextPos),
-
-    /// An unknown token.
+    InvalidDeclaration(StreamError, TextPos),
+    InvalidComment(StreamError, TextPos),
+    InvalidPI(StreamError, TextPos),
+    InvalidDoctype(StreamError, TextPos),
+    InvalidEntity(StreamError, TextPos),
+    InvalidElement(StreamError, TextPos),
+    InvalidAttribute(StreamError, TextPos),
+    InvalidCdata(StreamError, TextPos),
+    InvalidCharData(StreamError, TextPos),
     UnknownToken(TextPos),
 }
 
@@ -23,8 +24,15 @@ impl Error {
     /// Returns the error position.
     pub fn pos(&self) -> TextPos {
         match *self {
-            Error::InvalidToken(_, pos, _) => pos,
-            Error::UnexpectedToken(_, pos) => pos,
+            Error::InvalidDeclaration(_, pos) => pos,
+            Error::InvalidComment(_, pos) => pos,
+            Error::InvalidPI(_, pos) => pos,
+            Error::InvalidDoctype(_, pos) => pos,
+            Error::InvalidEntity(_, pos) => pos,
+            Error::InvalidElement(_, pos) => pos,
+            Error::InvalidAttribute(_, pos) => pos,
+            Error::InvalidCdata(_, pos) => pos,
+            Error::InvalidCharData(_, pos) => pos,
             Error::UnknownToken(pos) => pos,
         }
     }
@@ -33,18 +41,32 @@ impl Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Error::InvalidToken(token_type, pos, ref cause) => {
-                match *cause {
-                    Some(ref cause) => {
-                        write!(f, "invalid token '{}' at {} cause {}", token_type, pos, cause)
-                    }
-                    None => {
-                        write!(f, "invalid token '{}' at {}", token_type, pos)
-                    }
-                }
+            Error::InvalidDeclaration(ref cause, pos) => {
+                write!(f, "invalid XML declaration at {} cause {}", pos, cause)
             }
-            Error::UnexpectedToken(token_type, pos) => {
-                write!(f, "unexpected token '{}' at {}", token_type, pos)
+            Error::InvalidComment(ref cause, pos) => {
+                write!(f, "invalid comment at {} cause {}", pos, cause)
+            }
+            Error::InvalidPI(ref cause, pos) => {
+                write!(f, "invalid processing instruction at {} cause {}", pos, cause)
+            }
+            Error::InvalidDoctype(ref cause, pos) => {
+                write!(f, "invalid DTD at {} cause {}", pos, cause)
+            }
+            Error::InvalidEntity(ref cause, pos) => {
+                write!(f, "invalid DTD entity at {} cause {}", pos, cause)
+            }
+            Error::InvalidElement(ref cause, pos) => {
+                write!(f, "invalid element at {} cause {}", pos, cause)
+            }
+            Error::InvalidAttribute(ref cause, pos) => {
+                write!(f, "invalid attribute at {} cause {}", pos, cause)
+            }
+            Error::InvalidCdata(ref cause, pos) => {
+                write!(f, "invalid CDATA at {} cause {}", pos, cause)
+            }
+            Error::InvalidCharData(ref cause, pos) => {
+                write!(f, "invalid character data at {} cause {}", pos, cause)
             }
             Error::UnknownToken(pos) => {
                 write!(f, "unknown token at {}", pos)
@@ -62,7 +84,7 @@ impl error::Error for Error {
 
 
 /// A stream parser errors.
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum StreamError {
     /// The steam ended earlier than we expected.
     ///
@@ -108,6 +130,12 @@ pub enum StreamError {
 
     /// An invalid ExternalID in the DTD.
     InvalidExternalID,
+
+    /// Comment cannot contain `--`.
+    InvalidCommentData,
+
+    /// Comment cannot end with `-`.
+    InvalidCommentEnd,
 
     /// A Character Data node contains an invalid data.
     ///
@@ -157,6 +185,12 @@ impl fmt::Display for StreamError {
             }
             StreamError::InvalidExternalID => {
                 write!(f, "invalid ExternalID")
+            }
+            StreamError::InvalidCommentData => {
+                write!(f, "'--' is not allowed in comments")
+            }
+            StreamError::InvalidCommentEnd => {
+                write!(f, "comment cannot end with '-'")
             }
             StreamError::InvalidCharacterData => {
                 write!(f, "']]>' is not allowed inside a character data")
