@@ -301,7 +301,8 @@ type StreamResult<T> = core::result::Result<T, StreamError>;
 
 #[derive(Clone, Copy, PartialEq)]
 enum State {
-    Start,
+    Declaration,
+    AfterDeclaration,
     Dtd,
     AfterDtd,
     Elements,
@@ -322,16 +323,16 @@ pub struct Tokenizer<'a> {
 impl<'a> From<&'a str> for Tokenizer<'a> {
     #[inline]
     fn from(text: &'a str) -> Self {
-        Self::from(StrSpan::from(text))
-    }
-}
+        let mut stream = Stream::from(text);
 
-impl<'a> From<StrSpan<'a>> for Tokenizer<'a> {
-    #[inline]
-    fn from(span: StrSpan<'a>) -> Self {
+        // Skip UTF-8 BOM.
+        if stream.starts_with(&[0xEF, 0xBB, 0xBF]) {
+            stream.advance(3);
+        }
+
         Tokenizer {
-            stream: Stream::from(span),
-            state: State::Start,
+            stream,
+            state: State::Declaration,
             depth: 0,
             fragment_parsing: false,
         }
@@ -364,30 +365,40 @@ impl<'a> Tokenizer<'a> {
         }
     }
 
-    fn parse_next_impl(s: &mut Stream<'a>, state: State) -> Option<Result<Token<'a>>> {
+    fn parse_next_impl(&mut self) -> Option<Result<Token<'a>>> {
+        let s = &mut self.stream;
+
         if s.at_end() {
             return None;
         }
 
         let start = s.pos();
-        if start == 0 && state == State::Start {
-            // Skip UTF-8 BOM.
-            if s.starts_with(&[0xEF, 0xBB, 0xBF]) {
-                s.advance(3);
-            }
-        }
 
-        match state {
-            State::Start => {
-                if start == 0 && s.starts_with(b"<?xml ") {
+        match self.state {
+            State::Declaration => {
+                self.state = State::AfterDeclaration;
+                if s.starts_with(b"<?xml ") {
                     Some(Self::parse_declaration(s))
-                } else if s.starts_with(b"<!DOCTYPE") {
-                    Some(Self::parse_doctype(s))
+                } else {
+                    self.parse_next_impl()
+                }
+            }
+            State::AfterDeclaration => {
+                if s.starts_with(b"<!DOCTYPE") {
+                    let t = Self::parse_doctype(s);
+                    match t {
+                        Ok(Token::DtdStart { .. }) => self.state = State::Dtd,
+                        Ok(Token::EmptyDtd { .. }) => self.state = State::AfterDtd,
+                        _ => {}
+                    }
+
+                    Some(t)
                 } else if s.starts_with_space() {
                     s.skip_spaces();
-                    Self::parse_next_impl(s, state)
+                    self.parse_next_impl()
                 } else {
-                    Self::parse_next_impl(s, State::AfterDtd)
+                    self.state = State::AfterDtd;
+                    self.parse_next_impl()
                 }
             }
             State::Dtd => {
@@ -402,11 +413,12 @@ impl<'a> Tokenizer<'a> {
                         Some(Self::parse_pi(s))
                     }
                 } else if s.starts_with(b"]>") {
+                    self.state = State::AfterDtd;
                     s.advance(2);
                     Some(Ok(Token::DtdEnd { span: s.slice_back(start) }))
                 } else if s.starts_with_space() {
                     s.skip_spaces();
-                    Self::parse_next_impl(s, state)
+                    self.parse_next_impl()
                 } else if    s.starts_with(b"<!ELEMENT")
                           || s.starts_with(b"<!ATTLIST")
                           || s.starts_with(b"<!NOTATION")
@@ -415,7 +427,7 @@ impl<'a> Tokenizer<'a> {
                         let pos = s.gen_text_pos_from(start);
                         Some(Err(Error::UnknownToken(pos)))
                     } else {
-                        Self::parse_next_impl(s, state)
+                        self.parse_next_impl()
                     }
                 } else {
                     Some(Err(Error::UnknownToken(s.gen_text_pos())))
@@ -433,10 +445,11 @@ impl<'a> Tokenizer<'a> {
                 } else if s.starts_with(b"<!") {
                     Some(Err(Error::UnknownToken(s.gen_text_pos())))
                 } else if s.starts_with(b"<") {
+                    self.state = State::Attributes;
                     Some(Self::parse_element_start(s))
                 } else if s.starts_with_space() {
                     s.skip_spaces();
-                    Self::parse_next_impl(s, state)
+                    self.parse_next_impl()
                 } else {
                     Some(Err(Error::UnknownToken(s.gen_text_pos())))
                 }
@@ -463,9 +476,20 @@ impl<'a> Tokenizer<'a> {
                                 }
                             }
                             Ok(b'/') => {
+                                if self.depth > 0 {
+                                    self.depth -= 1;
+                                }
+
+                                if self.depth == 0 && !self.fragment_parsing {
+                                    self.state = State::AfterElements;
+                                } else {
+                                    self.state = State::Elements;
+                                }
+
                                 Some(Self::parse_close_element(s))
                             }
                             Ok(_) => {
+                                self.state = State::Attributes;
                                 Some(Self::parse_element_start(s))
                             }
                             Err(_) => {
@@ -482,8 +506,21 @@ impl<'a> Tokenizer<'a> {
                 }
             }
             State::Attributes => {
-                Some(Self::parse_attribute(s)
-                    .map_err(|e| Error::InvalidAttribute(e, s.gen_text_pos_from(start))))
+                let t = Self::parse_attribute(s);
+
+                if let Ok(Token::ElementEnd { end, .. }) = t {
+                    if end == ElementEnd::Open {
+                        self.depth += 1;
+                    }
+
+                    if self.depth == 0 && !self.fragment_parsing {
+                        self.state = State::AfterElements;
+                    } else {
+                        self.state = State::Elements;
+                    }
+                }
+
+                Some(t.map_err(|e| Error::InvalidAttribute(e, s.gen_text_pos_from(start))))
             }
             State::AfterElements => {
                 if s.starts_with(b"<!--") {
@@ -496,7 +533,7 @@ impl<'a> Tokenizer<'a> {
                     }
                 } else if s.starts_with_space() {
                     s.skip_spaces();
-                    Self::parse_next_impl(s, state)
+                    self.parse_next_impl()
                 } else {
                     Some(Err(Error::UnknownToken(s.gen_text_pos())))
                 }
@@ -933,40 +970,11 @@ impl<'a> Iterator for Tokenizer<'a> {
             return None;
         }
 
-        let t = Self::parse_next_impl(&mut self.stream, self.state);
+        let t = self.parse_next_impl();
 
-        if let Some(ref t) = t {
-            match *t {
-                Ok(t) => match t {
-                    Token::ElementStart { .. } => {
-                        self.state = State::Attributes;
-                    }
-                    Token::ElementEnd { ref end, .. } => {
-                        match *end {
-                            ElementEnd::Open => self.depth += 1,
-                            ElementEnd::Close(..) if self.depth > 0 => self.depth -= 1,
-                            _ => {}
-                        }
-
-                        if self.depth == 0 && !self.fragment_parsing {
-                            self.state = State::AfterElements;
-                        } else {
-                            self.state = State::Elements;
-                        }
-                    }
-                    Token::DtdStart { .. } => {
-                        self.state = State::Dtd;
-                    }
-                    Token::EmptyDtd { .. } | Token::DtdEnd { .. } => {
-                        self.state = State::AfterDtd;
-                    }
-                    _ => {}
-                }
-                Err(_) => {
-                    self.stream.jump_to_end();
-                    self.state = State::End;
-                }
-            }
+        if let Some(Err(_)) = t {
+            self.stream.jump_to_end();
+            self.state = State::End;
         }
 
         t
