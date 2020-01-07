@@ -47,7 +47,7 @@ If you are looking for a more high-level solution - checkout
 
 #![no_std]
 
-#![doc(html_root_url = "https://docs.rs/xmlparser/0.12.0")]
+#![doc(html_root_url = "https://docs.rs/xmlparser/0.13.0")]
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
