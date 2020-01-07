@@ -263,6 +263,7 @@ impl<'a> Stream<'a> {
     /// Consumes chars by the predicate and returns them.
     ///
     /// The result can be empty.
+    #[inline]
     pub fn consume_chars<F>(&mut self, f: F) -> Result<StrSpan<'a>>
         where F: Fn(&Stream, char) -> bool
     {
@@ -272,6 +273,7 @@ impl<'a> Stream<'a> {
     }
 
     /// Skips chars by the predicate.
+    #[inline]
     pub fn skip_chars<F>(&mut self, f: F) -> Result<()>
         where F: Fn(&Stream, char) -> bool
     {
@@ -303,62 +305,6 @@ impl<'a> Stream<'a> {
     #[inline]
     pub fn slice_tail(&self) -> StrSpan<'a> {
         self.span.slice_region(self.pos, self.end)
-    }
-
-    /// Calculates a current absolute position.
-    ///
-    /// This operation is very expensive. Use only for errors.
-    #[inline(never)]
-    pub fn gen_text_pos(&self) -> TextPos {
-        let text = self.span.as_str();
-        let end = self.pos;
-
-        let row = Self::calc_curr_row(text, end);
-        let col = Self::calc_curr_col(text, end);
-        TextPos::new(row, col)
-    }
-
-    /// Calculates an absolute position at `pos`.
-    ///
-    /// This operation is very expensive. Use only for errors.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let s = xmlparser::Stream::from("text");
-    ///
-    /// assert_eq!(s.gen_text_pos_from(2), xmlparser::TextPos::new(1, 3));
-    /// assert_eq!(s.gen_text_pos_from(9999), xmlparser::TextPos::new(1, 5));
-    /// ```
-    #[inline(never)]
-    pub fn gen_text_pos_from(&self, pos: usize) -> TextPos {
-        let mut s = self.clone();
-        s.pos = cmp::min(pos, s.span.as_str().len());
-        s.gen_text_pos()
-    }
-
-    fn calc_curr_row(text: &str, end: usize) -> u32 {
-        let mut row = 1;
-        for c in &text.as_bytes()[..end] {
-            if *c == b'\n' {
-                row += 1;
-            }
-        }
-
-        row
-    }
-
-    fn calc_curr_col(text: &str, end: usize) -> u32 {
-        let mut col = 1;
-        for c in text[..end].chars().rev() {
-            if c == '\n' {
-                break;
-            } else {
-                col += 1;
-            }
-        }
-
-        col
     }
 
     /// Skips whitespaces.
@@ -431,6 +377,7 @@ impl<'a> Stream<'a> {
         self._consume_reference().map_err(|_| StreamError::InvalidReference)
     }
 
+    #[inline(never)]
     fn _consume_reference(&mut self) -> Result<Reference<'a>> {
         if !self.try_consume_byte(b'&') {
             return Err(StreamError::InvalidReference);
@@ -525,6 +472,7 @@ impl<'a> Stream<'a> {
     /// # Errors
     ///
     /// - `InvalidName` - if name is empty or starts with an invalid char
+    #[inline(never)]
     pub fn consume_qname(&mut self) -> Result<(StrSpan<'a>, StrSpan<'a>)> {
         let start = self.pos();
 
@@ -619,5 +567,61 @@ impl<'a> Stream<'a> {
         } else {
             Err(StreamError::InvalidQuote(c, self.gen_text_pos()))
         }
+    }
+
+    /// Calculates a current absolute position.
+    ///
+    /// This operation is very expensive. Use only for errors.
+    #[inline(never)]
+    pub fn gen_text_pos(&self) -> TextPos {
+        let text = self.span.as_str();
+        let end = self.pos;
+
+        let row = Self::calc_curr_row(text, end);
+        let col = Self::calc_curr_col(text, end);
+        TextPos::new(row, col)
+    }
+
+    /// Calculates an absolute position at `pos`.
+    ///
+    /// This operation is very expensive. Use only for errors.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let s = xmlparser::Stream::from("text");
+    ///
+    /// assert_eq!(s.gen_text_pos_from(2), xmlparser::TextPos::new(1, 3));
+    /// assert_eq!(s.gen_text_pos_from(9999), xmlparser::TextPos::new(1, 5));
+    /// ```
+    #[inline(never)]
+    pub fn gen_text_pos_from(&self, pos: usize) -> TextPos {
+        let mut s = self.clone();
+        s.pos = cmp::min(pos, s.span.as_str().len());
+        s.gen_text_pos()
+    }
+
+    fn calc_curr_row(text: &str, end: usize) -> u32 {
+        let mut row = 1;
+        for c in &text.as_bytes()[..end] {
+            if *c == b'\n' {
+                row += 1;
+            }
+        }
+
+        row
+    }
+
+    fn calc_curr_col(text: &str, end: usize) -> u32 {
+        let mut col = 1;
+        for c in text[..end].chars().rev() {
+            if c == '\n' {
+                break;
+            } else {
+                col += 1;
+            }
+        }
+
+        col
     }
 }
