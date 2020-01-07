@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Changed
+- Moved to Rust 2018.
 - Completely new `Error` enum.
 - New error messages.
 - 10-20% faster parsing.

@@ -1,7 +1,7 @@
 extern crate xmlparser as xml;
 
 #[macro_use] mod token;
-use token::*;
+use crate::token::*;
 
 test!(dtd_01, "<!DOCTYPE greeting SYSTEM \"hello.dtd\">",
     Token::EmptyDtd("greeting", Some(ExternalId::System("hello.dtd")), 0..38)

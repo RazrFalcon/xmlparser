@@ -1,8 +1,9 @@
 use core::char;
 use core::cmp;
+use core::ops::Range;
 use core::str;
 
-use {
+use crate::{
     StreamError,
     StrSpan,
     TextPos,
@@ -61,7 +62,7 @@ impl<'a> From<StrSpan<'a>> for Stream<'a> {
 impl<'a> Stream<'a> {
     /// Creates a new stream from a specified `text` substring.
     #[inline]
-    pub fn from_substr(text: &'a str, fragment: std::ops::Range<usize>) -> Self {
+    pub fn from_substr(text: &'a str, fragment: Range<usize>) -> Self {
         Stream {
             pos: fragment.start,
             end: fragment.end,

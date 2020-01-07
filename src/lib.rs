@@ -73,10 +73,10 @@ mod stream;
 mod strspan;
 mod xmlchar;
 
-pub use error::*;
-pub use stream::*;
-pub use strspan::*;
-pub use xmlchar::*;
+pub use crate::error::*;
+pub use crate::stream::*;
+pub use crate::strspan::*;
+pub use crate::xmlchar::*;
 
 
 /// An XML token.
@@ -356,7 +356,7 @@ impl<'a> Tokenizer<'a> {
     /// But if we have to parse an XML fragment, it will lead to an error.
     /// This method switches the parser to the root element content parsing mode.
     /// So it will treat any data as a content of the root element.
-    pub fn from_fragment(full_text: &'a str, fragment: std::ops::Range<usize>) -> Self {
+    pub fn from_fragment(full_text: &'a str, fragment: core::ops::Range<usize>) -> Self {
         Tokenizer {
             stream: Stream::from_substr(full_text, fragment),
             state: State::Elements,

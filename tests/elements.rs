@@ -1,7 +1,7 @@
 extern crate xmlparser as xml;
 
 #[macro_use] mod token;
-use token::*;
+use crate::token::*;
 
 test!(element_01, "<a/>",
     Token::ElementStart("", "a", 0..2),
