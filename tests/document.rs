@@ -21,6 +21,16 @@ test!(document_06, str::from_utf8(b"\xEF\xBB\xBF<?xml version='1.0'?>").unwrap()
     Token::Declaration("1.0", None, None, 3..24)
 );
 
+test!(document_07, "<?xml version='1.0' encoding='utf-8'?>\n<!-- comment -->\n\
+<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>",
+    Token::Declaration("1.0", Some("utf-8"), None, 0..38),
+    Token::Comment(" comment ", 39..55),
+    Token::EmptyDtd("svg", Some(ExternalId::Public(
+        "-//W3C//DTD SVG 1.1//EN",
+        "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"
+    )), 56..154)
+);
+
 test!(document_err_01, "<![CDATA[text]]>",
     Token::Error("unknown token at 1:1".to_string())
 );

@@ -393,6 +393,8 @@ impl<'a> Tokenizer<'a> {
                     }
 
                     Some(t)
+                } else if s.starts_with(b"<!--") {
+                    Some(Self::parse_comment(s))
                 } else if s.starts_with_space() {
                     s.skip_spaces();
                     self.parse_next_impl()
