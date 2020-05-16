@@ -81,7 +81,7 @@ pub use crate::xmlchar::*;
 
 /// An XML token.
 #[allow(missing_docs)]
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum Token<'a> {
     /// Declaration token.
     ///
@@ -266,7 +266,7 @@ pub enum Token<'a> {
 
 
 /// `ElementEnd` token.
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum ElementEnd<'a> {
     /// Indicates `>`
     Open,
@@ -279,7 +279,7 @@ pub enum ElementEnd<'a> {
 
 /// Representation of the [ExternalID](https://www.w3.org/TR/xml/#NT-ExternalID) value.
 #[allow(missing_docs)]
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum ExternalId<'a> {
     System(StrSpan<'a>),
     Public(StrSpan<'a>, StrSpan<'a>),
@@ -288,7 +288,7 @@ pub enum ExternalId<'a> {
 
 /// Representation of the [EntityDef](https://www.w3.org/TR/xml/#NT-EntityDef) value.
 #[allow(missing_docs)]
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum EntityDefinition<'a> {
     EntityValue(StrSpan<'a>),
     ExternalId(ExternalId<'a>),

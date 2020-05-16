@@ -15,7 +15,7 @@ type Result<T> = ::core::result::Result<T, StreamError>;
 
 
 /// Representation of the [Reference](https://www.w3.org/TR/xml/#NT-Reference) value.
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum Reference<'a> {
     /// An entity reference.
     ///
@@ -30,7 +30,7 @@ pub enum Reference<'a> {
 
 
 /// A streaming XML parsing interface.
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub struct Stream<'a> {
     pos: usize,
     end: usize,
