@@ -7,7 +7,7 @@ use core::ops::{Deref, Range};
 /// Like `&str`, but also contains the position in the input XML,
 /// from which it was parsed.
 #[must_use]
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct StrSpan<'a> {
     text: &'a str,
     start: usize,

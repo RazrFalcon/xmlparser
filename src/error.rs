@@ -6,7 +6,7 @@ use std::error;
 
 /// An XML parser errors.
 #[allow(missing_docs)]
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum Error {
     InvalidDeclaration(StreamError, TextPos),
     InvalidComment(StreamError, TextPos),
@@ -84,7 +84,7 @@ impl error::Error for Error {
 
 
 /// A stream parser errors.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum StreamError {
     /// The steam ended earlier than we expected.
     ///
@@ -210,7 +210,7 @@ impl error::Error for StreamError {
 /// Position in text.
 ///
 /// Position indicates a row/line and a column in the original text. Starting from 1:1.
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[allow(missing_docs)]
 pub struct TextPos {
     pub row: u32,
