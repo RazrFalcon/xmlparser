@@ -303,6 +303,7 @@ type StreamResult<T> = core::result::Result<T, StreamError>;
 enum State {
     Declaration,
     AfterDeclaration,
+    AfterDeclarationTest,
     Dtd,
     AfterDtd,
     Elements,
@@ -376,9 +377,17 @@ impl<'a> Tokenizer<'a> {
 
         match self.state {
             State::Declaration => {
-                self.state = State::AfterDeclaration;
+                self.state = State::AfterDeclarationTest;
                 if s.starts_with(b"<?xml ") {
                     Some(Self::parse_declaration(s))
+                } else {
+                    self.parse_next_impl()
+                }
+            }
+            State::AfterDeclarationTest => {
+                self.state = State::AfterDeclaration;
+                if s.starts_with(b"<?xml-") {
+                    Some(Self::parse_pi(s))
                 } else {
                     self.parse_next_impl()
                 }
