@@ -77,9 +77,9 @@ impl XmlCharExt for char {
               0x000009
             | 0x00000A
             | 0x00000D
-            | 0x000020...0x000D7FF
-            | 0x00E000...0x000FFFD
-            | 0x010000...0x010FFFF => true,
+            | 0x000020...0x00D7FF
+            | 0x00E000...0x00FFFD
+            | 0x010000...0x10FFFF => true,
             _ => false,
         }
     }
@@ -88,27 +88,27 @@ impl XmlCharExt for char {
 
 /// Extension methods for XML-subset only operations.
 pub trait XmlByteExt {
-    /// Checks if a byte is a digit.
+    /// Checks if byte is a digit.
     ///
     /// `[0-9]`
     fn is_xml_digit(&self) -> bool;
 
-    /// Checks if a byte is a hex digit.
+    /// Checks if byte is a hex digit.
     ///
     /// `[0-9A-Fa-f]`
     fn is_xml_hex_digit(&self) -> bool;
 
-    /// Checks if a byte is a space.
+    /// Checks if byte is a space.
     ///
     /// `[ \r\n\t]`
     fn is_xml_space(&self) -> bool;
 
-    /// Checks if a byte is an ASCII char.
+    /// Checks if byte is an ASCII char.
     ///
     /// `[A-Za-z]`
     fn is_xml_letter(&self) -> bool;
 
-    /// Checks if a byte is within the ASCII
+    /// Checks if byte is within the ASCII
     /// [Char](https://www.w3.org/TR/xml/#NT-Char) range.
     fn is_xml_name(&self) -> bool;
 }
