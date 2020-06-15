@@ -395,6 +395,12 @@ impl<'a> Tokenizer<'a> {
                     Some(t)
                 } else if s.starts_with(b"<!--") {
                     Some(Self::parse_comment(s))
+                } else if s.starts_with(b"<?") {
+                    if s.starts_with(b"<?xml ") {
+                        Some(Err(Error::UnknownToken(s.gen_text_pos())))
+                    } else {
+                        Some(Self::parse_pi(s))
+                    }
                 } else if s.starts_with_space() {
                     s.skip_spaces();
                     self.parse_next_impl()

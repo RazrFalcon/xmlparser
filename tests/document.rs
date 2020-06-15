@@ -31,6 +31,25 @@ test!(document_07, "<?xml version='1.0' encoding='utf-8'?>\n<!-- comment -->\n\
     )), 56..154)
 );
 
+test!(document_08, "<?xml-stylesheet?>\n\
+<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>",
+    Token::PI("xml-stylesheet", None, 0..18),
+    Token::EmptyDtd("svg", Some(ExternalId::Public(
+        "-//W3C//DTD SVG 1.1//EN",
+        "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"
+    )), 19..117)
+);
+
+test!(document_09, "<?xml version='1.0' encoding='utf-8'?>\n<?xml-stylesheet?>\n\
+<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>",
+    Token::Declaration("1.0", Some("utf-8"), None, 0..38),
+    Token::PI("xml-stylesheet", None, 39..57),
+    Token::EmptyDtd("svg", Some(ExternalId::Public(
+        "-//W3C//DTD SVG 1.1//EN",
+        "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"
+    )), 58..156)
+);
+
 test!(document_err_01, "<![CDATA[text]]>",
     Token::Error("unknown token at 1:1".to_string())
 );
