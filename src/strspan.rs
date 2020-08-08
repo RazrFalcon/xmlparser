@@ -4,7 +4,7 @@ use core::ops::{Deref, Range};
 
 /// A string slice.
 ///
-/// Like `&str`, but also contains the position in the input XML,
+/// Like `&str`, but also contains the position in the input XML
 /// from which it was parsed.
 #[must_use]
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
@@ -31,25 +31,25 @@ impl<'a> StrSpan<'a> {
         StrSpan { text: &text[start..end], start }
     }
 
-    /// Returns a start position of the span.
+    /// Returns the start position of the span.
     #[inline]
     pub fn start(&self) -> usize {
         self.start
     }
 
-    /// Returns a end position of the span.
+    /// Returns the end position of the span.
     #[inline]
     pub fn end(&self) -> usize {
         self.start + self.text.len()
     }
 
-    /// Returns a end position of the span.
+    /// Returns the range of the span.
     #[inline]
     pub fn range(&self) -> Range<usize> {
         self.start..self.end()
     }
 
-    /// Returns a span slice.
+    /// Returns the span as a string slice
     #[inline]
     pub fn as_str(&self) -> &'a str {
         &self.text

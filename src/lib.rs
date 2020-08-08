@@ -10,39 +10,39 @@ for token in xmlparser::Tokenizer::from("<tagname name='value'/>") {
 }
 ```
 
-## Why a new library
+## Why a new library?
 
-This library is basically a low-level XML tokenizer that preserves a position of the tokens
-and does not intend to be used directly.
-If you are looking for a more high-level solution - checkout
+This library is basically a low-level XML tokenizer that preserves the positions of the tokens
+and is not intended to be used directly.
+If you are looking for a higher level solution, check out
 [roxmltree](https://github.com/RazrFalcon/roxmltree).
 
 ## Benefits
 
-- All tokens contain `StrSpan` objects which contain position of the substring
+- All tokens contain `StrSpan` structs which represent the position of the substring
   in the original document.
-- Good error processing. All error types contain position (line:column) where it occurred.
+- Good error processing. All error types contain the position (line:column) where it occurred.
 - No heap allocations.
 - No dependencies.
-- Tiny. ~1400 LOC and ~30KiB in the release build according to the `cargo-bloat`.
+- Tiny. ~1400 LOC and ~30KiB in the release build according to `cargo-bloat`.
 - Supports `no_std` builds. To use without the standard library, disable the default features.
 
 ## Limitations
 
-- Currently, only ENTITY objects are parsed from the DOCTYPE. Other ignored.
+- Currently, only ENTITY objects are parsed from the DOCTYPE. All others are ignored.
 - No tree structure validation. So an XML like `<root><child></root></child>`
   or a string without root element
   will be parsed without errors. You should check for this manually.
   On the other hand `<a/><a/>` will lead to an error.
-- Duplicated attributes is not an error. So an XML like `<item a="v1" a="v2"/>`
+- Duplicated attributes is not an error. So XML like `<item a="v1" a="v2"/>`
   will be parsed without errors. You should check for this manually.
 - UTF-8 only.
 
 ## Safety
 
-- The library must not panic. Any panic considered as a critical bug
+- The library must not panic. Any panic is considered a critical bug
   and should be reported.
-- The library forbids the unsafe code.
+- The library forbids unsafe code.
 */
 
 #![no_std]
@@ -354,8 +354,8 @@ impl<'a> Tokenizer<'a> {
     ///
     /// By default, `xmlparser` will check for DTD, root element, etc.
     /// But if we have to parse an XML fragment, it will lead to an error.
-    /// This method switches the parser to the root element content parsing mode.
-    /// So it will treat any data as a content of the root element.
+    /// This method switches the parser to the root element content parsing mode,
+    /// so it will treat any data as a content of the root element.
     pub fn from_fragment(full_text: &'a str, fragment: core::ops::Range<usize>) -> Self {
         Tokenizer {
             stream: Stream::from_substr(full_text, fragment),
