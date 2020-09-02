@@ -30,6 +30,16 @@ test!(dtd_06, "<!DOCTYPE greeting><a/>",
     Token::ElementEnd(ElementEnd::Empty, 21..23)
 );
 
+test!(dtd_07, "<!DOCTYPE greeting [] >",
+    Token::DtdStart("greeting", None, 0..20),
+    Token::DtdEnd(20..23)
+);
+
+test!(dtd_08, "<!DOCTYPE greeting [ ] >",
+    Token::DtdStart("greeting", None, 0..20),
+    Token::DtdEnd(21..24)
+);
+
 test!(dtd_entity_01,
 "<!DOCTYPE svg [
     <!ENTITY ns_extend \"http://ns.adobe.com/Extensibility/1.0/\">
@@ -134,4 +144,14 @@ test!(dtd_err_03, "<!DOCTYPE s [<!ENTITY % name B",
     Token::DtdStart("s", None, 0..13),
     Token::Error("invalid DTD entity at 1:14 cause \
                   expected '\"', ''', 'S', 'P' not 'B' at 1:30".to_string())
+);
+
+test!(dtd_err_04, "<!DOCTYPE s []",
+    Token::DtdStart("s", None, 0..13),
+    Token::Error("invalid DTD at 1:14 cause unexpected end of stream".to_string())
+);
+
+test!(dtd_err_05, "<!DOCTYPE s [] !",
+    Token::DtdStart("s", None, 0..13),
+    Token::Error("invalid DTD at 1:14 cause expected '>' not '!' at 1:16".to_string())
 );

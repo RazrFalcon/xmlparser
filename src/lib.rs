@@ -420,10 +420,25 @@ impl<'a> Tokenizer<'a> {
                     } else {
                         Some(Self::parse_pi(s))
                     }
-                } else if s.starts_with(b"]>") {
-                    self.state = State::AfterDtd;
-                    s.advance(2);
-                    Some(Ok(Token::DtdEnd { span: s.slice_back(start) }))
+                } else if s.starts_with(b"]") {
+                    // DTD ends with ']' S? '>', therefore we have to skip possible spaces.
+                    s.advance(1);
+                    s.skip_spaces();
+                    match s.curr_byte() {
+                        Ok(b'>') => {
+                            self.state = State::AfterDtd;
+                            s.advance(1);
+                            Some(Ok(Token::DtdEnd { span: s.slice_back(start) }))
+                        }
+                        Ok(c) => {
+                            let e = StreamError::InvalidChar(c, b'>', s.gen_text_pos());
+                            Some(Err(Error::InvalidDoctype(e, s.gen_text_pos_from(start))))
+                        }
+                        Err(_) => {
+                            let e = StreamError::UnexpectedEndOfStream;
+                            Some(Err(Error::InvalidDoctype(e, s.gen_text_pos_from(start))))
+                        }
+                    }
                 } else if s.starts_with_space() {
                     s.skip_spaces();
                     self.parse_next_impl()

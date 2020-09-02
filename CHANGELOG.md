@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- `DtdEnd` token parsing when `]` and `>` are separated by a whitespace.
 
 ## [0.13.2] - 2020-06-15
 ### Fixed
