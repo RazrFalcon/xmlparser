@@ -1,5 +1,3 @@
-extern crate xmlparser as xml;
-
 type Range = ::std::ops::Range<usize>;
 
 #[derive(PartialEq, Debug)]

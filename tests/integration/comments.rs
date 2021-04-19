@@ -1,6 +1,3 @@
-extern crate xmlparser as xml;
-
-#[macro_use] mod token;
 use crate::token::*;
 
 test!(comment_01, "<!--comment-->",     Token::Comment("comment", 0..14));

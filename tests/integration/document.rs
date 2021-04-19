@@ -1,8 +1,5 @@
-extern crate xmlparser as xml;
-
 use std::str;
 
-#[macro_use] mod token;
 use crate::token::*;
 
 test!(document_01, "", );

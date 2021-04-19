@@ -1,6 +1,3 @@
-extern crate xmlparser as xml;
-
-#[macro_use] mod token;
 use crate::token::*;
 
 test!(pi_01, "<?xslt ma?>",
