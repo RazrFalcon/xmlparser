@@ -1,6 +1,5 @@
 extern crate xmlparser as xml;
 
-#[macro_use] mod token;
 use crate::token::*;
 
 test!(cdata_01, "<p><![CDATA[content]]></p>",
