@@ -349,6 +349,10 @@ impl<'a> Stream<'a> {
     /// Consumes an XML character reference if there is one.
     ///
     /// On error will reset the position to the original.
+    ///
+    /// See [`consume_reference()`] for details.
+    ///
+    /// [`consume_reference()`]: #method.consume_reference
     pub fn try_consume_reference(&mut self) -> Option<Reference<'a>> {
         let start = self.pos();
 
@@ -374,6 +378,35 @@ impl<'a> Stream<'a> {
     /// # Errors
     ///
     /// - `InvalidReference`
+    ///
+    /// # Examples
+    ///
+    /// Escaped character:
+    ///
+    /// ```
+    /// use xmlparser::{Stream, Reference};
+    ///
+    /// let mut stream = Stream::from("&#xe13;");
+    /// assert_eq!(stream.consume_reference().unwrap(), Reference::Char('\u{e13}'));
+    /// ```
+    ///
+    /// Predefined references will not be expanded.
+    /// [Details.]( https://www.w3.org/TR/xml/#sec-entexpand)
+    ///
+    /// ```
+    /// use xmlparser::{Stream, Reference};
+    ///
+    /// let mut stream = Stream::from("&le;");
+    /// assert_eq!(stream.consume_reference().unwrap(), Reference::Entity("le"));
+    /// ```
+    ///
+    /// Named reference:
+    ///
+    /// ```
+    /// use xmlparser::{Stream, Reference};
+    ///
+    /// let mut stream = Stream::from("&other;");
+    /// assert_eq!(stream.consume_reference().unwrap(), Reference::Entity("other"));
     pub fn consume_reference(&mut self) -> Result<Reference<'a>> {
         self._consume_reference().map_err(|_| StreamError::InvalidReference)
     }
@@ -403,14 +436,7 @@ impl<'a> Stream<'a> {
             Reference::Char(c)
         } else {
             let name = self.consume_name()?;
-            match name.as_str() {
-                "quot" => Reference::Char('"'),
-                "amp"  => Reference::Char('&'),
-                "apos" => Reference::Char('\''),
-                "lt"   => Reference::Char('<'),
-                "gt"   => Reference::Char('>'),
-                _ => Reference::Entity(name.as_str()),
-            }
+            Reference::Entity(name.as_str())
         };
 
         self.consume_byte(b';')?;
