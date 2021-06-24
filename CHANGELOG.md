@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.13.4] - 2021-06-24
+### Fixed
+- Do not expand predefined references in `Stream::consume_reference`.
+  Thanks to [@Jesse-Bakker](https://github.com/Jesse-Bakker).
+
 ## [0.13.3] - 2020-09-02
 ### Changed
 - Documentation fixes by [@kneasle](https://github.com/kneasle).
@@ -200,7 +205,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - `log` 0.3 -> 0.4
 
-[Unreleased]: https://github.com/RazrFalcon/xmlparser/compare/v0.13.3...HEAD
+[Unreleased]: https://github.com/RazrFalcon/xmlparser/compare/v0.13.4...HEAD
+[0.13.4]: https://github.com/RazrFalcon/xmlparser/compare/v0.13.3...v0.13.4
 [0.13.3]: https://github.com/RazrFalcon/xmlparser/compare/v0.13.2...v0.13.3
 [0.13.2]: https://github.com/RazrFalcon/xmlparser/compare/v0.13.1...v0.13.2
 [0.13.1]: https://github.com/RazrFalcon/xmlparser/compare/v0.13.0...v0.13.1
