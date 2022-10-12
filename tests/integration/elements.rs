@@ -209,9 +209,9 @@ test!(attribute_err_05, "<c a='<'/>",
     Token::Error("invalid attribute at 1:3 cause expected ''' not '<' at 1:7".to_string())
 );
 
-test!(attribute_err_06, "<c a='\0'/>",
+test!(attribute_err_06, "<c a='\u{1}'/>",
     Token::ElementStart("", "c", 0..2),
-    Token::Error("invalid attribute at 1:3 cause a non-XML character '\\u{0}' found at 1:7".to_string())
+    Token::Error("invalid attribute at 1:3 cause a non-XML character '\\u{1}' found at 1:7".to_string())
 );
 
 test!(attribute_err_07, "<c a='v'b='v'/>",
