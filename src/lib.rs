@@ -981,6 +981,11 @@ impl<'a> Tokenizer<'a> {
 
         Ok(Token::Text { text })
     }
+
+    /// Get a reference to the tokenizer's stream.
+    pub fn stream<'b>(&'b self) -> Stream<'a> {
+        self.stream
+    }
 }
 
 impl<'a> Iterator for Tokenizer<'a> {
