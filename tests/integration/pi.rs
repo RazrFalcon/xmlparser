@@ -118,8 +118,8 @@ test!(declaration_err_12, "<?xml version='1.0'?><?xml version='1.0'?>",
     Token::Error("unknown token at 1:22".to_string())
 );
 
-test!(declaration_err_13, "<?target \u{0000}content>",
-    Token::Error("invalid processing instruction at 1:1 cause a non-XML character '\\u{0}' found at 1:10".to_string())
+test!(declaration_err_13, "<?target \u{1}content>",
+    Token::Error("invalid processing instruction at 1:1 cause a non-XML character '\\u{1}' found at 1:10".to_string())
 );
 
 test!(declaration_err_14, "<?xml version='1.0'encoding='UTF-8'?>",
