@@ -380,7 +380,7 @@ impl<'a> Tokenizer<'a> {
                 if s.starts_with(b"<?xml ") {
                     Some(Self::parse_declaration(s))
                 } else {
-                    self.parse_next_impl()
+                    None
                 }
             }
             State::AfterDeclaration => {
@@ -403,10 +403,10 @@ impl<'a> Tokenizer<'a> {
                     }
                 } else if s.starts_with_space() {
                     s.skip_spaces();
-                    self.parse_next_impl()
+                    None
                 } else {
                     self.state = State::AfterDtd;
-                    self.parse_next_impl()
+                    None
                 }
             }
             State::Dtd => {
@@ -441,7 +441,7 @@ impl<'a> Tokenizer<'a> {
                     }
                 } else if s.starts_with_space() {
                     s.skip_spaces();
-                    self.parse_next_impl()
+                    None
                 } else if    s.starts_with(b"<!ELEMENT")
                           || s.starts_with(b"<!ATTLIST")
                           || s.starts_with(b"<!NOTATION")
@@ -450,7 +450,7 @@ impl<'a> Tokenizer<'a> {
                         let pos = s.gen_text_pos_from(start);
                         Some(Err(Error::UnknownToken(pos)))
                     } else {
-                        self.parse_next_impl()
+                        None
                     }
                 } else {
                     Some(Err(Error::UnknownToken(s.gen_text_pos())))
@@ -472,7 +472,7 @@ impl<'a> Tokenizer<'a> {
                     Some(Self::parse_element_start(s))
                 } else if s.starts_with_space() {
                     s.skip_spaces();
-                    self.parse_next_impl()
+                    None
                 } else {
                     Some(Err(Error::UnknownToken(s.gen_text_pos())))
                 }
@@ -556,7 +556,7 @@ impl<'a> Tokenizer<'a> {
                     }
                 } else if s.starts_with_space() {
                     s.skip_spaces();
-                    self.parse_next_impl()
+                    None
                 } else {
                     Some(Err(Error::UnknownToken(s.gen_text_pos())))
                 }
@@ -989,11 +989,10 @@ impl<'a> Iterator for Tokenizer<'a> {
 
     #[inline]
     fn next(&mut self) -> Option<Self::Item> {
-        if self.stream.at_end() || self.state == State::End {
-            return None;
+        let mut t = None;
+        while !self.stream.at_end() && self.state != State::End && t.is_none() {
+            t = self.parse_next_impl();
         }
-
-        let t = self.parse_next_impl();
 
         if let Some(Err(_)) = t {
             self.stream.jump_to_end();

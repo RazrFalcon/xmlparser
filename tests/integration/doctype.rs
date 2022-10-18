@@ -128,6 +128,24 @@ test!(dtd_entity_06,
     Token::DtdEnd(203..205)
 );
 
+// We do not support !ELEMENT DTD token and it will be skipped.
+// Previously, we were calling `Tokenizer::next` after the skip,
+// which is recursive and could cause a stack overflow when there are too many sequential
+// unsupported tokens.
+// This tests checks that the current code do not crash with stack overflow.
+#[test]
+fn dtd_entity_07() {
+    let mut text = "<!DOCTYPE svg [\n".to_string();
+    for _ in 0..500 {
+        text.push_str("<!ELEMENT sgml ANY>\n");
+    }
+    text.push_str("]>\n");
+
+    let mut p = xml::Tokenizer::from(text.as_str());
+    assert_eq!(to_test_token(p.next().unwrap()), Token::DtdStart("svg", None, 0..15));
+    assert_eq!(to_test_token(p.next().unwrap()), Token::DtdEnd(10016..10018));
+}
+
 test!(dtd_err_01, "<!DOCTYPEEG[<!ENTITY%ETT\u{000a}SSSSSSSS<D_IDYT;->\u{000a}<",
     Token::Error("invalid DTD at 1:1 cause expected space not 'E' at 1:10".to_string())
 );
