@@ -5,8 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.13.5] - 2022-10-18
 ### Fixed
-- Do no use recursive calls during parsing.
+- Do no use recursive calls during parsing. Could lead to stack overflow on some input.
+- Revert _Do not expand predefined references in `Stream::consume_reference`._
+- Tests on Rust 1.61. Thanks to [@krtab](https://github.com/krtab).
 
 ## [0.13.4] - 2021-06-24
 ### Fixed
