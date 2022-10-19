@@ -31,6 +31,11 @@ impl<'a> StrSpan<'a> {
         StrSpan { text: &text[start..end], start }
     }
 
+    /// Returns `true` is self is empty.
+    pub fn empty(&self) -> bool {
+        self.start == self.end()
+    }
+
     /// Returns the start position of the span.
     #[inline]
     pub fn start(&self) -> usize {
