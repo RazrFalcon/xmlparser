@@ -262,6 +262,25 @@ pub enum Token<'a> {
     },
 }
 
+impl<'tkn> Token<'tkn> {
+    /// Returns the [`StrSpan`] encompassing all of the token.
+    pub fn span<'a>(&'a self) -> StrSpan<'tkn> {
+        match self {
+            &Token::Declaration { span, ..} => span,
+            &Token::ProcessingInstruction { span, ..} => span,
+            &Token::Comment { span, ..} => span,
+            &Token::DtdStart { span, ..} => span,
+            &Token::EmptyDtd { span, ..} => span,
+            &Token::EntityDeclaration { span, ..} => span,
+            &Token::DtdEnd { span, ..} => span,
+            &Token::ElementStart { span, ..} => span,
+            &Token::Attribute { span, ..} => span,
+            &Token::ElementEnd { span, ..} => span,
+            &Token::Text { text, ..} => text,
+            &Token::Cdata { span, ..} => span,
+        }
+    }
+}
 
 /// `ElementEnd` token.
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
