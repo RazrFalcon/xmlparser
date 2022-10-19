@@ -297,7 +297,7 @@ type Result<T> = core::result::Result<T, Error>;
 type StreamResult<T> = core::result::Result<T, StreamError>;
 
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 enum State {
     Declaration,
     AfterDeclaration,
@@ -311,6 +311,7 @@ enum State {
 
 
 /// Tokenizer for the XML structure.
+#[derive(Debug,Clone)]
 pub struct Tokenizer<'a> {
     stream: Stream<'a>,
     state: State,
