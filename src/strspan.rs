@@ -23,6 +23,30 @@ impl<'a> From<&'a str> for StrSpan<'a> {
     }
 }
 
+impl<'a> PartialEq<str> for StrSpan<'a> {
+    fn eq(&self, other: &str) -> bool {
+        self.text == other
+    }
+}
+
+impl<'a> PartialEq<&str> for StrSpan<'a> {
+    fn eq(&self, other: &&str) -> bool {
+        self.text == *other
+    }
+}
+
+impl<'a> PartialEq<StrSpan<'a>> for str {
+    fn eq(&self, other: &StrSpan<'a>) -> bool {
+        self == other.text
+    }
+}
+
+impl<'a> PartialEq<StrSpan<'a>> for &str {
+    fn eq(&self, other: &StrSpan<'a>) -> bool {
+        *self == other.text
+    }
+}
+
 impl<'a> StrSpan<'a> {
     /// Constructs a new `StrSpan` from substring.
     #[inline]
