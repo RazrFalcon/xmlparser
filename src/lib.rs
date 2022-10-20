@@ -262,9 +262,9 @@ pub enum Token<'a> {
     },
 }
 
-impl<'tkn> Token<'tkn> {
+impl<'a> Token<'a> {
     /// Returns the [`StrSpan`] encompassing all of the token.
-    pub fn span<'a>(&'a self) -> StrSpan<'tkn> {
+    pub fn span<>(&self) -> StrSpan<'a> {
         match self {
             &Token::Declaration { span, ..} => span,
             &Token::ProcessingInstruction { span, ..} => span,
@@ -1001,8 +1001,8 @@ impl<'a> Tokenizer<'a> {
         Ok(Token::Text { text })
     }
 
-    /// Get a reference to the tokenizer's stream.
-    pub fn stream<'b>(&'b self) -> Stream<'a> {
+    /// Returns a copy of the tokenizer's stream.
+    pub fn stream(&self) -> Stream<'a> {
         self.stream
     }
 }

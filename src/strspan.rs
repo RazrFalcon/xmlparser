@@ -23,26 +23,26 @@ impl<'a> From<&'a str> for StrSpan<'a> {
     }
 }
 
-impl<'a> PartialEq<str> for StrSpan<'a> {
+impl PartialEq<str> for StrSpan<'_> {
     fn eq(&self, other: &str) -> bool {
         self.text == other
     }
 }
 
-impl<'a> PartialEq<&str> for StrSpan<'a> {
+impl PartialEq<&str> for StrSpan<'_> {
     fn eq(&self, other: &&str) -> bool {
         self.text == *other
     }
 }
 
-impl<'a> PartialEq<StrSpan<'a>> for str {
-    fn eq(&self, other: &StrSpan<'a>) -> bool {
+impl PartialEq<StrSpan<'_>> for str {
+    fn eq(&self, other: &StrSpan<'_>) -> bool {
         self == other.text
     }
 }
 
-impl<'a> PartialEq<StrSpan<'a>> for &str {
-    fn eq(&self, other: &StrSpan<'a>) -> bool {
+impl PartialEq<StrSpan<'_>> for &str {
+    fn eq(&self, other: &StrSpan<'_>) -> bool {
         *self == other.text
     }
 }
@@ -56,7 +56,7 @@ impl<'a> StrSpan<'a> {
     }
 
     /// Returns `true` is self is empty.
-    pub fn empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.start == self.end()
     }
 
