@@ -23,12 +23,41 @@ impl<'a> From<&'a str> for StrSpan<'a> {
     }
 }
 
+impl PartialEq<str> for StrSpan<'_> {
+    fn eq(&self, other: &str) -> bool {
+        self.text == other
+    }
+}
+
+impl PartialEq<&str> for StrSpan<'_> {
+    fn eq(&self, other: &&str) -> bool {
+        self.text == *other
+    }
+}
+
+impl PartialEq<StrSpan<'_>> for str {
+    fn eq(&self, other: &StrSpan<'_>) -> bool {
+        self == other.text
+    }
+}
+
+impl PartialEq<StrSpan<'_>> for &str {
+    fn eq(&self, other: &StrSpan<'_>) -> bool {
+        *self == other.text
+    }
+}
+
 impl<'a> StrSpan<'a> {
     /// Constructs a new `StrSpan` from substring.
     #[inline]
     pub(crate) fn from_substr(text: &str, start: usize, end: usize) -> StrSpan {
         debug_assert!(start <= end);
         StrSpan { text: &text[start..end], start }
+    }
+
+    /// Returns `true` is self is empty.
+    pub fn is_empty(&self) -> bool {
+        self.text.is_empty()
     }
 
     /// Returns the start position of the span.

@@ -262,6 +262,26 @@ pub enum Token<'a> {
     },
 }
 
+impl<'a> Token<'a> {
+    /// Returns the [`StrSpan`] encompassing all of the token.
+    pub fn span(&self) -> StrSpan<'a> {
+        let span = match self {
+            Token::Declaration { span, .. } => span,
+            Token::ProcessingInstruction { span, .. } => span,
+            Token::Comment { span, .. } => span,
+            Token::DtdStart { span, .. } => span,
+            Token::EmptyDtd { span, .. } => span,
+            Token::EntityDeclaration { span, .. } => span,
+            Token::DtdEnd { span, .. } => span,
+            Token::ElementStart { span, .. } => span,
+            Token::Attribute { span, .. } => span,
+            Token::ElementEnd { span, .. } => span,
+            Token::Text { text, .. } => text,
+            Token::Cdata { span, .. } => span,
+        };
+        *span
+    }
+}
 
 /// `ElementEnd` token.
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
@@ -297,7 +317,7 @@ type Result<T> = core::result::Result<T, Error>;
 type StreamResult<T> = core::result::Result<T, StreamError>;
 
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 enum State {
     Declaration,
     AfterDeclaration,
@@ -311,11 +331,18 @@ enum State {
 
 
 /// Tokenizer for the XML structure.
+#[derive(Clone)]
 pub struct Tokenizer<'a> {
     stream: Stream<'a>,
     state: State,
     depth: usize,
     fragment_parsing: bool,
+}
+
+impl core::fmt::Debug for Tokenizer<'_> {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(f, "Tokenizer {{ ... }}")
+    }
 }
 
 impl<'a> From<&'a str> for Tokenizer<'a> {
@@ -979,6 +1006,11 @@ impl<'a> Tokenizer<'a> {
         }
 
         Ok(Token::Text { text })
+    }
+
+    /// Returns a copy of the tokenizer's stream.
+    pub fn stream(&self) -> Stream<'a> {
+        self.stream
     }
 }
 
