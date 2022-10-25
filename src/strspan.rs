@@ -57,7 +57,7 @@ impl<'a> StrSpan<'a> {
 
     /// Returns `true` is self is empty.
     pub fn is_empty(&self) -> bool {
-        self.start == self.end()
+        self.text.is_empty()
     }
 
     /// Returns the start position of the span.

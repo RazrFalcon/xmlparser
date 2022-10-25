@@ -264,21 +264,22 @@ pub enum Token<'a> {
 
 impl<'a> Token<'a> {
     /// Returns the [`StrSpan`] encompassing all of the token.
-    pub fn span<>(&self) -> StrSpan<'a> {
-        match self {
-            &Token::Declaration { span, ..} => span,
-            &Token::ProcessingInstruction { span, ..} => span,
-            &Token::Comment { span, ..} => span,
-            &Token::DtdStart { span, ..} => span,
-            &Token::EmptyDtd { span, ..} => span,
-            &Token::EntityDeclaration { span, ..} => span,
-            &Token::DtdEnd { span, ..} => span,
-            &Token::ElementStart { span, ..} => span,
-            &Token::Attribute { span, ..} => span,
-            &Token::ElementEnd { span, ..} => span,
-            &Token::Text { text, ..} => text,
-            &Token::Cdata { span, ..} => span,
-        }
+    pub fn span(&self) -> StrSpan<'a> {
+        let span = match self {
+            Token::Declaration { span, .. } => span,
+            Token::ProcessingInstruction { span, .. } => span,
+            Token::Comment { span, .. } => span,
+            Token::DtdStart { span, .. } => span,
+            Token::EmptyDtd { span, .. } => span,
+            Token::EntityDeclaration { span, .. } => span,
+            Token::DtdEnd { span, .. } => span,
+            Token::ElementStart { span, .. } => span,
+            Token::Attribute { span, .. } => span,
+            Token::ElementEnd { span, .. } => span,
+            Token::Text { text, .. } => text,
+            Token::Cdata { span, .. } => span,
+        };
+        *span
     }
 }
 
@@ -330,12 +331,18 @@ enum State {
 
 
 /// Tokenizer for the XML structure.
-#[derive(Debug,Clone)]
+#[derive(Clone)]
 pub struct Tokenizer<'a> {
     stream: Stream<'a>,
     state: State,
     depth: usize,
     fragment_parsing: bool,
+}
+
+impl core::fmt::Debug for Tokenizer<'_> {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        write!(f, "Tokenizer {{ ... }}")
+    }
 }
 
 impl<'a> From<&'a str> for Tokenizer<'a> {
