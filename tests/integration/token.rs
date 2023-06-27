@@ -85,7 +85,7 @@ pub fn to_test_token(token: Result<html::Token, html::Error>) -> Token {
             span,
         }) => Token::DtdStart(
             name.as_str(),
-            external_id.map(|v| to_test_external_id(v)),
+            external_id.map(to_test_external_id),
             span.range(),
         ),
         Ok(html::Token::EmptyDtd {
@@ -94,7 +94,7 @@ pub fn to_test_token(token: Result<html::Token, html::Error>) -> Token {
             span,
         }) => Token::EmptyDtd(
             name.as_str(),
-            external_id.map(|v| to_test_external_id(v)),
+            external_id.map(to_test_external_id),
             span.range(),
         ),
         Ok(html::Token::EntityDeclaration {

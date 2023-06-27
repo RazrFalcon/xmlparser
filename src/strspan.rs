@@ -80,7 +80,7 @@ impl<'a> StrSpan<'a> {
     /// Returns the span as a string slice
     #[inline]
     pub fn as_str(&self) -> &'a str {
-        &self.text
+        self.text
     }
 
     /// Returns an underling string region as `StrSpan`.

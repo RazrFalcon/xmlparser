@@ -350,7 +350,7 @@ impl<'a> Stream<'a> {
         let start = self.pos();
 
         // Consume reference on a substream.
-        let mut s = self.clone();
+        let mut s = *self;
         match s.consume_reference() {
             Ok(r) => {
                 // If the current data is a reference than advance the current stream
@@ -494,7 +494,7 @@ impl<'a> Stream<'a> {
                 }
             } else {
                 // Fallback to Unicode code point.
-                match self.chars().nth(0) {
+                match self.chars().next() {
                     Some(c) if c.is_xml_name() => {
                         self.advance(c.len_utf8());
                     }
@@ -513,14 +513,14 @@ impl<'a> Stream<'a> {
         };
 
         // Prefix must start with a `NameStartChar`.
-        if let Some(c) = prefix.as_str().chars().nth(0) {
+        if let Some(c) = prefix.as_str().chars().next() {
             if !c.is_xml_name_start() {
                 return Err(StreamError::InvalidName);
             }
         }
 
         // Local name must start with a `NameStartChar`.
-        if let Some(c) = local.as_str().chars().nth(0) {
+        if let Some(c) = local.as_str().chars().next() {
             if !c.is_xml_name_start() {
                 return Err(StreamError::InvalidName);
             }
@@ -593,7 +593,7 @@ impl<'a> Stream<'a> {
     /// ```
     #[inline(never)]
     pub fn gen_text_pos_from(&self, pos: usize) -> TextPos {
-        let mut s = self.clone();
+        let mut s = *self;
         s.pos = cmp::min(pos, s.span.as_str().len());
         s.gen_text_pos()
     }

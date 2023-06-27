@@ -18,14 +18,10 @@ impl XmlCharExt for char {
     fn is_xml_name_start(&self) -> bool {
         // Check for ASCII first.
         if *self as u32 <= 128 {
-            return match *self as u8 {
-                b'A'...b'Z' | b'a'...b'z' | b':' | b'_' => true,
-                _ => false,
-            };
+            return matches!(*self as u8, b'A'...b'Z' | b'a'...b'z' | b':' | b'_');
         }
 
-        match *self as u32 {
-            0x0000C0...0x0000D6
+        matches!(*self as u32, 0x0000C0...0x0000D6
             | 0x0000D8...0x0000F6
             | 0x0000F8...0x0002FF
             | 0x000370...0x00037D
@@ -36,9 +32,7 @@ impl XmlCharExt for char {
             | 0x003001...0x00D7FF
             | 0x00F900...0x00FDCF
             | 0x00FDF0...0x00FFFD
-            | 0x010000...0x0EFFFF => true,
-            _ => false,
-        }
+            | 0x010000...0x0EFFFF)
     }
 
     #[inline]
@@ -48,8 +42,7 @@ impl XmlCharExt for char {
             return (*self as u8).is_xml_name();
         }
 
-        match *self as u32 {
-            0x0000B7
+        matches!(*self as u32, 0x0000B7
             | 0x0000C0...0x0000D6
             | 0x0000D8...0x0000F6
             | 0x0000F8...0x0002FF
@@ -63,22 +56,17 @@ impl XmlCharExt for char {
             | 0x003001...0x00D7FF
             | 0x00F900...0x00FDCF
             | 0x00FDF0...0x00FFFD
-            | 0x010000...0x0EFFFF => true,
-            _ => false,
-        }
+            | 0x010000...0x0EFFFF)
     }
 
     #[inline]
     fn is_xml_char(&self) -> bool {
-        match *self as u32 {
-            0x000009
+        matches!(*self as u32, 0x000009
             | 0x00000A
             | 0x00000D
             | 0x000020...0x00D7FF
             | 0x00E000...0x00FFFD
-            | 0x010000...0x10FFFF => true,
-            _ => false,
-        }
+            | 0x010000...0x10FFFF)
     }
 }
 
