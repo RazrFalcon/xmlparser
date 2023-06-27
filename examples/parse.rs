@@ -1,8 +1,7 @@
 extern crate htmlparser as html;
 
-use std::env;
-use std::fs;
 use std::io::Read;
+use std::{env, fs};
 
 fn main() {
     let args = env::args().collect::<Vec<String>>();

@@ -1,7 +1,5 @@
-use core::char;
-use core::cmp;
 use core::ops::Range;
-use core::str;
+use core::{char, cmp, str};
 
 use crate::{StrSpan, StreamError, TextPos, XmlByteExt, XmlCharExt};
 

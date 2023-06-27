@@ -1,5 +1,4 @@
-use core::fmt;
-use core::str;
+use core::{fmt, str};
 #[cfg(feature = "std")]
 use std::error;
 
