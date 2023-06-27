@@ -1,4 +1,4 @@
-extern crate xmlparser as xml;
+extern crate htmlparser as html;
 
 use std::env;
 use std::fs;
@@ -7,7 +7,7 @@ use std::io::Read;
 fn main() {
     let args = env::args().collect::<Vec<String>>();
     if args.len() != 2 {
-        println!("Usage: parse file.xml");
+        println!("Usage: parse file.html");
         return;
     }
 
@@ -18,8 +18,8 @@ fn main() {
     }
 }
 
-fn parse(text: &str) -> Result<(), xml::Error> {
-    for token in xml::Tokenizer::from(text) {
+fn parse(text: &str) -> Result<(), html::Error> {
+    for token in html::Tokenizer::from(text) {
         println!("{:?}", token?);
     }
 

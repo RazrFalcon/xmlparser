@@ -19,16 +19,13 @@ impl XmlCharExt for char {
         // Check for ASCII first.
         if *self as u32 <= 128 {
             return match *self as u8 {
-                  b'A'...b'Z'
-                | b'a'...b'z'
-                | b':'
-                | b'_' => true,
+                b'A'...b'Z' | b'a'...b'z' | b':' | b'_' => true,
                 _ => false,
             };
         }
 
         match *self as u32 {
-              0x0000C0...0x0000D6
+            0x0000C0...0x0000D6
             | 0x0000D8...0x0000F6
             | 0x0000F8...0x0002FF
             | 0x000370...0x00037D
@@ -52,7 +49,7 @@ impl XmlCharExt for char {
         }
 
         match *self as u32 {
-              0x0000B7
+            0x0000B7
             | 0x0000C0...0x0000D6
             | 0x0000D8...0x0000F6
             | 0x0000F8...0x0002FF
@@ -74,7 +71,7 @@ impl XmlCharExt for char {
     #[inline]
     fn is_xml_char(&self) -> bool {
         match *self as u32 {
-              0x000009
+            0x000009
             | 0x00000A
             | 0x00000D
             | 0x000020...0x00D7FF
@@ -84,7 +81,6 @@ impl XmlCharExt for char {
         }
     }
 }
-
 
 /// Extension methods for XML-subset only operations.
 pub trait XmlByteExt {

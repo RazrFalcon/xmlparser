@@ -1,5 +1,5 @@
 [package]
-name = "xmlparser-fuzz"
+name = "htmlparser-fuzz"
 version = "0.0.1"
 authors = ["Automatically generated"]
 publish = false
@@ -7,7 +7,7 @@ publish = false
 [package.metadata]
 cargo-fuzz = true
 
-[dependencies.xmlparser]
+[dependencies.htmlparser]
 path = ".."
 
 [dependencies.libfuzzer-sys]

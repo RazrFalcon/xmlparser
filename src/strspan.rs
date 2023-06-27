@@ -1,7 +1,6 @@
 use core::fmt;
 use core::ops::{Deref, Range};
 
-
 /// A string slice.
 ///
 /// Like `&str`, but also contains the position in the input XML
@@ -16,10 +15,7 @@ pub struct StrSpan<'a> {
 impl<'a> From<&'a str> for StrSpan<'a> {
     #[inline]
     fn from(text: &'a str) -> Self {
-        StrSpan {
-            text,
-            start: 0,
-        }
+        StrSpan { text, start: 0 }
     }
 }
 
@@ -52,7 +48,10 @@ impl<'a> StrSpan<'a> {
     #[inline]
     pub(crate) fn from_substr(text: &str, start: usize, end: usize) -> StrSpan {
         debug_assert!(start <= end);
-        StrSpan { text: &text[start..end], start }
+        StrSpan {
+            text: &text[start..end],
+            start,
+        }
     }
 
     /// Returns `true` is self is empty.
@@ -93,7 +92,13 @@ impl<'a> StrSpan<'a> {
 
 impl<'a> fmt::Debug for StrSpan<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "StrSpan({:?} {}..{})", self.as_str(), self.start(), self.end())
+        write!(
+            f,
+            "StrSpan({:?} {}..{})",
+            self.as_str(),
+            self.start(),
+            self.end()
+        )
     }
 }
 

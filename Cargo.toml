@@ -1,14 +1,14 @@
 [package]
-name = "xmlparser"
-version = "0.13.5"
-authors = ["Evgeniy Reizner <razrfalcon@gmail.com>"]
+name = "htmlparser"
+version = "0.1.0"
+authors = ["Jeremie Drouet <jeremie.drouet@gmail.com>"]
 categories = ["parser-implementations"]
-description = "Pull-based, zero-allocation XML parser."
-documentation = "https://docs.rs/xmlparser/"
-keywords = ["xml", "parser", "tokenizer"]
+description = "Pull-based, zero-allocation HTML parser."
+documentation = "https://docs.rs/htmlparser/"
+keywords = ["html", "parser", "tokenizer"]
 license = "MIT/Apache-2.0"
 readme = "README.md"
-repository = "https://github.com/RazrFalcon/xmlparser"
+repository = "https://github.com/jdrouet/htmlparser"
 edition = "2018"
 
 [features]

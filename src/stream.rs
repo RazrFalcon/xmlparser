@@ -3,16 +3,9 @@ use core::cmp;
 use core::ops::Range;
 use core::str;
 
-use crate::{
-    StreamError,
-    StrSpan,
-    TextPos,
-    XmlByteExt,
-    XmlCharExt,
-};
+use crate::{StrSpan, StreamError, TextPos, XmlByteExt, XmlCharExt};
 
 type Result<T> = ::core::result::Result<T, StreamError>;
-
 
 /// Representation of the [Reference](https://www.w3.org/TR/xml/#NT-Reference) value.
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
@@ -27,7 +20,6 @@ pub enum Reference<'a> {
     /// <https://www.w3.org/TR/xml/#NT-CharRef>
     Char(char),
 }
-
 
 /// A streaming XML parsing interface.
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
@@ -149,7 +141,7 @@ impl<'a> Stream<'a> {
     /// # Examples
     ///
     /// ```rust,should_panic
-    /// use xmlparser::Stream;
+    /// use htmlparser::Stream;
     ///
     /// let mut s = Stream::from("text");
     /// s.advance(2); // ok
@@ -168,7 +160,7 @@ impl<'a> Stream<'a> {
     /// # Examples
     ///
     /// ```
-    /// use xmlparser::Stream;
+    /// use htmlparser::Stream;
     ///
     /// let mut s = Stream::from("Some text.");
     /// s.advance(5);
@@ -190,7 +182,7 @@ impl<'a> Stream<'a> {
     /// # Examples
     ///
     /// ```
-    /// use xmlparser::Stream;
+    /// use htmlparser::Stream;
     ///
     /// let mut s = Stream::from("Some text.");
     /// assert!(s.consume_byte(b'S').is_ok());
@@ -245,7 +237,8 @@ impl<'a> Stream<'a> {
     /// The result can be empty.
     #[inline]
     pub fn consume_bytes<F>(&mut self, f: F) -> StrSpan<'a>
-        where F: Fn(&Stream, u8) -> bool
+    where
+        F: Fn(&Stream, u8) -> bool,
     {
         let start = self.pos;
         self.skip_bytes(f);
@@ -254,7 +247,8 @@ impl<'a> Stream<'a> {
 
     /// Skips bytes by the predicate.
     pub fn skip_bytes<F>(&mut self, f: F)
-        where F: Fn(&Stream, u8) -> bool
+    where
+        F: Fn(&Stream, u8) -> bool,
     {
         while !self.at_end() && f(self, self.curr_byte_unchecked()) {
             self.advance(1);
@@ -266,7 +260,8 @@ impl<'a> Stream<'a> {
     /// The result can be empty.
     #[inline]
     pub fn consume_chars<F>(&mut self, f: F) -> Result<StrSpan<'a>>
-        where F: Fn(&Stream, char) -> bool
+    where
+        F: Fn(&Stream, char) -> bool,
     {
         let start = self.pos;
         self.skip_chars(f)?;
@@ -276,7 +271,8 @@ impl<'a> Stream<'a> {
     /// Skips chars by the predicate.
     #[inline]
     pub fn skip_chars<F>(&mut self, f: F) -> Result<()>
-        where F: Fn(&Stream, char) -> bool
+    where
+        F: Fn(&Stream, char) -> bool,
     {
         for c in self.chars() {
             if !c.is_xml_char() {
@@ -339,7 +335,10 @@ impl<'a> Stream<'a> {
         }
 
         if !self.starts_with_space() {
-            return Err(StreamError::InvalidSpace(self.curr_byte_unchecked(), self.gen_text_pos()));
+            return Err(StreamError::InvalidSpace(
+                self.curr_byte_unchecked(),
+                self.gen_text_pos(),
+            ));
         }
 
         self.skip_spaces();
@@ -361,9 +360,7 @@ impl<'a> Stream<'a> {
                 self.advance(s.pos() - start);
                 Some(r)
             }
-            Err(_) => {
-                None
-            }
+            Err(_) => None,
         }
     }
 
@@ -375,7 +372,8 @@ impl<'a> Stream<'a> {
     ///
     /// - `InvalidReference`
     pub fn consume_reference(&mut self) -> Result<Reference<'a>> {
-        self._consume_reference().map_err(|_| StreamError::InvalidReference)
+        self._consume_reference()
+            .map_err(|_| StreamError::InvalidReference)
     }
 
     #[inline(never)]
@@ -405,10 +403,10 @@ impl<'a> Stream<'a> {
             let name = self.consume_name()?;
             match name.as_str() {
                 "quot" => Reference::Char('"'),
-                "amp"  => Reference::Char('&'),
+                "amp" => Reference::Char('&'),
                 "apos" => Reference::Char('\''),
-                "lt"   => Reference::Char('<'),
-                "gt"   => Reference::Char('>'),
+                "lt" => Reference::Char('<'),
+                "gt" => Reference::Char('>'),
                 _ => Reference::Entity(name.as_str()),
             }
         };
@@ -590,10 +588,10 @@ impl<'a> Stream<'a> {
     /// # Examples
     ///
     /// ```
-    /// let s = xmlparser::Stream::from("text");
+    /// let s = htmlparser::Stream::from("text");
     ///
-    /// assert_eq!(s.gen_text_pos_from(2), xmlparser::TextPos::new(1, 3));
-    /// assert_eq!(s.gen_text_pos_from(9999), xmlparser::TextPos::new(1, 5));
+    /// assert_eq!(s.gen_text_pos_from(2), htmlparser::TextPos::new(1, 3));
+    /// assert_eq!(s.gen_text_pos_from(9999), htmlparser::TextPos::new(1, 5));
     /// ```
     #[inline(never)]
     pub fn gen_text_pos_from(&self, pos: usize) -> TextPos {

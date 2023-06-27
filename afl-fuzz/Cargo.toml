@@ -5,4 +5,4 @@ authors = ["RazrFalcon <razrfalcon@gmail.com>"]
 
 [dependencies]
 afl = "0.5"
-xmlparser = { path = ".." }
+htmlparser = { path = ".." }

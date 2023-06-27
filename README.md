@@ -1,27 +1,24 @@
-## xmlparser
-![Build Status](https://github.com/RazrFalcon/xmlparser/workflows/Rust/badge.svg)
-[![Crates.io](https://img.shields.io/crates/v/xmlparser.svg)](https://crates.io/crates/xmlparser)
-[![Documentation](https://docs.rs/xmlparser/badge.svg)](https://docs.rs/xmlparser)
+## htmlparser
+![Build Status](https://github.com/jdrouet/htmlparser/workflows/Rust/badge.svg)
+[![Crates.io](https://img.shields.io/crates/v/htmlparser.svg)](https://crates.io/crates/htmlparser)
+[![Documentation](https://docs.rs/htmlparser/badge.svg)](https://docs.rs/htmlparser)
 [![Rust 1.31+](https://img.shields.io/badge/rust-1.31+-orange.svg)](https://www.rust-lang.org)
 ![](https://img.shields.io/badge/unsafe-forbidden-brightgreen.svg)
 
-*xmlparser* is a low-level, pull-based, zero-allocation
-[XML 1.0](https://www.w3.org/TR/xml/) parser.
+*htmlparser* is a low-level, pull-based, zero-allocation HTML parser.
 
 ### Example
 
 ```rust
-for token in xmlparser::Tokenizer::from("<tagname name='value'/>") {
+for token in htmlparser::Tokenizer::from("<tagname name='value'/>") {
     println!("{:?}", token);
 }
 ```
 
 ### Why a new library?
 
-This library is basically a low-level XML tokenizer that preserves the positions of the tokens
-and is not intended to be used directly.
-If you are looking for a higher level solution, check out
-[roxmltree](https://github.com/RazrFalcon/roxmltree).
+This library is a copy of [xmlparser](https://crates.io/crates/xmlparser) with some adjustments
+to parse html.
 
 ### Benefits
 
