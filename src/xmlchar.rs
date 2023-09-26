@@ -73,14 +73,12 @@ impl XmlCharExt for char {
 
     #[inline]
     fn is_xml_char(&self) -> bool {
+        if (*self as u32) < 0x20 {
+            return (*self as u8).is_xml_space()
+        }
         match *self as u32 {
-              0x000009
-            | 0x00000A
-            | 0x00000D
-            | 0x000020...0x00D7FF
-            | 0x00E000...0x00FFFD
-            | 0x010000...0x10FFFF => true,
-            _ => false,
+              0xFFFF | 0xFFFE => false,
+            _ => true,
         }
     }
 }
