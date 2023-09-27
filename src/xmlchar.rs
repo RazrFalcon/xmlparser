@@ -10,6 +10,10 @@ pub trait XmlCharExt {
 
     /// Checks if the value is within the
     /// [Char](https://www.w3.org/TR/xml/#NT-Char) range.
+    /// 
+    /// Does not check for surrogate code points U+D800-
+    /// U+DFFF, since that check was performed by rust
+    /// when the str was constructed.
     fn is_xml_char(&self) -> bool;
 }
 
