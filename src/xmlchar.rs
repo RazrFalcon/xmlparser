@@ -10,10 +10,6 @@ pub trait XmlCharExt {
 
     /// Checks if the value is within the
     /// [Char](https://www.w3.org/TR/xml/#NT-Char) range.
-    /// 
-    /// Does not check for surrogate code points U+D800-
-    /// U+DFFF, since that check was performed by rust
-    /// when the str was constructed.
     fn is_xml_char(&self) -> bool;
 }
 
@@ -77,11 +73,13 @@ impl XmlCharExt for char {
 
     #[inline]
     fn is_xml_char(&self) -> bool {
+        // Does not check for surrogate code points U+D800-U+DFFF,
+        // since that check was performed by Rust when the `&str` was constructed.
         if (*self as u32) < 0x20 {
             return (*self as u8).is_xml_space()
         }
         match *self as u32 {
-              0xFFFF | 0xFFFE => false,
+            0xFFFF | 0xFFFE => false,
             _ => true,
         }
     }

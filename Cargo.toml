@@ -1,7 +1,7 @@
 [package]
 name = "xmlparser"
-version = "0.13.5"
-authors = ["Evgeniy Reizner <razrfalcon@gmail.com>"]
+version = "0.13.6"
+authors = ["Yevhenii Reizner <razrfalcon@gmail.com>"]
 categories = ["parser-implementations"]
 description = "Pull-based, zero-allocation XML parser."
 documentation = "https://docs.rs/xmlparser/"

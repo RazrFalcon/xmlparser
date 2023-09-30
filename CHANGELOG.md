@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.13.6] - 2023-09-30
+### Added
+- `Token::span`, `Tokenizer::stream` and allow cloning of `Tokenizer`.
+  Thanks to [@krtab](https://github.com/krtab).
+
+### Changed
+- Optimize `is_xml_char` function. Makes parsing 5-10% faster.
+  Thanks to [@Simon-Martens](https://github.com/Simon-Martens).
+
 ## [0.13.5] - 2022-10-18
 ### Fixed
 - Do no use recursive calls during parsing. Could lead to stack overflow on some input.
@@ -211,7 +220,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - `log` 0.3 -> 0.4
 
-[Unreleased]: https://github.com/RazrFalcon/xmlparser/compare/v0.13.4...HEAD
+[Unreleased]: https://github.com/RazrFalcon/xmlparser/compare/v0.13.6...HEAD
+[0.13.6]: https://github.com/RazrFalcon/xmlparser/compare/v0.13.5...v0.13.6
+[0.13.5]: https://github.com/RazrFalcon/xmlparser/compare/v0.13.4...v0.13.5
 [0.13.4]: https://github.com/RazrFalcon/xmlparser/compare/v0.13.3...v0.13.4
 [0.13.3]: https://github.com/RazrFalcon/xmlparser/compare/v0.13.2...v0.13.3
 [0.13.2]: https://github.com/RazrFalcon/xmlparser/compare/v0.13.1...v0.13.2
