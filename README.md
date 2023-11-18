@@ -1,3 +1,5 @@
+# Depreacted. Use [roxmltree](https://github.com/RazrFalcon/roxmltree) instead or fork.
+
 ## xmlparser
 ![Build Status](https://github.com/RazrFalcon/xmlparser/workflows/Rust/badge.svg)
 [![Crates.io](https://img.shields.io/crates/v/xmlparser.svg)](https://crates.io/crates/xmlparser)
