@@ -19,16 +19,13 @@ impl XmlCharExt for char {
         // Check for ASCII first.
         if *self as u32 <= 128 {
             return match *self as u8 {
-                  b'A'...b'Z'
-                | b'a'...b'z'
-                | b':'
-                | b'_' => true,
+                b'A'...b'Z' | b'a'...b'z' | b':' | b'_' => true,
                 _ => false,
             };
         }
 
         match *self as u32 {
-              0x0000C0...0x0000D6
+            0x0000C0...0x0000D6
             | 0x0000D8...0x0000F6
             | 0x0000F8...0x0002FF
             | 0x000370...0x00037D
@@ -45,6 +42,7 @@ impl XmlCharExt for char {
     }
 
     #[inline]
+    #[allow(clippy::match_like_matches_macro)]
     fn is_xml_name(&self) -> bool {
         // Check for ASCII first.
         if *self as u32 <= 128 {
@@ -52,7 +50,7 @@ impl XmlCharExt for char {
         }
 
         match *self as u32 {
-              0x0000B7
+            0x0000B7
             | 0x0000C0...0x0000D6
             | 0x0000D8...0x0000F6
             | 0x0000F8...0x0002FF
@@ -76,15 +74,11 @@ impl XmlCharExt for char {
         // Does not check for surrogate code points U+D800-U+DFFF,
         // since that check was performed by Rust when the `&str` was constructed.
         if (*self as u32) < 0x20 {
-            return (*self as u8).is_xml_space()
+            return (*self as u8).is_xml_space();
         }
-        match *self as u32 {
-            0xFFFF | 0xFFFE => false,
-            _ => true,
-        }
+        !matches!(*self as u32, 0xFFFF | 0xFFFE)
     }
 }
-
 
 /// Extension methods for XML-subset only operations.
 pub trait XmlByteExt {

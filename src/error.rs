@@ -3,7 +3,6 @@ use core::str;
 #[cfg(feature = "std")]
 use std::error;
 
-
 /// An XML parser errors.
 #[allow(missing_docs)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
@@ -48,7 +47,11 @@ impl fmt::Display for Error {
                 write!(f, "invalid comment at {} cause {}", pos, cause)
             }
             Error::InvalidPI(ref cause, pos) => {
-                write!(f, "invalid processing instruction at {} cause {}", pos, cause)
+                write!(
+                    f,
+                    "invalid processing instruction at {} cause {}",
+                    pos, cause
+                )
             }
             Error::InvalidDoctype(ref cause, pos) => {
                 write!(f, "invalid DTD at {} cause {}", pos, cause)
@@ -81,7 +84,6 @@ impl error::Error for Error {
         "an XML parsing error"
     }
 }
-
 
 /// A stream parser errors.
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
@@ -156,8 +158,11 @@ impl fmt::Display for StreamError {
                 write!(f, "a non-XML character {:?} found at {}", c, pos)
             }
             StreamError::InvalidChar(actual, expected, pos) => {
-                write!(f, "expected '{}' not '{}' at {}",
-                       expected as char, actual as char, pos)
+                write!(
+                    f,
+                    "expected '{}' not '{}' at {}",
+                    expected as char, actual as char, pos
+                )
             }
             StreamError::InvalidCharMultiple(actual, ref expected, pos) => {
                 let mut expected_iter = expected.iter().peekable();
@@ -205,7 +210,6 @@ impl error::Error for StreamError {
         "an XML stream parsing error"
     }
 }
-
 
 /// Position in text.
 ///

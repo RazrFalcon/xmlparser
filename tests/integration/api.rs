@@ -2,7 +2,6 @@ extern crate xmlparser;
 
 use xmlparser::*;
 
-
 #[test]
 fn text_pos_1() {
     let mut s = Stream::from("text");
@@ -23,7 +22,6 @@ fn text_pos_3() {
     s.advance(15);
     assert_eq!(s.gen_text_pos(), TextPos::new(2, 3));
 }
-
 
 #[test]
 fn token_size() {

@@ -1,25 +1,29 @@
 use crate::token::*;
 
-test!(comment_01, "<!--comment-->",     Token::Comment("comment", 0..14));
-test!(comment_02, "<!--<head>-->",      Token::Comment("<head>", 0..13));
-test!(comment_03, "<!--<!-x-->",        Token::Comment("<!-x", 0..11));
-test!(comment_04, "<!--<!x-->",         Token::Comment("<!x", 0..10));
-test!(comment_05, "<!--<<!x-->",        Token::Comment("<<!x", 0..11));
-test!(comment_06, "<!--<<!-x-->",       Token::Comment("<<!-x", 0..12));
-test!(comment_07, "<!--<x-->",          Token::Comment("<x", 0..9));
-test!(comment_08, "<!--<>-->",          Token::Comment("<>", 0..9));
-test!(comment_09, "<!--<-->",           Token::Comment("<", 0..8));
-test!(comment_10, "<!--<!-->",          Token::Comment("<!", 0..9));
-test!(comment_11, "<!---->",            Token::Comment("", 0..7));
+test!(
+    comment_01,
+    "<!--comment-->",
+    Token::Comment("comment", 0..14)
+);
+test!(comment_02, "<!--<head>-->", Token::Comment("<head>", 0..13));
+test!(comment_03, "<!--<!-x-->", Token::Comment("<!-x", 0..11));
+test!(comment_04, "<!--<!x-->", Token::Comment("<!x", 0..10));
+test!(comment_05, "<!--<<!x-->", Token::Comment("<<!x", 0..11));
+test!(comment_06, "<!--<<!-x-->", Token::Comment("<<!-x", 0..12));
+test!(comment_07, "<!--<x-->", Token::Comment("<x", 0..9));
+test!(comment_08, "<!--<>-->", Token::Comment("<>", 0..9));
+test!(comment_09, "<!--<-->", Token::Comment("<", 0..8));
+test!(comment_10, "<!--<!-->", Token::Comment("<!", 0..9));
+test!(comment_11, "<!---->", Token::Comment("", 0..7));
 
 macro_rules! test_err {
-    ($name:ident, $text:expr) => (
+    ($name:ident, $text:expr) => {
         #[test]
         fn $name() {
             let mut p = xml::Tokenizer::from($text);
             assert!(p.next().unwrap().is_err());
         }
-    )
+    };
 }
 
 test_err!(comment_err_01, "<!----!>");
