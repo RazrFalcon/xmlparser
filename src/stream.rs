@@ -352,7 +352,7 @@ impl<'a> Stream<'a> {
         let start = self.pos();
 
         // Consume reference on a substream.
-        let mut s = self.clone();
+        let mut s = *self;
         match s.consume_reference() {
             Ok(r) => {
                 // If the current data is a reference than advance the current stream
@@ -595,7 +595,7 @@ impl<'a> Stream<'a> {
     /// ```
     #[inline(never)]
     pub fn gen_text_pos_from(&self, pos: usize) -> TextPos {
-        let mut s = self.clone();
+        let mut s = *self;
         s.pos = cmp::min(pos, s.span.as_str().len());
         s.gen_text_pos()
     }

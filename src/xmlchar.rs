@@ -15,13 +15,11 @@ pub trait XmlCharExt {
 
 impl XmlCharExt for char {
     #[inline]
+    #[allow(clippy::match_like_matches_macro)]
     fn is_xml_name_start(&self) -> bool {
         // Check for ASCII first.
         if *self as u32 <= 128 {
-            return match *self as u8 {
-                b'A'...b'Z' | b'a'...b'z' | b':' | b'_' => true,
-                _ => false,
-            };
+            return matches!(*self as u8, b'A'...b'Z' | b'a'...b'z' | b':' | b'_');
         }
 
         match *self as u32 {
