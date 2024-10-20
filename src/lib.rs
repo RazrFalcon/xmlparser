@@ -791,7 +791,7 @@ impl<'a> Tokenizer<'a> {
 
         let c = s.curr_byte()?;
         if c != b'[' && c != b'>' {
-            static EXPECTED: &[u8] = &[b'[', b'>'];
+            static EXPECTED: &[u8] = b"[>";
             return Err(StreamError::InvalidCharMultiple(
                 c,
                 EXPECTED,
@@ -917,7 +917,7 @@ impl<'a> Tokenizer<'a> {
                 }
             }
             _ => {
-                static EXPECTED: &[u8] = &[b'"', b'\'', b'S', b'P'];
+                static EXPECTED: &[u8] = b"\"'SP";
                 let pos = s.gen_text_pos();
                 Err(StreamError::InvalidCharMultiple(c, EXPECTED, pos))
             }

@@ -90,7 +90,7 @@ impl<'a> StrSpan<'a> {
     }
 }
 
-impl<'a> fmt::Debug for StrSpan<'a> {
+impl fmt::Debug for StrSpan<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -102,13 +102,13 @@ impl<'a> fmt::Debug for StrSpan<'a> {
     }
 }
 
-impl<'a> fmt::Display for StrSpan<'a> {
+impl fmt::Display for StrSpan<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.as_str())
     }
 }
 
-impl<'a> Deref for StrSpan<'a> {
+impl Deref for StrSpan<'_> {
     type Target = str;
 
     fn deref(&self) -> &Self::Target {
