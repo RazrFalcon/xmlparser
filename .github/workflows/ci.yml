@@ -13,22 +13,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  msrv:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        rust: ["1.31", stable]
     steps:
     - uses: actions/checkout@v4
-    - uses: dtolnay/rust-toolchain@master
-      with:
-        toolchain: ${{matrix.rust}}
-    - run: cargo build --all-targets
+    - uses: dtolnay/rust-toolchain@1.31
+    - run: cargo build --lib
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dtolnay/rust-toolchain@stable
     - run: cargo test --all-targets
-      if: matrix.rust == 'stable'
     - run: cargo test --doc
-      if: matrix.rust == 'stable'
 
   clippy:
     runs-on: ubuntu-latest
