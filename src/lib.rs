@@ -1058,10 +1058,8 @@ impl<'a> Tokenizer<'a> {
         // https://www.w3.org/TR/xml/#syntax
         //
         // Search for `>` first, since it's a bit faster than looking for `]]>`.
-        if let Some(position) = text.as_str().find('>') {
-            if text.as_str()[position.saturating_sub(2)..].starts_with("]]>") {
-                return Err(StreamError::InvalidCharacterData);
-            }
+        if text.as_str().contains('>') && text.as_str().contains("]]>") {
+            return Err(StreamError::InvalidCharacterData);
         }
 
         Ok(Token::Text { text })
