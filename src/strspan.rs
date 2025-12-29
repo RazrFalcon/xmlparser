@@ -46,7 +46,7 @@ impl PartialEq<StrSpan<'_>> for &str {
 impl<'a> StrSpan<'a> {
     /// Constructs a new `StrSpan` from substring.
     #[inline]
-    pub(crate) fn from_substr(text: &str, start: usize, end: usize) -> StrSpan {
+    pub(crate) fn from_substr(text: &str, start: usize, end: usize) -> StrSpan<'_> {
         debug_assert!(start <= end);
         StrSpan {
             text: &text[start..end],
