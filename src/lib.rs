@@ -426,7 +426,7 @@ impl<'a> Tokenizer<'a> {
         match self.state {
             State::Declaration => {
                 self.state = State::AfterDeclaration;
-                if s.starts_with(b"<?xml ") {
+                if s.starts_with_xml_decl() {
                     Some(Self::parse_declaration(s))
                 } else {
                     None
@@ -445,7 +445,7 @@ impl<'a> Tokenizer<'a> {
                 } else if s.starts_with(b"<!--") {
                     Some(Self::parse_comment(s))
                 } else if s.starts_with(b"<?") {
-                    if s.starts_with(b"<?xml ") {
+                    if s.starts_with_xml_decl() {
                         Some(Err(Error::UnknownToken(s.gen_text_pos())))
                     } else {
                         Some(Self::parse_pi(s))
@@ -464,7 +464,7 @@ impl<'a> Tokenizer<'a> {
                 } else if s.starts_with(b"<!--") {
                     Some(Self::parse_comment(s))
                 } else if s.starts_with(b"<?") {
-                    if s.starts_with(b"<?xml ") {
+                    if s.starts_with_xml_decl() {
                         Some(Err(Error::UnknownToken(s.gen_text_pos())))
                     } else {
                         Some(Self::parse_pi(s))
@@ -511,7 +511,7 @@ impl<'a> Tokenizer<'a> {
                 if s.starts_with(b"<!--") {
                     Some(Self::parse_comment(s))
                 } else if s.starts_with(b"<?") {
-                    if s.starts_with(b"<?xml ") {
+                    if s.starts_with_xml_decl() {
                         Some(Err(Error::UnknownToken(s.gen_text_pos())))
                     } else {
                         Some(Self::parse_pi(s))
@@ -542,7 +542,7 @@ impl<'a> Tokenizer<'a> {
                             }
                         }
                         Ok(b'?') => {
-                            if !s.starts_with(b"<?xml ") {
+                            if !s.starts_with_xml_decl() {
                                 Some(Self::parse_pi(s))
                             } else {
                                 Some(Err(Error::UnknownToken(s.gen_text_pos())))
@@ -592,7 +592,7 @@ impl<'a> Tokenizer<'a> {
                 if s.starts_with(b"<!--") {
                     Some(Self::parse_comment(s))
                 } else if s.starts_with(b"<?") {
-                    if s.starts_with(b"<?xml ") {
+                    if s.starts_with_xml_decl() {
                         Some(Err(Error::UnknownToken(s.gen_text_pos())))
                     } else {
                         Some(Self::parse_pi(s))

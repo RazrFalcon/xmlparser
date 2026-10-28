@@ -172,6 +172,15 @@ impl<'a> Stream<'a> {
         self.span.as_bytes()[self.pos..self.end].starts_with(text)
     }
 
+    /// XMLDecl is `'<?xml'` followed by `S` (`#x20 | #x9 | #xD | #xA`).
+    /// `<?xml-stylesheet` and similar PIs must not match.
+    #[inline]
+    pub fn starts_with_xml_decl(&self) -> bool {
+        let rest = &self.span.as_bytes()[self.pos..self.end];
+        rest.starts_with(b"<?xml")
+            && rest.get(5).copied().map(|b| b.is_xml_space()).unwrap_or(false)
+    }
+
     /// Consumes the current byte if it's equal to the provided byte.
     ///
     /// # Errors

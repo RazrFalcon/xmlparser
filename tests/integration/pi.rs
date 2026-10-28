@@ -31,6 +31,18 @@ test!(
 );
 
 test!(
+    declaration_tab,
+    "<?xml\tversion='1.0'?>",
+    Token::Declaration("1.0", None, None, 0..21)
+);
+
+test!(
+    declaration_newline,
+    "<?xml\nversion='1.0'?>",
+    Token::Declaration("1.0", None, None, 0..21)
+);
+
+test!(
     declaration_02,
     "<?xml version='1.0'?>",
     Token::Declaration("1.0", None, None, 0..21)
@@ -124,7 +136,7 @@ test!(
 test!(
     declaration_err_07,
     "\u{000a}<?xml\u{000a}&jg'];",
-    Token::Error("invalid processing instruction at 2:1 cause expected '?>' at 3:7".to_string())
+    Token::Error("unknown token at 2:1".to_string())
 );
 
 test!(
